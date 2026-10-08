@@ -511,47 +511,113 @@ const SHORT='<div class="short"><button class="btn ghost" data-act="tab" data-ta
 
 /* ---------- állapot és mentés ---------- */
 const LS='petlife.v1';
-const blank=()=>({pets:[],events:[],chat:{},ai:{},settings:{theme:'auto',activePetId:null,city:''},updatedAt:0});
+const blank=()=>({pets:[],events:[],chat:{},ai:{},settings:{theme:'auto',activePetId:null,city:''},updatedAt:0,owner:null,pend:false});
 let S=blank(),tab='home';
 try{const r=localStorage.getItem(LS);if(r)S=Object.assign(blank(),JSON.parse(r))}catch(e){}
-const bootEmpty=!S.updatedAt;
 const HOST_THEME=document.documentElement.getAttribute('data-theme');
-const cloud={db:null,uid:null,ok:false,state:'pending',dirty:new Set(),busy:false,timer:0};
-const cdoc=k=>cloud.db.doc(`data/users/${cloud.uid}/${k}`);
+/* ---------- fiók és szinkron (Supabase) ----------
+   SB_URL: a projekt címe. SB_KEY: a NYILVÁNOS (publishable / anon) kulcs. Titkos (secret / service_role) kulcs ide soha nem kerülhet. */
+const SB_URL='https://vxinkrltltlfcgjhoqqj.supabase.co',SB_KEY='sb_publishable_44tAo7cyttqU3BTpirE4PA_zdtrcuLE';
+const SB_LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4',SB_TABLE='petlife_docs';
+const APP_URL=location.origin+location.pathname;
+const keyOk=k=>{if(!k||/^sb_secret_/.test(k))return false;const p=k.split('.');if(p.length===3)try{if(/service_role/.test(atob(p[1].replace(/-/g,'+').replace(/_/g,'/'))))return false}catch(e){}return true};
+const CFG_OK=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(SB_URL)&&keyOk(SB_KEY);
+/* a megerősítő vagy jelszócserélő levélből érkező visszatérés jelzései (a könyvtár betöltése előtt olvassuk ki) */
+const HASH=new URLSearchParams(location.hash.slice(1)),hashErr=HASH.get('error_code')||HASH.get('error')||'',hashType=HASH.get('type')||'';
+if(hashErr)try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+/* állapotok: off = nincs beállítva vagy nem tölthető be, pending = ellenőrzés, out = nincs belépve, sync = első letöltés, cloud = mentve, error = sikertelen mentés */
+const cloud={sb:null,uid:null,email:'',ok:false,state:CFG_OK?'pending':'off',err:'',leaving:false,pulling:false,checked:0,dirty:new Set(),busy:false,timer:0};
 const plain=o=>JSON.parse(JSON.stringify(o));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const un=r=>{if(r&&r.error)throw r.error;return r};
+const errCode=e=>String((e&&(e.code||e.status))||(navigator.onLine===false?'nincs kapcsolat':'ismeretlen')).slice(0,40);
+/* egy felhasználó egy dokumentuma: main (állatok, események, beállítások), chat (beszélgetések, AI-ajánlások), photo_<állat> */
+const cdoc=k=>{const uid=cloud.uid,q=()=>cloud.sb.from(SB_TABLE);return{
+  get:async()=>{const{data}=un(await q().select('data').eq('user_id',uid).eq('key',k).maybeSingle());return{exists:!!data,data:()=>data.data}},
+  set:async v=>{un(await q().upsert({user_id:uid,key:k,data:v,updated_at:new Date().toISOString()},{onConflict:'user_id,key'}))},
+  delete:async()=>{un(await q().delete().eq('user_id',uid).eq('key',k))}}};
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-function save(...keys){S.updatedAt=Date.now();saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200)}
+function save(...keys){S.updatedAt=Date.now();S.pend=true;saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200)}
+const soft=()=>{if(!$('#sheet').hidden||tab==='ai')renderTop();else render()};
 async function flush(){
   if(!cloud.ok||cloud.busy||!cloud.dirty.size)return;
-  cloud.busy=true;const keys=[...cloud.dirty];cloud.dirty.clear();
+  cloud.busy=true;const keys=[...cloud.dirty],uid=cloud.uid,was=cloud.state;cloud.dirty.clear();
   try{for(const k of keys){
     if(k==='main')await cdoc('main').set(plain({pets:S.pets.map(({photo,...p})=>({...p,hasPhoto:!!photo})),events:S.events,settings:S.settings,updatedAt:S.updatedAt}));
     else if(k==='chat')await cdoc('chat').set(plain({byPet:S.chat,ai:S.ai}));
     else{const p=S.pets.find(x=>'photo_'+x.id===k);if(p&&p.photo)await cdoc(k).set({data:p.photo});else await cdoc(k).delete()}
-   }cloud.state='cloud'}
-  catch(e){keys.forEach(k=>cloud.dirty.add(k));cloud.state='error';if(e&&(e.code==='invalid_argument'||e.code==='revoked'||e.code==='not_granted')){cloud.ok=false;cloud.state='local'}}
+   }
+   if(cloud.uid===uid){cloud.state='cloud';cloud.err='';if(!cloud.dirty.size){S.pend=false;saveLocal()}}}
+  catch(e){if(cloud.uid===uid){keys.forEach(k=>cloud.dirty.add(k));cloud.state='error';cloud.err=errCode(e)}}
   cloud.busy=false;
-  if(cloud.ok&&cloud.state==='cloud'&&cloud.dirty.size)cloud.timer=setTimeout(flush,400);
+  if(cloud.state!==was&&tab==='more'&&$('#sheet').hidden)render();
+  if(cloud.ok&&cloud.dirty.size){clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,cloud.state==='cloud'?400:30000)}
 }
-async function initCloud(){
+/* A fiók és az eszköz adatainak összefésülése.
+   - más fiók adatai maradtak az eszközön: eldobjuk, soha nem töltjük fel;
+   - fiók nélkül felvett adatok (első belépés): a fiók adatai mellé kerülnek;
+   - ugyanaz a fiók: a frissebb változat nyer; ha itt még fel nem töltött módosítás van, az itt felvett új állatok megmaradnak. */
+async function pull(){
+  const uid=cloud.uid;if(!uid||cloud.pulling)return false;cloud.pulling=true;
   try{
-    if(!window.claude||!claude.use)throw 0;
-    const[db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
-    const uid=db&&user?await user.id():null;if(!uid)throw 0;
-    cloud.db=db;cloud.uid=uid;
-    const snap=await cdoc('main').get(),R=snap.exists?snap.data():null;
-    if(R&&Array.isArray(R.pets)&&((R.updatedAt||0)>(S.updatedAt||0)||bootEmpty)){
+    const snap=await cdoc('main').get(),R=snap.exists?snap.data():null,hasR=!!(R&&Array.isArray(R.pets));
+    if(cloud.uid!==uid)return false;
+    const foreign=!!S.owner&&S.owner!==uid,anon=!S.owner;
+    if(foreign){const th=S.settings.theme;S=blank();S.settings.theme=th;cloud.dirty.clear()}
+    if(hasR&&(anon||foreign||!S.updatedAt||(R.updatedAt||0)>(S.updatedAt||0))){
       const pets=R.pets,[cs,...ph]=await Promise.all([cdoc('chat').get(),...pets.map(p=>p.hasPhoto?cdoc('photo_'+p.id).get():null)]);
+      if(cloud.uid!==uid)return false;
       pets.forEach((p,i)=>{if(ph[i]&&ph[i].exists)p.photo=ph[i].data().data;delete p.hasPhoto});
-      const mine=S;S={pets,events:R.events||[],chat:(cs.exists&&cs.data().byPet)||{},ai:(cs.exists&&cs.data().ai)||{},settings:Object.assign(blank().settings,R.settings),updatedAt:R.updatedAt||Date.now()};
-      /* ami a betöltés alatt ezen az eszközön keletkezett, megmarad */
-      const have=new Set(S.pets.map(p=>p.id)),extra=mine.pets.filter(p=>!have.has(p.id));
-      if(extra.length){S.pets.push(...extra);S.events.push(...mine.events.filter(e=>!have.has(e.petId)));extra.forEach(p=>{if(mine.chat[p.id])S.chat[p.id]=mine.chat[p.id];if(p.photo)cloud.dirty.add('photo_'+p.id)});S.settings.activePetId=extra[0].id;S.updatedAt=Date.now();cloud.dirty.add('main').add('chat')}
-      saveLocal();applyTheme();
-    }else if(S.updatedAt){cloud.dirty.add('main').add('chat');S.pets.forEach(p=>p.photo&&cloud.dirty.add('photo_'+p.id))}
-    cloud.ok=true;cloud.state='cloud';flush();
-  }catch(e){cloud.state='local'}
-  if(!$('#sheet').hidden||tab==='ai')renderTop();else render();
+      const mine=S,keep=anon||mine.pend;
+      S={pets,events:R.events||[],chat:(cs.exists&&cs.data().byPet)||{},ai:(cs.exists&&cs.data().ai)||{},settings:Object.assign(blank().settings,R.settings),updatedAt:R.updatedAt||Date.now(),owner:uid,pend:false};
+      cloud.dirty.clear();
+      const have=new Set(S.pets.map(p=>p.id)),extra=keep?mine.pets.filter(p=>!have.has(p.id)):[];
+      if(extra.length){S.pets.push(...extra);S.events.push(...mine.events.filter(e=>!have.has(e.petId)));
+        extra.forEach(p=>{if(mine.chat[p.id])S.chat[p.id]=mine.chat[p.id];if(mine.ai[p.id])S.ai[p.id]=mine.ai[p.id];if(p.photo)cloud.dirty.add('photo_'+p.id)});
+        S.settings.activePetId=extra[0].id;S.updatedAt=Date.now();S.pend=true;cloud.dirty.add('main').add('chat')}
+    }else{
+      S.owner=uid;
+      if(S.updatedAt&&(S.pend||!hasR||S.updatedAt>(R.updatedAt||0))){S.pend=true;cloud.dirty.add('main').add('chat');S.pets.forEach(p=>p.photo&&cloud.dirty.add('photo_'+p.id))}
+    }
+    saveLocal();applyTheme();return true;
+  }finally{cloud.pulling=false}
+}
+async function startSync(){
+  const uid=cloud.uid;if(!uid)return;if(cloud.pulling){setTimeout(startSync,500);return}cloud.state='sync';soft();
+  try{const done=await pull();if(cloud.uid!==uid)return;if(done){cloud.ok=true;cloud.state='cloud';cloud.err='';cloud.checked=Date.now();flush()}}
+  catch(e){if(cloud.uid!==uid)return;cloud.state='error';cloud.err=errCode(e)}
+  soft();
+}
+/* visszatéréskor és kapcsolat helyreálltakor: elmaradt mentés pótlása, illetve a másik eszközön történt változás letöltése */
+function recheck(){
+  if(!cloud.sb||!cloud.uid||document.hidden)return;
+  if(!cloud.ok){if(cloud.state==='error')startSync();return}
+  if(cloud.dirty.size||S.pend){if(S.pend&&!cloud.dirty.size)cloud.dirty.add('main').add('chat');flush();return}
+  if(cloud.busy||Date.now()-cloud.checked<60000||!$('#sheet').hidden)return;
+  cloud.checked=Date.now();const before=S.updatedAt;pull().then(()=>{if(S.updatedAt!==before)soft()}).catch(()=>{});
+}
+function onAuth(ev,sess){
+  const u=sess&&sess.user;
+  if(u){
+    cloud.email=u.email||'';
+    if(cloud.uid!==u.id){cloud.uid=u.id;cloud.ok=false;cloud.leaving=false;startSync()}
+    else if(!cloud.ok&&cloud.state==='error')startSync();
+    if(ev==='PASSWORD_RECOVERY')pwSheet();
+    else if(ev==='SIGNED_IN'&&hashType==='signup'&&!cloud.greeted){cloud.greeted=true;toast('E-mail-cím megerősítve, beléptél')}
+  }else{
+    const left=cloud.leaving;cloud.uid=null;cloud.email='';cloud.ok=false;cloud.leaving=false;cloud.state='out';cloud.err='';cloud.dirty.clear();clearTimeout(cloud.timer);
+    if(left){const th=S.settings.theme;S=blank();S.settings.theme=th;saveLocal();tab='home';closeSheet();render({top:true});toast('Kiléptél');return}
+    soft();
+  }
+}
+const loadLib=()=>new Promise((ok,no)=>{if(window.supabase&&window.supabase.createClient)return ok();const el=document.createElement('script');el.src=SB_LIB;el.crossOrigin='anonymous';el.onload=()=>window.supabase&&window.supabase.createClient?ok():no(new Error('lib'));el.onerror=()=>no(new Error('lib'));document.head.appendChild(el)});
+async function initCloud(){
+  if(!CFG_OK)return;
+  try{await loadLib();cloud.sb=window.supabase.createClient(SB_URL.replace(/\/$/,''),SB_KEY);
+    /* a könyvtár kérése szerint a visszahívásban nem várunk másik Supabase-hívásra, ezért időzítve dolgozzuk fel */
+    cloud.sb.auth.onAuthStateChange((ev,sess)=>setTimeout(()=>onAuth(ev,sess),0));
+    if(hashErr)openSheet('<h2>A link már nem érvényes</h2><p>A levélben kapott link lejárt, vagy már felhasználtad. Ha már megerősítetted a címed, egyszerűen lépj be. Ha nem, kérj új levelet.</p><button class="btn" data-act="auOpen" data-m="in">Belépés</button><button class="btn ghost" data-act="close">Bezárás</button>');
+  }catch(e){cloud.state='off';cloud.err='lib';soft()}
 }
 function applyTheme(){const t=S.settings.theme,r=document.documentElement;
   if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else if(HOST_THEME)r.setAttribute('data-theme',HOST_THEME);else r.removeAttribute('data-theme');
@@ -611,7 +677,7 @@ function trail(p){
   <p class="next">${next} A szakaszhatárok tájékoztató jellegűek.</p>`}
 function vEmpty(){return`<div class="empty"><div class="big">🐾</div><h1>Kövesd végig a kedvenced életét</h1>
   <p class="sub">Add meg a faját, fajtáját és korát, és a PetLife mindig az aktuális életszakaszához illő teendőket és tippeket mutatja.</p>
-  <p><button class="btn" data-act="petNew">Állat felvétele</button></p>${cloud.state==='pending'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
+  <p><button class="btn" data-act="petNew">Állat felvétele</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
 function vHome(p){
   const st=stageOf(p),items=buildItems(p),due=dueList(p,items),t=today();
   const soon=S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&D(e.date)>=t&&D(e.date)-t<=30*DAY).sort((a,c)=>a.date<c.date?-1:1);
@@ -809,15 +875,47 @@ function drawChatSheet(clear){
 function redrawChat(clear){if(chatSheet)drawChatSheet(clear);else if(tab==='ai')render({clearDraft:clear})}
 function vMore(){
   const cur=pet(),th=S.settings.theme;
-  const store={pending:'Mentés ellenőrzése…',cloud:'Az adataid a Claude-fiókodhoz mentve, így más eszközödön is megjelennek.',local:'Az adataid csak ezen az eszközön tárolódnak. Ha törlöd az appot vagy a böngésző adatait, elvesznek.',error:'A fiókba mentés most nem sikerült. Az eszközön megvannak az adatok, a következő módosításnál újra megpróbálom.'}[cloud.state];
+  const store=!cloud.uid?'Az adataid csak ezen az eszközön tárolódnak. Ha törlöd az appot vagy a böngésző adatait, elvesznek.'
+    :{sync:'Szinkronizálás a fiókoddal…',cloud:'Az adataid a fiókodhoz mentve, így a többi eszközödön is megjelennek.',error:`A fiókba mentés most nem sikerült. Az eszközön megvannak az adatok, kapcsolat esetén újra megpróbálom.${cloud.err?` (hibakód: ${esc(cloud.err)})`:''}`}[cloud.state]||'Mentés ellenőrzése…';
   return`<h1>Több</h1><h2>Állataim</h2>
   ${S.pets.length?`<ul class="list">${S.pets.map(p=>{const st=stageOf(p);return`<li>${ava(p)}<button class="grow" data-act="petUse" data-id="${p.id}"><b>${esc(petName(p))}</b>${cur&&cur.id===p.id?' ✓':''}<span class="when">${fmtAge(p)}${st?', '+STAGE_HU[st].toLowerCase():''}</span></button><button class="btn ghost small" data-act="petEdit" data-id="${p.id}">Szerkesztés</button></li>`}).join('')}</ul>`:'<p class="sub">Még nincs felvett állat.</p>'}
   <p style="margin-top:10px"><button class="btn" data-act="petNew">Új állat felvétele</button></p>
+  <h2>Fiók</h2>${accountHtml()}
   <h2>Megjelenés</h2><div class="chips">${[['auto','Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,n])=>`<label><input type="radio" name="theme" value="${v}"${th===v?' checked':''}><span>${n}</span></label>`).join('')}</div>
   <h2>Útmutatók</h2>${SHORT}
   <h2>Telepítés</h2>${installHtml()}
   <h2>Adatok</h2><p class="sub">${store}</p><button class="btn danger" data-act="wipeAsk">Adatok törlése</button>
   <p class="note">A mérföldkövek és a szakaszhatárok tájékoztató jellegűek. Kutyánál a veszettség elleni oltást a 164/2008. (XII. 20.) FVM rendelet, a mikrochipet a 41/2010. (II. 26.) Korm. rendelet írja elő. ${DISC}</p>`}
+function accountHtml(){
+  if(cloud.state==='off')return`<p class="sub">${cloud.err==='lib'?'A fiókkezelést most nem sikerült betölteni. Ellenőrizd az internetkapcsolatot, majd nyisd meg újra az appot.':'A fiók ebben a változatban nincs beállítva.'}</p>`;
+  if(cloud.state==='pending')return'<p class="sub">Fiók ellenőrzése…</p>';
+  if(!cloud.uid)return`<p class="sub">Fiókkal az adataid biztonsági mentést kapnak, és a többi eszközödön is megjelennek. Fiók nélkül is használhatod az appot.</p><button class="btn" data-act="auOpen" data-m="in">Belépés</button><button class="btn ghost" style="margin-top:10px" data-act="auOpen" data-m="up">Regisztráció</button>`;
+  return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button>`}
+/* ---------- fiók: belépés, regisztráció, jelszócsere ---------- */
+let auMode='in',auBusy=false;
+const AU={in:{h:'Belépés',b:'Belépés'},up:{h:'Regisztráció',b:'Fiók létrehozása'},reset:{h:'Új jelszó kérése',b:'Levél küldése'}};
+function authSheet(m,mail=''){auMode=AU[m]?m:'in';auBusy=false;const a=AU[auMode];
+  openSheet(`<form id="auForm" novalidate><h2>${a.h}</h2>
+  ${auMode==='reset'?'<p class="sub">Írd be az e-mail-címed, és küldünk egy linket, amivel új jelszót adhatsz meg.</p>':auMode==='up'?'<p class="sub">A regisztráció után megerősítő levelet kapsz. A benne lévő linkre kattintva válik használhatóvá a fiókod.</p>':''}
+  <label class="f"><span>E-mail-cím</span><input id="auMail" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="200" value="${esc(mail)}"></label>
+  ${auMode==='reset'?'':`<label class="f"><span>Jelszó${auMode==='up'?' (legalább 8 karakter)':''}</span><input id="auPw" type="password" name="password" autocomplete="${auMode==='up'?'new-password':'current-password'}" maxlength="72"></label>`}
+  <p class="err" id="auErr" role="alert" hidden></p>
+  <button class="btn" id="auBtn" data-act="auGo">${a.b}</button>
+  ${auMode==='in'?'<button type="button" class="btn ghost" data-act="auMode" data-m="up">Nincs még fiókom</button><button type="button" class="btn text" style="width:100%" data-act="auMode" data-m="reset">Elfelejtettem a jelszavam</button>':'<button type="button" class="btn ghost" data-act="auMode" data-m="in">Van már fiókom</button>'}
+  <button type="button" class="btn ghost" data-act="close">Mégse</button></form>`)}
+function pwSheet(){openSheet('<form id="auForm" novalidate><h2>Új jelszó megadása</h2><label class="f"><span>Új jelszó (legalább 8 karakter)</span><input id="npPw" type="password" name="password" autocomplete="new-password" maxlength="72"></label><p class="err" id="npErr" role="alert" hidden></p><button class="btn" id="npBtn" data-act="pwSave">Jelszó mentése</button><button type="button" class="btn ghost" data-act="close">Mégse</button></form>')}
+/* a hibakódok a Supabase Auth kódjai; régebbi válaszoknál a szövegből azonosítunk */
+function auErr(e){const c=String((e&&e.code)||''),m=String((e&&e.message)||'').toLowerCase(),st=e&&e.status;
+  if(c==='invalid_credentials'||m.includes('invalid login'))return'Hibás e-mail-cím vagy jelszó.';
+  if(c==='email_not_confirmed'||m.includes('not confirmed'))return'Még nem erősítetted meg az e-mail-címed. Kattints a levélben kapott linkre, utána lépj be.';
+  if(c==='user_already_exists'||c==='email_exists'||m.includes('already registered'))return'Ezzel az e-mail-címmel már van fiók. Lépj be, vagy kérj új jelszót.';
+  if(c==='same_password')return'Az új jelszó nem egyezhet a régivel.';
+  if(c==='weak_password'||m.includes('password should'))return'Túl gyenge jelszó. Legalább 8 karakter legyen.';
+  if(c.includes('rate_limit')||st===429||m.includes('rate limit')||m.includes('security purposes'))return'Túl sok próbálkozás. Várj néhány percet, majd próbáld újra.';
+  if(c==='email_address_invalid'||c==='validation_failed'||m.includes('invalid email')||m.includes('invalid format'))return'Ez az e-mail-cím nem tűnik érvényesnek.';
+  if(c==='signup_disabled'||c==='email_provider_disabled')return'A regisztráció jelenleg nincs engedélyezve.';
+  if(navigator.onLine===false||m.includes('fetch')||m.includes('network'))return'Nincs internetkapcsolat. Próbáld újra később.';
+  return`Most nem sikerült. Próbáld újra kicsit később.${c?` (hibakód: ${c.slice(0,40)})`:''}`}
 function renderTop(){const p=pet(),b=$('#petPill');b.hidden=!p;if(p)b.innerHTML=`${ava(p)}<b>${esc(petName(p))}</b><span aria-hidden="true">▾</span>`;
   const cur={food:'more',vets:'more',care:'more',prod:'more'}[tab]||tab;$('#fab').hidden=!p||tab==='ai';document.querySelectorAll('.tab').forEach(t=>t.dataset.tab===cur?t.setAttribute('aria-current','page'):t.removeAttribute('aria-current'))}
 function render(opt={}){
@@ -1011,7 +1109,7 @@ const ACT={
   chatClear(){confirmSheet('Törlöd a beszélgetést?','Az eddigi kérdések és válaszok törlődnek ennél az állatnál.','Igen, törlöm','chatClearDo')},
   chatClearDo(){delete S.chat[pet().id];chatNote='';save('chat');closeSheet();render()},
   wipeAsk(){confirmSheet('Minden adatot törölsz?',`Minden állat, esemény és beszélgetés törlődik ${cloud.ok?'erről az eszközről és a fiókodhoz mentett másolatból is':'erről az eszközről'}. Ezt nem lehet visszavonni.`,'Igen, mindent törlök','wipe')},
-  wipe(){const ids=S.pets.map(p=>'photo_'+p.id),theme=S.settings.theme;S=blank();S.settings.theme=theme;save('chat',...ids);closeSheet();tab='home';render({top:true});toast('Minden adat törölve')}
+  wipe(){const ids=S.pets.map(p=>'photo_'+p.id),theme=S.settings.theme,owner=S.owner;S=blank();S.settings.theme=theme;S.owner=owner;save('chat',...ids);closeSheet();tab='home';render({top:true});toast('Minden adat törölve')}
 };
 document.addEventListener('click',e=>{
   if(e.target.id==='sheet'&&!W)return closeSheet();
@@ -1028,6 +1126,40 @@ document.addEventListener('input',e=>{const t=e.target;
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('#sheet').hidden)closeSheet();
   if(e.key==='Enter'&&!e.shiftKey&&e.target.id==='chatIn'&&matchMedia('(pointer:fine)').matches){e.preventDefault();if(!chatBusy)sendChat(e.target.value)}});
+
+Object.assign(ACT,{
+  auOpen(el){authSheet(el.dataset.m)},
+  auMode(el){authSheet(el.dataset.m,$('#auMail')?$('#auMail').value.trim():'')},
+  async auGo(){
+    if(auBusy||!cloud.sb)return;const m=auMode,mail=$('#auMail').value.trim().toLowerCase(),pw=$('#auPw')?$('#auPw').value:'';
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail))return showErr('#auErr','Írd be az e-mail-címed.');
+    if(m!=='reset'&&!pw)return showErr('#auErr','Írd be a jelszavad.');
+    if(m==='up'&&pw.length<8)return showErr('#auErr','A jelszó legalább 8 karakter legyen.');
+    auBusy=true;$('#auErr').hidden=true;const b=$('#auBtn');b.disabled=true;b.textContent='Egy pillanat…';
+    let r;try{r=m==='in'?await cloud.sb.auth.signInWithPassword({email:mail,password:pw})
+      :m==='up'?await cloud.sb.auth.signUp({email:mail,password:pw,options:{emailRedirectTo:APP_URL}})
+      :await cloud.sb.auth.resetPasswordForEmail(mail,{redirectTo:APP_URL})}catch(e){r={error:e}}
+    auBusy=false;
+    if(r.error){const x=$('#auBtn');if(x&&auMode===m){x.disabled=false;x.textContent=AU[m].b;showErr('#auErr',auErr(r.error))}return}
+    if(m==='in'||(r.data&&r.data.session)){closeSheet();toast(m==='in'?'Beléptél':'Fiók létrehozva, beléptél');return}
+    openSheet(m==='up'?`<h2>Nézd meg a postafiókod</h2><p>Megerősítő levelet küldtünk ide: <b>${esc(mail)}</b>. Kattints a benne lévő linkre, utána itt lépj be.</p><p class="sub">Ha pár percen belül nem érkezik meg, nézd meg a levélszemét mappát. Ha ezzel a címmel már volt fiókod, nem kapsz új levelet: lépj be, vagy kérj új jelszót.</p><button class="btn" data-act="auOpen" data-m="in">Belépés</button><button class="btn ghost" data-act="close">Bezárás</button>`
+      :`<h2>Nézd meg a postafiókod</h2><p>Ha van fiók ezzel a címmel (<b>${esc(mail)}</b>), küldtünk egy levelet. A benne lévő linkre kattintva adhatsz meg új jelszót.</p><button class="btn ghost" data-act="close">Bezárás</button>`)},
+  async pwSave(){
+    const pw=$('#npPw').value;if(pw.length<8)return showErr('#npErr','A jelszó legalább 8 karakter legyen.');
+    const b=$('#npBtn');b.disabled=true;let r;try{r=await cloud.sb.auth.updateUser({password:pw})}catch(e){r={error:e}}
+    if(r.error){const x=$('#npBtn');if(x){x.disabled=false;showErr('#npErr',auErr(r.error))}return}
+    closeSheet();toast('Jelszó megváltoztatva')},
+  async outAsk(){
+    clearTimeout(cloud.timer);for(let i=0;i<40&&cloud.busy;i++)await sleep(100);
+    if(S.pend&&!cloud.dirty.size)cloud.dirty.add('main').add('chat');await flush();
+    confirmSheet('Kilépsz?',`Az adataid a fiókodban megmaradnak, erről az eszközről viszont törlődnek. Belépés után újra megjelennek.${S.pend?' <b>Figyelem:</b> a legutóbbi módosításaidat még nem sikerült feltölteni, kilépéskor elvesznek.':''}`,'Kilépés','out')},
+  async out(){
+    if(!cloud.sb||cloud.leaving)return;cloud.leaving=true;let r;try{r=await cloud.sb.auth.signOut({scope:'local'})}catch(e){r={error:e}}
+    if(r&&r.error){cloud.leaving=false;closeSheet();toast('A kilépés most nem sikerült. Ellenőrizd az internetkapcsolatot.')}}
+});
+document.addEventListener('submit',e=>{if(e.target.id==='auForm')e.preventDefault()});
+document.addEventListener('visibilitychange',recheck);
+addEventListener('online',recheck);
 
 /* ---------- PWA: telepítés és offline működés ---------- */
 let installEvt=null;
