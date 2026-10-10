@@ -105,7 +105,9 @@ button{cursor:pointer}
 .tasks{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:18px}
 .tasks li{display:flex;gap:12px;align-items:center;padding:14px 16px}
 .tasks li+li{border-top:1px solid var(--line)}
-.tasks li>div{flex:1;min-width:0}
+.tasks li>div,.tasks li>.plink{flex:1;min-width:0}
+.plink{display:block;color:inherit;text-decoration:none}.plink b::after{content:"\00a0↗";font-weight:400;color:var(--muted)}
+.blink{color:inherit;text-decoration:underline;text-decoration-color:var(--muted);text-underline-offset:3px}
 .tasks b{display:block}
 .when{display:block;font-size:14px;color:var(--muted)}
 .late .when{color:var(--alert);font-weight:600}
@@ -656,7 +658,10 @@ const fmtKg=n=>String(Math.round(n*100)/100).replace('.',',');
 const mapUrl=(q,c)=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q+' '+c);
 
 /* tápok: csak ellenőrzötten létező, Magyarországon kapható márkák; k = közép, p = prémium (tájékoztató besorolás) */
+/* ezeknél a fajoknál a táplista az életszakasztól függ; a többinél a terméktáblából jön */
+const STAGED_FOOD=new Set(['kutya','macska','nyul','tengerimalac','horcsog']);
 function foods(p){
+  if(!STAGED_FOOD.has(p.species))return(prodOf(p)||{}).tap||[];
   const st=stageOf(p);if(!st)return[];
   const y=st==='kolyok'||st==='novendek',o=st==='idos',gen=b=>`${b}, ${y?'kölyök':o?'szenior':'felnőtt'} változat`,n=p.neutered==='igen';
   if(p.species==='kutya'){
@@ -682,9 +687,63 @@ const PROD={
  nyul:{alom:SMALL_BED,felsz:SMALL_EQ,jatek:[['Trixie','fűalagút, fűlabda, fa rágójáték','k'],['JR Farm','rágnivaló és jutalomfalat','k']]},
  tengerimalac:{alom:SMALL_BED,felsz:SMALL_EQ,jatek:[['Trixie','fűház, alagút','k'],['JR Farm','rágnivaló és jutalomfalat','k']]},
  horcsog:{alom:SMALL_BED,felsz:[['Trixie','futókerék, házikó, homokfürdő','k'],['Ferplast','ketrec','p'],['Savic','ketrec','p']],jatek:[['Trixie','fa játszótér, alagút','k'],['JR Farm','rágnivaló','k']]}};
+const BIRD_ALOM=[['Vitakraft','madárhomok','k'],['Versele-Laga','kagylóhomok','k'],['Trixie','homokpapír, fürdőház','k']],BIRD_EQ=[['Ferplast','kalitka','p'],['Savic','kalitka','p'],['Kerbl','kalitka, röpde','k'],['Trixie','ülőrúd, etető, itató, hordozó','k']],BIRD_TOY=[['Trixie','hinta, létra, rágójáték','k'],['Kerbl','madárjáték','k']];
+const birdProd=(a,b,c)=>({tap:[[`Versele-Laga Prestige ${a}`,'k'],['Versele-Laga NutriBird granulált táp','p'],[`Beaphar XtraVital ${b}`,'p'],[`Vitakraft Menü ${c||a}`,'k'],['Vitakraft Kräcker rúd','k']],alom:BIRD_ALOM,felsz:BIRD_EQ,jatek:BIRD_TOY});
+Object.assign(PROD,{
+ csincsilla:{tap:[['Versele-Laga csincsillatáp (Nature vagy Complete)','p'],['Beaphar Care+ csincsillatáp','p'],['Bunny csincsillatáp','p'],['JR Farm csincsilla pellet','k'],['Vitakraft csincsillaeleség','k'],['Széna: JR Farm, Vitakraft Vita Verde vagy Bunny','k']],
+  alom:[["Cat's Best",'Universal növényi alom kisállatoknak','p'],['JR Farm','csincsillahomok a homokfürdőhöz','k'],['Trixie','csincsillahomok','k'],['Versele-Laga','fürdőhomok csincsillának','k']],
+  felsz:[['Ferplast','többszintes ketrec','p'],['Savic','ketrec','p'],['Trixie','házikó, homokfürdő-tál, futókerék, itató','k'],['Kerbl','ketrec, kifutó','k']],jatek:[['Trixie','fa rágójáték, alagút','k'],['JR Farm','rágnivaló','k']]},
+ goreny:{tap:[['Versele-Laga Ferret Complete','p'],['Beaphar görénytáp','p'],['Brit Animals Ferret','k'],['Vitakraft görényeledel','k']],
+  alom:[["Cat's Best",'Universal nem csomósodó növényi alom','p'],['Chipsi','fa pellet alom','k']],
+  felsz:[['Ferplast','görényketrec, hordozó','p'],['Savic','ketrec, saroktálca','p'],['Trixie','függőágy, hám és póráz, hordozó','k'],['Kerbl','ketrec','k']],jatek:[['Trixie','játszóalagút, függőágy','k']]},
+ hullamos:birdProd('hullámospapagáj-eleség','hullámospapagáj-eleség'),nimfa:birdProd('nimfapapagáj-eleség','nagypapagáj-eleség','nimfapapagáj-eleség'),
+ kanari:birdProd('kanárieleség','kanárieleség'),pinty:birdProd('díszpintyeleség','egzótaeleség','egzótaeleség')});
+/* csoportszintű készletek azoknak a fajoknak, amelyeknek nincs saját terméklistájuk: márka + terméktípus */
+const T_SUP=[['Exo Terra','kalcium- és multivitaminpor','p'],['Zoo Med','kalcium- és vitaminpor','p'],['JBL','kalcium- és vitaminkészítmény terráriumi állatoknak','k'],['Trixie','kalciumpor, szépiahéj','k']],
+ T_SUB=[['Exo Terra','terráriumi aljzat (homok, kókuszrost, kéreg)','p'],['Zoo Med','terráriumi aljzat','p'],['Trixie','terráriumi aljzat','k'],['JBL','terráriumi aljzat','k']],
+ T_EQ=[['Exo Terra','terrárium, hőlámpa, UVB-fényforrás, hőmérő','p'],['Arcadia','UVB-fénycső és -lámpa','p'],['Zoo Med','hőlámpa, UVB-fényforrás, termosztát','p'],['Trixie','terrárium, fűtőlap, hő- és páramérő','k'],['JBL','UV- és melegítőlámpa','k'],['sera','terráriumtechnika','k']],
+ T_DEC=[['Exo Terra','búvóhely, mászóág, műnövény, itató','p'],['Zoo Med','búvóhely, itató','p'],['Trixie','búvóhely, műszikla, műnövény','k']],
+ A_WAT=[['Tetra','vízelőkészítő, vízteszt','k'],['JBL','vízteszt, vízelőkészítő','k'],['sera','vízelőkészítő, vízteszt','k']],
+ A_EQ=[['JUWEL','akváriumszett','p'],['EHEIM','szűrő, fűtő, akvárium','p'],['JBL','szűrő, világítás','p'],['AQUAEL','akvárium, szűrő, fűtő, világítás','k'],['Tetra','kezdő akváriumszett','k']],
+ A_DEC=[['JUWEL','háttér, dekoráció','p'],['Tetra','műnövény','k'],['JBL','aljzat, növénytáp','k']];
+const GPROD={
+ gyik:{tap:T_SUP,alom:T_SUB,felsz:T_EQ,jatek:T_DEC},
+ kigyo:{tap:[],alom:T_SUB,felsz:[['Exo Terra','terrárium, hőlámpa, hőmérő','p'],['Zoo Med','fűtőlap, termosztát','p'],['Trixie','terrárium, fűtőlap, hő- és páramérő','k']],jatek:T_DEC},
+ teknos:{tap:[['Zoo Med','teknőstáp','p'],['JBL','PROTERRA eleség szárazföldi teknősöknek','k'],['sera','teknőseleség','k'],['Trixie','szépiahéj kalciumforrásnak','k']],alom:T_SUB,felsz:T_EQ,jatek:T_DEC},
+ viziteknos:{tap:[['Zoo Med','vízi teknőstáp','p'],['Tetra','ReptoMin teknőseleség','k'],['sera','teknőseleség','k'],['JBL','teknőseleség','k']],alom:[['sera','reptil aquatan vízelőkészítő','k'],['JBL','vízteszt, vízelőkészítő','k'],['Tetra','vízelőkészítő','k']],
+  felsz:[['EHEIM','külső és belső szűrő','p'],['Exo Terra','UVB- és melegítőlámpa','p'],['Arcadia','UVB-fényforrás','p'],['JUWEL','akvárium','p'],['AQUAEL','szűrő, fűtő','k']],jatek:[['Exo Terra','napozósziget, búvóhely','p'],['Zoo Med','úszó napozóstég','p'],['Trixie','teknőssziget','k']]},
+ keteltu:{tap:T_SUP,alom:T_SUB,felsz:[['Exo Terra','terrárium, párásító, hő- és páramérő','p'],['Zoo Med','hő- és páramérő, világítás','p'],['Trixie','terrárium, permetező, fűtőlap','k']],jatek:T_DEC},
+ vizi:{tap:[['JBL','eleség vízi kétéltűeknek','k'],['sera','süllyedő eleség','k'],['Tetra','süllyedő eleség (tabletta)','k']],alom:A_WAT,felsz:A_EQ,jatek:A_DEC},
+ edesvizi:{tap:[['Tetra','lemezes és granulált haleleség','k'],['sera','haleleség','k'],['JBL','haleleség','k']],alom:A_WAT,felsz:A_EQ,jatek:A_DEC},
+ tengeri:{tap:[['sera','tengeri haleleség','k'],['JBL','tengeri haleleség','k']],alom:[['Tropic Marin','tengeri só, vízkezelők','p'],['Red Sea','tengeri só, vízteszt','p'],['JBL','vízteszt','k']],
+  felsz:[['Red Sea','tengeri akváriumrendszer','p'],['EHEIM','szűrő, áramoltató','p'],['JUWEL','akvárium','p'],['AQUAEL','fűtő, világítás','k']],jatek:[]},
+ gerinctelen:{tap:[],alom:[['Exo Terra','terráriumi aljzat (kókuszrost, humusz)','p'],['Zoo Med','terráriumi aljzat','p'],['Trixie','terráriumi aljzat','k']],felsz:[['Exo Terra','kis terrárium, faunárium, hő- és páramérő','p'],['Trixie','terrárium, fűtőlap, permetező','k']],jatek:[['Exo Terra','búvóhely, műnövény','p'],['Trixie','búvóhely, parafakéreg','k']]}};
+const AQUA=new Set(['axolotl','torpekarmosbeka','bordasgote','tuzhasugote']),WTURTLE=new Set(['mocsariteknos','diszteknos']);
+const kitOf=p=>{const k=p.species,tl=tileOf(p);return k==='tengeri'?'tengeri':tl==='hal'?'edesvizi':AQUA.has(k)?'vizi':WTURTLE.has(k)?'viziteknos':['gyik','kigyo','teknos','keteltu','gerinctelen'].includes(tl)?tl:null};
+const prodOf=p=>PROD[p.species]||GPROD[kitOf(p)]||null;
+/* a kategóriák neve a tartás módjához igazodik */
+const pcat=p=>{const k=PROD[p.species]?null:kitOf(p);return['edesvizi','vizi','viziteknos'].includes(k)?{tap:'Eleség',alom:'Vízkezelés és teszt',felsz:'Akvárium és technika',jatek:'Berendezés'}
+  :k==='tengeri'?{tap:'Eleség',alom:'Só és vízkezelés',felsz:'Akvárium és technika',jatek:'Berendezés'}:k?{tap:'Eleség és kiegészítők',alom:'Aljzat',felsz:'Terrárium és technika',jatek:'Berendezés'}
+  :grp(p)==='madar'?{tap:'Eleség',alom:'Higiénia',felsz:'Kalitka és felszerelés',jatek:'Játék'}:PCAT};
+const PEMPTY={kigyo:'A kígyó előre leölt, fagyasztott zsákmányállatot eszik: ezt szaküzletben kapod, márkás táp nincs hozzá.',gerinctelen:'Ezek az állatok élő eleséget vagy friss növényt esznek: márkás táp nincs hozzájuk.'};
+/* ---------- márkák weboldalai ----------
+   Minden cím egyenként ellenőrizve (2026-10-10). Egy ajánlásra koppintva a benne szereplő márka oldala nyílik meg új lapon.
+   Ha egy márkának nincs itt címe, webes keresés nyílik a nevére. Később ide kerülhet partner- vagy hirdetési link is. */
+const BRAND={'Royal Canin':'https://www.royalcanin.com/hu',"Hill's":'https://www.hillspet.com/','Purina':'https://www.purina.hu/','Acana':'https://emea.acana.com/en/homepage','Eukanuba':'https://www.eukanuba.com/','Carnilove':'https://carnilove.com/en','Farmina':'https://www.farmina.com/','Brit':'https://brit-petfood.com/en',
+ 'Josera':'https://josera.com/hu','Happy Dog':'https://happydog.hu/','Happy Cat':'https://happycat.hu/','bosch':'https://www.bosch-tiernahrung.de/','Applaws':'https://applaws.com/','Animonda':'https://animonda.de/','Perfect Fit':'https://www.perfectfit.hu/',
+ 'Versele-Laga':'https://www.versele-laga.com/','Beaphar':'https://www.beaphar.com/','Bunny':'https://bunny-nature.de/','Vitakraft':'https://www.vitakraft.com/','JR Farm':'https://www.jr-farm.de/',
+ 'Trixie':'https://www.trixie.de/','Kerbl':'https://www.kerbl.com/','Ferplast':'https://www.ferplast.com/','Savic':'https://www.savic.be/','Chipsi':'https://www.chipsi.de/',"Cat's Best":'https://www.catsbest.de/','Flexi':'https://flexi.de/','Julius-K9':'https://julius-k9.com/hu/','Hunter':'https://www.hunter.de/',
+ 'Ruffwear':'https://ruffwear.com/','FURminator':'https://www.furminator.com/','Nobby':'https://www.nobby.de/','KONG':'https://www.kongcompany.com/','Chuckit!':'https://www.petmate.com/collections/chuckit','Catsan':'https://www.catsan.de/','Catit':'https://www.catit.com/','Petkit':'https://www.petkit.com/',
+ 'Exo Terra':'https://exo-terra.com/','Zoo Med':'https://zoomed.com/','Arcadia':'https://arcadiareptile.com/','JBL':'https://www.jbl.de/','sera':'https://www.sera.de/','Tetra':'https://www.tetra.net/','EHEIM':'https://eheim.com/','JUWEL':'https://www.juwel-aquarium.de/en','AQUAEL':'https://www.aquael.com/','Tropic Marin':'https://www.tropic-marin.com/','Red Sea':'https://redseafish.com/'};
+const BKEYS=Object.keys(BRAND).sort((a,b)=>b.length-a.length);
+/* a névben legelöl álló ismert márka */
+const brandOf=s=>{const l=String(s).toLowerCase();let best=null,at=1e9;for(const k of BKEYS){const i=l.indexOf(k.toLowerCase());if(i>=0&&i<at){at=i;best=k}}return best};
+const brandUrl=s=>{const b=brandOf(s);return b?BRAND[b]:'https://www.google.com/search?q='+encodeURIComponent(s)};
+const blink=s=>`<a class="blink" href="${esc(brandUrl(s))}" target="_blank" rel="noopener noreferrer">${esc(s)}</a>`;
+const brs=s=>String(s).split(', ').map(blink).join(', ');
 const SUPP=['Beaphar','GimCat','GimDog','8in1','BiogenicPet',"Dr. Clauder's",'Luposan','Vitakraft'];
-const brandList=p=>[...new Set([...foods(p).map(x=>x[0]),...Object.values(PROD[p.species]||{}).flat().map(x=>x[0]),...SUPP])].join('; ');
-const PNOTE='Valóban létező, Magyarországon kapható márkák, ár nélkül. A kínálat és a pontos terméknév boltonként változhat; az életkor- és méretjelölést a csomagoláson ellenőrizd. A közép és prémium besorolás tájékoztató.';
+const brandList=p=>[...new Set([...foods(p).map(x=>x[0]),...Object.values(prodOf(p)||{}).flat().map(x=>x[0]),...(grp(p)==='emlos'?SUPP:[])])].join('; ');
+const PNOTE='Valóban létező, Magyarországon kapható márkák, ár nélkül. A kínálat és a pontos terméknév boltonként változhat; az életkor- és méretjelölést a csomagoláson ellenőrizd. A közép és prémium besorolás tájékoztató. Egy ajánlásra koppintva a márka weboldala nyílik meg új lapon.';
 const VIT={kutya:'Teljes értékű táp mellett az egészséges kutyának általában nincs szüksége külön vitaminra. A zsírban oldódó vitaminok (főleg az A- és a D-vitamin) túladagolva ártalmasak, ezért kiegészítőt csak célzottan, az állatorvossal egyeztetve adj. Embereknek szánt készítményt ne adj neki.',
  macska:'Teljes értékű táp mellett az egészséges macskának általában nincs szüksége külön vitaminra. A zsírban oldódó vitaminok (főleg az A- és a D-vitamin) túladagolva ártalmasak, ezért kiegészítőt csak célzottan, az állatorvossal egyeztetve adj. Embereknek szánt készítményt ne adj neki.',
  nyul:'Jó széna, friss zöldek és minőségi táp mellett a nyúlnak általában nincs szüksége vitaminkiegészítésre. Kiegészítőt csak állatorvosi javaslatra adj.',
@@ -841,7 +900,7 @@ Object.assign(CARE,{
   idos:[BIRD_ILL,BIRD_VET]},
   i:['Friss zöld és tojásos lágyeleség a változatosságért.','Fürdési lehetőség.','Annyi ülőrúd, hogy maradjon szabad röptér.'],
   p:[['Tépik egymás tollát','Túlzsúfoltságot vagy agressziót jelez: adj több helyet, vagy válaszd szét őket.'],BIRD_CATCH,['Felborzolt tollal gubbaszt',BIRD_SICK],BIRD_FUME]}});
-const BIRD_HOME=(cage)=>[['Kalitka',cage],['Hely','Olyan szobába tedd, ahol a család tartózkodik, lehetőleg sarokba, a padlónál magasabbra. Huzatos helyre, közvetlenül ablak elé és a konyhába ne kerüljön.'],['Ülőrudak és játékok','Több, különböző ülőrúd, mellé rágható és keresgélős játék. A madár feje ne férjen ki a rácsok között.'],['Világítás és alvás','Ha nem éri természetes fény, teljes spektrumú lámpa kell. Az esti rutin legyen mindig ugyanaz; a letakarás nem kötelező.'],['Takarítás','Az aljpapírt naponta vagy kétnaponta cseréld, a tálkákat naponta mosd el, a rácsot hetente tisztítsd.'],['Veszélyek a lakásban',BIRD_HAZ]];
+const BIRD_HOME=(cage)=>[['Kalitka',cage,'Ferplast, Savic, Kerbl'],['Hely','Olyan szobába tedd, ahol a család tartózkodik, lehetőleg sarokba, a padlónál magasabbra. Huzatos helyre, közvetlenül ablak elé és a konyhába ne kerüljön.'],['Ülőrudak és játékok','Több, különböző ülőrúd, mellé rágható és keresgélős játék. A madár feje ne férjen ki a rácsok között.','Trixie'],['Világítás és alvás','Ha nem éri természetes fény, teljes spektrumú lámpa kell. Az esti rutin legyen mindig ugyanaz; a letakarás nem kötelező.'],['Takarítás','Az aljpapírt naponta vagy kétnaponta cseréld, a tálkákat naponta mosd el, a rácsot hetente tisztítsd.'],['Veszélyek a lakásban',BIRD_HAZ]];
 Object.assign(HOME,{
  csincsilla:[['Ketrec','Párnak vagy három állatnak legalább 90 × 60 × 120 cm-es (hossz × mélység × magasság), többszintes ketrec kell, polcokkal. A rácsos aljzat mellé legyen tömör pihenőfelület is.'],['Hely és hőmérséklet','Beltéri, jól szellőző, száraz, huzatmentes hely, 10–18 °C között. Napos ablak elé és párás helyiségbe ne tedd.'],['Alom','A papíralapú alom a legjobb. Kezeletlen fenyőforgácsot és vegyszerrel kezelt fát ne használj.'],['Homokfürdő','Sekély tál csincsillahomokkal, kb. 5–10 cm mélyen, naponta 10–20 percre. A homokot legalább hetente cseréld.'],['Kerék és búvóhely','Sima futófelületű, kb. 38 cm átmérőjű kerék, és állatonként egy búvóhely vagy doboz.'],['Takarítás','A ketrecet legalább hetente ürítsd ki, és mosd ki.']],
  goreny:[['Ketrec','Biztonságosan zárható legyen, mert ügyesen megszökik. Legalább 60 × 60 × 45 cm, de minél nagyobb, annál jobb: az ajánlott méret kb. 90 × 90 × 60 cm, több szinttel.'],['Aljzat','Tömör vagy kipárnázott aljzat kell: a csupasz rács megsérti a talppárnáit.'],['Alvóhely','Függőágy vagy szövetkuckó, tiszta törölközővel vagy kis takaróval. Újságpapírt és faforgácsot ne használj; a cédrus mérgező lehet.'],['Alomtálca','Magas falú saroktálca, az alvó- és etetőhelytől távol. Csomósodó almot ne használj.'],['Hőmérséklet','18–23 °C, napos ablaktól és huzattól távol.'],['Itató és tál','Golyós itató vagy nehéz tál, naponta tisztítva.']],
@@ -849,6 +908,8 @@ Object.assign(HOME,{
  nimfa:BIRD_HOME('Legalább 50–60 cm hosszú és széles kalitka kell, de minél nagyobb, annál jobb: férjen el benne kitárt szárnnyal is. A rácstávolság 1,3–1,9 cm legyen.'),
  kanari:BIRD_HOME('Legalább 46 cm hosszú és széles kalitka kell, kb. 1 cm rácstávolsággal; az ajánlott méret legalább kb. 90 × 60 × 60 cm. A hossza fontosabb a magasságánál, mert a kalitkában repül.'),
  pinty:BIRD_HOME('Egy párnak legalább 35 × 35 cm alapterület kell, de a hosszú, vízszintes röpkalitka vagy röpde a jó. A rácstávolság legfeljebb 1,3 cm legyen.')});
+{const HBR={csincsilla:{Ketrec:'Ferplast, Savic, Kerbl',Alom:"Cat's Best",'Homokfürdő':'JR Farm, Trixie, Versele-Laga','Kerék és búvóhely':'Trixie'},goreny:{Ketrec:'Ferplast, Savic, Kerbl','Alvóhely':'Trixie','Alomtálca':"Savic, Cat's Best"}};
+ for(const k in HBR)HOME[k].forEach(c=>{if(HBR[k][c[0]])c[2]=HBR[k][c[0]]})}
 const L_CARRIER={k:'hord',t:'Hordozóba szoktatás',s:['Tedd ki a nyitott hordozót, benne egy kedvenc falattal.','Hagyd, hogy magától menjen be, és jutalmazd, amikor bent van.','Naponta két-három rövid alkalommal gyakorolj, több napon át.','Csak akkor csukd rá az ajtót, ha már nyugodtan bent marad.'],tip:'Így az állatorvosi út és az utazás kevésbé viseli meg.'};
 const PARROT_LES=[{k:'szelid',t:'Szelídítés',st:['kolyok','novendek'],s:['Ülj a kalitka mellé, és beszélj hozzá nyugodtan.','Tegyél kedvenc falatot (pl. fürtös kölest) a tálkájába, amikor ott vagy.','Később kínáld a falatot a kezedből, a rácson át, majd a nyitott ajtón át.','Kalitkán kívül csak akkor gyakorolj, amikor már megbízik benned.'],tip:'Ha sziszeg, liheg vagy elhátrál, lassíts: a megijedt madár csíp.'},
  {k:'kezre',t:'Kézre lépés',s:['Nyomd az ujjad finoman a mellkasához, közvetlenül a lába fölé.','Amikor rálép, mondd mindig ugyanazt, például: „Lépj fel!”','Ismételd, minden alkalommal kicsit magasabbra emelve.','Jutalmul adj falatot, vagy tedd vissza egy magas, biztonságos helyre.','Ha fél az ujjadtól, pálcával vagy ülőrúddal kezdd.'],tip:'Kezdetben öt perc elég, később fokozatosan növeld. Azonnal jutalmazz, a próbálkozást is.'},
@@ -1173,7 +1234,7 @@ function vHealth(p){
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
 function vFood(p){
   const F=FOOD[p.species],st=stageOf(p),L=limitsFor(p);
-  if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div><p class="note">${DISC}</p>`;
+  if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div>${foods(p).length?`<h2>Ajánlott eleségek és kiegészítők</h2>${tierChips()}<div style="height:10px"></div>${prodList(foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>`:PEMPTY[kitOf(p)]?`<p class="sub" style="margin-top:14px">${PEMPTY[kitOf(p)]}</p>`:''}<p class="note">${DISC}</p>`;
   /* adatvezérelt adatlap: ami az adott fajnál hiányzik (táplista, szakasz szerinti gyakoriság), az a lapról is kimarad */
   const kc=kcalRange(p),k100=+p.kcal100||0,meals=F.meals&&st?F.meals[st]:0,fl=foods(p),freq=(F.freq&&st&&F.freq[st])||F.freqAll||'';let portion;
   if(F.base)portion=`<ul class="tips" style="margin-bottom:-12px">${F.base.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
@@ -1185,7 +1246,7 @@ function vFood(p){
     <p class="sub" style="margin:0">Tájékoztató becslés a testsúlyból, az életszakaszból és az ivartalanításból. Az egyéni igény eltérhet: a táp etetési táblázata és az állatorvos az irányadó.${st==='kolyok'||st==='novendek'?' Növésben a súly gyorsan változik, mérd és frissítsd gyakran.':''}</p>`}
   return`${BACK}<h1>Táplálkozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p>
   <h2>${F.h||'Napi adag'}</h2><div class="card">${portion}</div>
-  ${fl.length?`<h2>Ajánlott tápok ${stHU(p,st).toLowerCase()} korra</h2>${tierChips()}<div style="height:10px"></div>${prodList(fl)}<p class="sub" style="margin-top:10px">${PNOTE}</p>${aiBox(p,'food','Személyre szabott tápajánlás kérése')}`:''}
+  ${fl.length?`<h2>Ajánlott ${grp(p)==='emlos'?'tápok':'eleségek'}${STAGED_FOOD.has(p.species)&&st?` ${stHU(p,st).toLowerCase()} korra`:''}</h2>${tierChips()}<div style="height:10px"></div>${prodList(fl)}<p class="sub" style="margin-top:10px">${PNOTE}</p>${aiBox(p,'food','Személyre szabott tápajánlás kérése')}`:''}
   ${freq?`<h2>Etetési gyakoriság</h2><p>${freq}</p>`:''}
   <h2>Tápváltás</h2>${F.sw?`<p>${F.sw}</p>`:F.base?'<p>Kisemlősnél lassan, legalább 2 hét alatt válts, az új eleséget fokozatosan a régihez keverve.</p>'
     :`<p>Új tápra fokozatosan, 7–10 nap alatt válts, a régihez keverve.</p><div class="plan">${[['1–3. nap',25],['4–6. nap',50],['7–9. nap',75],['10. naptól',100]].map(([d,n])=>`<div><i style="--h:${n}%"></i><b>${n}%</b><span>${d}</span></div>`).join('')}</div>
@@ -1194,8 +1255,8 @@ function vFood(p){
   <p class="note warn">Ha mégis evett valamelyikből, vagy mérgezésre gyanakszol, azonnal fordulj állatorvoshoz.</p>${srcBox(p,'food')}<p class="note">${DISC}</p>`}
 let tier='all',pCat='tap',careSt=null,aiRun=null,aiErr=null,symOpen='';
 const tierChips=()=>`<div class="seg2" role="group" aria-label="Árkategória">${[['all','Mind'],['k','Közép'],['p','Prémium']].map(([v,n])=>`<button data-act="tier" data-v="${v}" aria-pressed="${tier===v}">${n}</button>`).join('')}</div>`;
-function prodList(l){const f=l.filter(x=>tier==='all'||x[x.length-1]===tier);
-  return f.length?`<ul class="tasks">${f.map(x=>{const pr=x[x.length-1]==='p';return`<li><div><b>${esc(x[0])}</b>${x.length>2?`<span class="when">${esc(x[1])}</span>`:''}</div><span class="tag${pr?' prem':''}" style="margin:0">${pr?'prémium':'közép'}</span></li>`}).join('')}</ul>`:'<p class="sub">Ebben a szűrésben nincs találat.</p>'}
+function prodList(l,all){const f=l.filter(x=>all||tier==='all'||x[x.length-1]===tier);
+  return f.length?`<ul class="tasks">${f.map(x=>{const pr=x[x.length-1]==='p';return`<li><a class="plink" href="${esc(brandUrl(x[0]))}" target="_blank" rel="noopener noreferrer"><b>${esc(x[0])}</b>${x.length>2?`<span class="when">${esc(x[1])}</span>`:''}</a><span class="tag${pr?' prem':''}" style="margin:0">${pr?'prémium':'közép'}</span></li>`}).join('')}</ul>`:'<p class="sub">Ebben a szűrésben nincs találat.</p>'}
 function aiBox(p,key,label){
   const r=(S.ai[p.id]||{})[key],k=p.id+':'+key,run=aiRun&&aiRun.key===k;
   return`<div class="card" style="margin-top:12px">${run?`<div class="aitext" id="aiOut">${esc(aiRun.text)||'Gondolkodom…'}</div><p style="margin:10px 0 0"><button class="btn ghost small" data-act="aiStop">Leállítás</button></p>`
@@ -1205,11 +1266,11 @@ function aiBox(p,key,label){
 function aiTask(p,key){
   if(key==='vit')return`Feladat: ajánlj ennek az állatnak vitaminokat és táplálékkiegészítőket. Írd le, mely típusok lehetnek hasznosak a faja, fajtája, mérete, életszakasza és a naplózott adatai alapján, és melyek fölöslegesek. Adagolást ne írj. Jelezd, hogy teljes értékű táp mellett egészséges állatnak többnyire nincs szüksége külön vitaminra, a túladagolás ártalmas lehet, és a kiegészítőt az állatorvossal kell egyeztetni. Márkát csak ezek közül említs: ${SUPP.join(', ')}. Árat ne írj. Legfeljebb 150 szó.`;
   if(key==='food')return`Feladat: ajánlj ennek az állatnak 3 konkrét tápot az alábbi listából, és egy-egy mondatban indokold, miért illik a korához, méretéhez és adataihoz. Ha a naplóban van ide tartozó tünet vagy súlyváltozás, vedd figyelembe. Lista: ${foods(p).map(x=>x[0]).join('; ')}. Árat ne írj. Legfeljebb 130 szó.`;
-  const pl=c=>((PROD[p.species]||{})[c]||[]).map(x=>`${x[0]} (${x[1]})`).join('; ');
+  const pl=c=>((prodOf(p)||{})[c]||[]).map(x=>`${x[0]} (${x[1]})`).join('; ');
   if(key==='home')return`Feladat: írd le konkrétan, mire van szüksége otthon ennek az állatnak a faja, fajtája, mérete és életszakasza alapján: alom, fekhely, ház, ketrec vagy terrárium, tálak, hordozó – ami ennél a fajnál értelmezhető. Adj méretre és típusra vonatkozó gyakorlati tanácsot (ha a súlya vagy a mérete ismert, ahhoz igazítva), ${pl('alom')||pl('felsz')?`és mindegyikhez nevezz meg egy márkát ebből a listából: ${pl('alom')}; ${pl('felsz')}`:'márkát ne említs'}. Árat ne írj. Legfeljebb 170 szó.`;
   if(key==='play')return`Feladat: állíts össze rövid napi mozgás- és foglalkozási tervet ennek az állatnak a faja, fajtája, mérete, életszakasza és súlya alapján: mennyi és milyen mozgás kell neki (kutyánál a séták száma és hossza), milyen játékok valók neki, és hogyan foglalkozzon vele a gazdája. Jelezd, mire kell vigyázni ebben a korban. ${pl('jatek')?`Játékmárkát csak ebből a listából említs: ${pl('jatek')}.`:'Márkát ne említs.'} Árat ne írj. Legfeljebb 170 szó.`;
-  const c=key.slice(5),l=c==='tap'?foods(p):(PROD[p.species]||{})[c]||[];
-  return`Feladat: a(z) „${PCAT[c]}" kategóriából ajánlj ennek az állatnak 3 terméket vagy terméktípust márkával, a faja, mérete és életszakasza alapján. Röviden indokold, és írd meg, mire figyeljen a választásnál. Csak ebből a listából válassz: ${l.map(x=>x.slice(0,-1).join(' – ')+(x[x.length-1]==='p'?' (prémium)':' (közép)')).join('; ')}.${tier==='all'?'':` Csak a ${tier==='p'?'prémium':'közép'} kategóriából ajánlj.`} Árat ne írj. Legfeljebb 130 szó.`}
+  const c=key.slice(5),l=c==='tap'?foods(p):(prodOf(p)||{})[c]||[];
+  return`Feladat: a(z) „${pcat(p)[c]}" kategóriából ajánlj ennek az állatnak 3 terméket vagy terméktípust márkával, a faja, mérete és életszakasza alapján. Röviden indokold, és írd meg, mire figyeljen a választásnál. Csak ebből a listából válassz: ${l.map(x=>x.slice(0,-1).join(' – ')+(x[x.length-1]==='p'?' (prémium)':' (közép)')).join('; ')}.${tier==='all'?'':` Csak a ${tier==='p'?'prémium':'közép'} kategóriából ajánlj.`} Árat ne írj. Legfeljebb 130 szó.`}
 async function runAi(key,task,store){
   const p=pet();if(!p||aiRun)return;aiErr=null;const k=p.id+':'+key;aiRun={key:k,text:'',ctl:new AbortController()};render();
   try{const sample=aiSample;
@@ -1221,9 +1282,9 @@ const symAsk=e=>{symOpen=e.id;runAi('sym:'+e.id,`Feladat: a felhasználó ezt a 
 let cTab='guide',lesOpen='';
 function vCare(p){
   const k=p.species,C=CARE[k],cur=stageOf(p);
-  if(!C)return`${BACK}<h1>Tartás és nevelés</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített útmutató.</p><p class="sub">A tartásáról a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>`;
+  if(!C)return`${BACK}<h1>Tartás és nevelés</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített útmutató.</p><p class="sub">A tartásáról a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>${prodOf(p)?['felsz','alom','jatek'].filter(c=>(prodOf(p)[c]||[]).length).map(c=>`<h2>${pcat(p)[c]}</h2>${prodList(prodOf(p)[c],1)}`).join('')+`<p class="sub" style="margin-top:10px">${PNOTE}</p>`:''}`;
   const ask=(q,l='Kérdezd erről a Tanácsadót')=>`<button class="btn text" style="padding:0" data-act="askQ" data-q="${esc(q)}">${l}</button>`;
-  const card=([t,d,br])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${br?`<p style="color:var(--ink)"><span class="tag" style="margin:0 6px 0 0">bevált márkák</span>${br}</p>`:''}</div>`;
+  const card=([t,d,br])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${br?`<p style="color:var(--ink)"><span class="tag" style="margin:0 6px 0 0">bevált márkák</span>${brs(br)}</p>`:''}</div>`;
   /* adatvezérelt adatlap: csak azok a fülek látszanak, amelyekhez az adott fajnál van tartalom */
   const has={guide:C.g,home:HOME[k],les:(LESSONS[k]||[]).length,play:PLAY[k],prob:C.p,trip:TRIP[k]},tabs=Object.keys(CT).filter(x=>has[x]),ct=tabs.includes(cTab)?cTab:tabs[0];
   let b='';
@@ -1232,14 +1293,14 @@ function vCare(p){
     <h2>Útmutató ${stHU(p,st).toLowerCase()} korra</h2>`:'<h2>Útmutató</h2>'}${list.map(card).join('')}
     ${C.i?`<h2>Ötletek a mindennapokra</h2><ul class="tips">${C.i.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}`}
   if(ct==='home')b=`<h2>Mire van szüksége otthon?</h2>${HOME[k].map(card).join('')}
-    ${PROD[k]?`<p class="sub" style="margin-top:10px">${PNOTE}</p>`:''}<h2>Személyre szabott ajánlás</h2>${aiBox(p,'home','Mi kell neki pontosan? Ajánlás kérése')}`;
+    ${HOME[k].some(c=>c[2])?`<p class="sub" style="margin-top:10px">${PNOTE}</p>`:''}<h2>Személyre szabott ajánlás</h2>${aiBox(p,'home','Mi kell neki pontosan? Ajánlás kérése')}`;
   if(ct==='les'){const done=p.lessons||{};
     b=`<p class="sub" style="margin-top:14px">Rövid, napi gyakorlásra szánt leckék. Jutalmazással taníts, büntetés nélkül; egy alkalom néhány perc legyen.</p>${LESSONS[k].map(x=>{const ok=done[x.k],now=!ok&&(!x.st||x.st.includes(cur));
       return`<details class="acc"${lesOpen===x.k?' open':''}><summary>${ok?'<span class="ok">✓</span>':''}${x.t}${now?'<span class="tag" style="margin:0">most időszerű</span>':''}</summary><ol class="steps2">${x.s.map(t=>`<li>${t}</li>`).join('')}</ol>${x.tip?`<p class="sub">${x.tip}</p>`:''}
       <p><button class="btn small${ok?' ghost':''}" data-act="lesDone" data-k="${x.k}">${ok?'Még gyakoroljuk':'Megtanulta'}</button></p><p>${ask(x.t+': hogyan tanítsam meg neki lépésről lépésre, és mit tegyek, ha elakadunk?','Elakadtatok? Kérdezd a Tanácsadót')}</p></details>`}).join('')}`}
-  if(ct==='play'){const P=PLAY[k],J=(PROD[k]||{}).jatek;
+  if(ct==='play'){const P=PLAY[k],J=(prodOf(p)||{}).jatek;
     b=`<h2>Mozgásigény${cur?` ${stHU(p,cur).toLowerCase()} korban`:''}</h2><p>${(cur&&P.need[cur])||P.need.all}</p>${P.walk?`<h2>Séta</h2><p>${P.walk}</p>`:''}
-    ${P.games?`<h2>Játékok</h2><ul class="tips">${P.games.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${J?`<p class="sub">Bevált játékmárkák: ${J.map(x=>`${x[0]} (${x[1]})`).join('; ')}.</p>`:''}
+    ${P.games?`<h2>Játékok</h2><ul class="tips">${P.games.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${J&&J.length?`<p class="sub">Bevált játékmárkák: ${J.map(x=>`${blink(x[0])} (${esc(x[1])})`).join('; ')}.</p>`:''}
     <h2>Így foglalkozz vele</h2><p>${P.engage}</p><h2>Személyre szabott terv</h2>${aiBox(p,'play','Napi mozgás- és játékterv kérése')}`}
   if(ct==='prob')b=`<h2>Gyakori problémák</h2>${C.p.map(([q,a])=>`<details class="acc"><summary>${q}</summary><p>${a}</p><p>${ask(q+': mit tegyek?')}</p></details>`).join('')}<p class="note">${DISC}</p>`;
   if(ct==='trip')b=`<h2>Utazás és szállítás</h2>${TRIP[k].map(card).join('')}
@@ -1247,12 +1308,13 @@ function vCare(p){
   return`${BACK}<h1>Tartás és nevelés</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${cur?', '+stHU(p,cur).toLowerCase():''}</p>
   <div class="seg2" role="group" aria-label="A Tartás és nevelés részei">${tabs.map(x=>`<button data-act="cTab" data-v="${x}" aria-pressed="${ct===x}">${CT[x]}</button>`).join('')}</div>${b}${srcBox(p,ct==='trip'?'trip':'care')}`}
 function vProd(p){
-  const P=PROD[p.species],st=stageOf(p);
+  const P=prodOf(p),st=stageOf(p),C=pcat(p);
   if(!P)return`${BACK}<h1>Ajánlott termékek</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített terméklista.</p><p class="sub">Felszerelésről a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>`;
-  return`${BACK}<h1>Ajánlott termékek</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}, ${stHU(p,st).toLowerCase()}</p>
-  <div class="seg2" role="group" aria-label="Kategória">${Object.entries(PCAT).map(([k,n])=>`<button data-act="pCat" data-v="${k}" aria-pressed="${pCat===k}">${n}</button>`).join('')}</div>${tierChips()}<div style="height:10px"></div>
-  ${prodList(pCat==='tap'?foods(p):P[pCat]||[])}<p class="sub" style="margin-top:10px">${PNOTE}</p>
-  <h2>Személyre szabott ajánlás</h2>${aiBox(p,'prod_'+pCat,'AI-ajánlás kérése ebben a kategóriában')}`}
+  const l=pCat==='tap'?foods(p):P[pCat]||[];
+  return`${BACK}<h1>Ajánlott termékek</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p>
+  <div class="seg2" role="group" aria-label="Kategória">${Object.entries(C).map(([k,n])=>`<button data-act="pCat" data-v="${k}" aria-pressed="${pCat===k}">${n}</button>`).join('')}</div>${tierChips()}<div style="height:10px"></div>
+  ${l.length?prodList(l):`<p class="sub">${(pCat==='tap'&&PEMPTY[kitOf(p)])||'Ebben a kategóriában nincs beépített ajánlás.'}</p>`}<p class="sub" style="margin-top:10px">${PNOTE}</p>
+  ${l.length?`<h2>Személyre szabott ajánlás</h2>${aiBox(p,'prod_'+pCat,'AI-ajánlás kérése ebben a kategóriában')}`:''}`}
 function vVets(){
   const p=pet(),ex=!!p&&['hullo','keteltu','hal','madar','gerinctelen'].includes(grp(p)),c=S.settings.city||'',a=(q,l,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${l}</a>`;
   return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A PetVia nem ajánl és nem tárol állatorvosokat.${ex?' Ennél a fajnál egzotikus állatokhoz értő állatorvost keresünk.':''}</p>
@@ -1473,7 +1535,7 @@ function chatContext(p,task){
     size?`- Méret: ${SIZE_HU[size]}`:null,`- Életkor: ${fmtAge(p)} (születési dátum: ${p.birth}${p.est?', becsült':''})`,`- Életszakasz: ${st?stHU(p,st):'ennél a fajnál nincs meghatározva'}`,
     `- Ivar: ${{him:'hím',nosteny:'nőstény'}[p.sex]||'nincs megadva'}`,grp(p)==='emlos'||grp(p)==='egyeb'?`- Ivartalanított: ${p.neutered||'nincs megadva'}`:null,grp(p)==='hal'?`- Állomány: ${p.count||'?'} db, ${p.tankL?fmtKg(p.tankL):'?'} literes akvárium`:noWeight(p)?null:`- Súly: ${p.weight?wTxt(p,p.weight):'nincs megadva'}`,'',
     'Előzmények az életútból:',...(hist.length?hist:['- nincs rögzített esemény']),'','Esedékes teendők:',...(due.length?due:['- nincs']),'','Súlymérések:',...or(w),'','Tünetnapló:',...or(sy),'','Parazita elleni kezelések:',...or(pa),'',
-    foods(p).length||PROD[p.species]?`Ha márkát vagy terméket említesz, csak ezek közül válassz: ${brandList(p)}.`:'Konkrét márkát vagy terméknevet ne említs.','','Sima szöveggel válaszolj, markdown formázás nélkül.',task||'A felhasználó üzenetei következnek.'].filter(x=>x!==null).join('\n');
+    foods(p).length||prodOf(p)?`Ha márkát vagy terméket említesz, csak ezek közül válassz: ${brandList(p)}.`:'Konkrét márkát vagy terméknevet ne említs.','','Sima szöveggel válaszolj, markdown formázás nélkül.',task||'A felhasználó üzenetei következnek.'].filter(x=>x!==null).join('\n');
 }
 /* ---------- Tanácsadó: hívás a szerveroldali függvényen át ----------
    A kérés a belépett felhasználó nevében megy; a rendszerprompt és az AI-kulcs a szerveren van.
