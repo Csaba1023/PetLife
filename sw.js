@@ -1,8 +1,8 @@
 /* PetLife service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v1';
-const FONTS = 'petlife-fonts';
+const V = 'petlife-v2';
+const FONTS = 'petlife-fonts-2';
 const LIB = 'petlife-lib';
 /* A fiókkezelő könyvtár. Ugyanaz a cím legyen, mint az index.html SB_LIB értéke. */
 const LIB_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4';
