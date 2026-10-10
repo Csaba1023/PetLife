@@ -668,7 +668,7 @@ function foods(p){
   if(!STAGED_FOOD.has(p.species))return(prodOf(p)||{}).tap||[];
   const st=stageOf(p);if(!st)return[];
   const y=st==='kolyok'||st==='novendek',o=st==='idos',gen=b=>`${b}, ${y?'kölyök':o?'szenior':'felnőtt'} változat`,n=p.neutered==='igen';
-  const fu=r=>{const f=FL.find(x=>r[0].startsWith(x[0])),a=f&&f[2][p.species];if(a)r.u=f[1]+a[y?0:o?2:1];return r};
+  const fu=r=>{const f=FL.find(x=>r[0].startsWith(x[0])),a=f&&f[1][p.species];if(a)r.u=a[y?0:o?2:1];return r};
   if(p.species==='kutya'){
     const z=sizeOf(p),[rc,br]={kicsi:['Mini','S'],kozepes:['Medium','M'],nagy:['Maxi','L'],orias:['Giant','XL']}[z],en=y?'Puppy':o?'Senior':'Adult',sz=`, ${SIZE_HU[z==='orias'?'nagy':z]} változat`;
     return[[`Royal Canin ${rc} ${y?'Puppy':o&&z!=='orias'?'Ageing':'Adult'}`,'p'],[`Hill's Science Plan ${y?'Puppy':o?'Mature Adult':'Adult'}${sz}`,'p'],[o?gen('Purina Pro Plan'):`Purina Pro Plan ${en}${sz}`,'p'],[`Acana ${en}${sz}`,'p'],[`Eukanuba ${en}${sz}`,'p'],...(o?[]:[[gen('Carnilove'),'p'],[gen('Farmina N&D'),'p']]),
@@ -731,94 +731,122 @@ const pcat=p=>{const k=PROD[p.species]?null:kitOf(p);return['edesvizi','vizi','v
   :k==='tengeri'?{tap:'Eleség',alom:'Só és vízkezelés',felsz:'Akvárium és technika',jatek:'Berendezés'}:k?{tap:'Eleség és kiegészítők',alom:'Aljzat',felsz:'Terrárium és technika',jatek:'Berendezés'}
   :grp(p)==='madar'?{tap:'Eleség',alom:'Higiénia',felsz:'Kalitka és felszerelés',jatek:'Játék'}:PCAT};
 const PEMPTY={kigyo:'A kígyó előre leölt, fagyasztott zsákmányállatot eszik: ezt szaküzletben kapod, márkás táp nincs hozzá.',gerinctelen:'Ezek az állatok élő eleséget vagy friss növényt esznek: márkás táp nincs hozzájuk.'};
-/* ---------- márkák weboldalai ----------
+/* ---------- márkák oldalai ----------
+   A márka saját magyar oldala; ha nincs, magyar webshop márkaoldala vagy márkakeresése; ha az sincs, a márka saját oldala.
    Minden cím egyenként ellenőrizve (2026-10-10). A márkanév ezt a címet nyitja meg, ha a márkának nincs az adott állathoz tartozó oldala (lásd PL).
    Ha egy márkának nincs itt címe, webes keresés nyílik a nevére. */
-const BRAND={'Royal Canin':'https://www.royalcanin.com/hu',"Hill's":'https://www.hillspet.co.hu/','Purina':'https://www.purina.hu/','Acana':'https://emea.acana.com/en/homepage','Eukanuba':'https://www.eukanuba.com/','Carnilove':'https://carnilove.com/en','Farmina':'https://www.farmina.com/hu','Brit':'https://brit-petfood.com/en',
- 'Josera':'https://shop.josera.com/hu-hu','Happy Dog':'https://happydog.hu/','Happy Cat':'https://happycat.hu/','bosch':'https://www.bosch-tiernahrung.de/','Applaws':'https://applaws.com/','Animonda':'https://animonda.de/','Perfect Fit':'https://www.perfectfit.hu/',
- 'Versele-Laga':'https://www.versele.com/hu/hu','Beaphar':'https://www.beaphar.com/','Bunny':'https://bunny-nature.de/','Vitakraft':'https://www.vitakraft.com/hu/hu/','JR Farm':'https://www.jr-farm.de/',
- 'Trixie':'https://www.trixie.de/','Kerbl':'https://www.kerbl.com/','Ferplast':'https://www.ferplast.com/','Savic':'https://www.savic.be/','Chipsi':'https://www.chipsi.de/',"Cat's Best":'https://www.catsbest.de/','Flexi':'https://flexi.de/','Julius-K9':'https://julius-k9.com/hu/','Hunter':'https://www.hunter.de/',
- 'Ruffwear':'https://ruffwear.com/','FURminator':'https://www.furminator.com/','Nobby':'https://www.nobby.de/','KONG':'https://www.kongcompany.com/','Chuckit!':'https://www.petmate.com/collections/chuckit','Catsan':'https://www.catsan.de/','Catit':'https://www.catit.com/','Petkit':'https://www.petkit.com/',
- 'Exo Terra':'https://exo-terra.com/','Zoo Med':'https://zoomed.com/','Arcadia':'https://arcadiareptile.com/','JBL':'https://www.jbl.de/','sera':'https://www.sera.de/','Tetra':'https://www.tetra.net/hu-hu','EHEIM':'https://eheim.com/','JUWEL':'https://www.juwel-aquarium.de/en','AQUAEL':'https://www.aquael.com/','Tropic Marin':'https://www.tropic-marin.com/','Red Sea':'https://redseafish.com/'};
+const BRAND={'Royal Canin':'https://www.royalcanin.com/hu',"Hill's":'https://www.hillspet.co.hu/',Purina:'https://www.purina.hu/',Acana:'https://www.petissimo.hu/kutyaknak/szarazeledelek/acana',Eukanuba:'https://www.zooplus.hu/shop/top_markak/eukanuba',Carnilove:'https://www.petissimo.hu/kutyaknak/szarazeledelek/carnilove',
+ Farmina:'https://www.farmina.com/hu',Brit:'https://www.zooplus.hu/shop/top_markak/brit',Josera:'https://shop.josera.com/hu-hu','Happy Dog':'https://happydog.hu/','Happy Cat':'https://happycat.hu/',bosch:'https://www.zooplus.hu/shop/top_markak/bosch',
+ Applaws:'https://www.zooplus.hu/search/results?q=applaws%20sz%C3%A1raz%20macskat%C3%A1p',Animonda:'https://www.zooplus.hu/shop/top_markak/animonda','Perfect Fit':'https://www.petissimo.hu/macskaknak/szarazeledelek/perfect-fit','Versele-Laga':'https://www.versele.com/hu/hu',Beaphar:'https://www.zooplus.hu/search/results?q=beaphar',
+ Bunny:'https://www.zooplus.hu/search/results?q=bunny%20nature',Vitakraft:'https://www.vitakraft.com/hu/hu/','JR Farm':'https://www.zooplus.hu/search/results?q=jr%20farm',Trixie:'https://www.zooplus.hu/shop/top_markak/trixie_markak',Kerbl:'https://www.zooplus.hu/search/results?q=kerbl',
+ Ferplast:'https://www.zooplus.hu/shop/top_markak/ferplast',Savic:'https://www.zooplus.hu/search/results?q=savic',Chipsi:'https://www.zooplus.hu/search/results?q=chipsi',"Cat's Best":'https://www.zooplus.hu/search/results?q=cat\'s%20best',Flexi:'https://www.petissimo.hu/kutyaknak/nyakorv-ham-poraz/flexi-poraz',
+ 'Julius-K9':'https://julius-k9.com/hu/',Hunter:'https://www.zooplus.hu/shop/top_markak/hunter',Ruffwear:'https://www.zooplus.hu/search/results?q=ruffwear',FURminator:'https://www.zooplus.hu/shop/top_markak/furminator',Nobby:'https://www.nobby.de/',KONG:'https://www.zooplus.hu/shop/top_markak/kong',
+ 'Chuckit!':'https://www.zooplus.hu/search/results?q=chuckit',Catsan:'https://www.zooplus.hu/search/results?q=catsan',Catit:'https://www.zooplus.hu/shop/top_markak/catit',Petkit:'https://www.zooplus.hu/search/results?q=petkit','Exo Terra':'https://okosgazdi.hu/termekek/exo-terra','Zoo Med':'https://tmreptiles.eu/zoomed',
+ Arcadia:'https://tmreptiles.eu/arcadia',JBL:'https://okosgazdi.hu/termekek/jbl',sera:'https://okosgazdi.hu/termekek/sera',Tetra:'https://www.tetra.net/hu-hu',EHEIM:'https://eheim.com/',JUWEL:'https://www.juwel-aquarium.de/en',AQUAEL:'https://okosgazdi.hu/kereses?query=aquael','Tropic Marin':'https://www.tropic-marin.com/',
+ 'Red Sea':'https://redseafish.com/',"Biokat's":'https://www.zooplus.hu/search/results?q=biokat\'s'};
 /* ---------- terméklinkek ----------
-   Egy ajánlás tételére koppintva a márka saját oldalán a termék vagy a termékkategória oldala nyílik meg (ellenőrizve: 2026-10-10).
-   PL[márka] = [alapcím, {kulcs: végződés}] (a https-sel kezdődő végződés teljes cím). Kulcs: 'tétel', 'tétel@faj' vagy 'tétel@csoport'; '@faj' / '@csoport' a márka adott állathoz tartozó oldala.
-   Amihez nincs itt cím, az sima szöveg marad, a márkanév pedig a márka főoldalát nyitja (BRAND). Hirdetési vagy partnerlink ide kerülhet. */
+   Egy ajánlás tételére koppintva a termék vagy a termékkategória oldala nyílik meg (ellenőrizve: 2026-10-10).
+   Sorrend: a márka saját magyar oldala; ha nincs, magyar webshop, ahol a termék megvan (zooplus, Petissimo, Okosgazdi, TM-Reptiles, Petguru);
+   ha ott sincs ellenőrizhetően, a márka saját (idegen nyelvű) kategóriaoldala.
+   PL[márka] = {kulcs: cím}. Kulcs: 'tétel', 'tétel@faj' vagy 'tétel@csoport'; '@faj' / '@csoport' a márka adott állathoz tartozó oldala.
+   Amihez nincs itt cím, az sima szöveg marad, a márkanév pedig a BRAND szerinti oldalt nyitja. Hirdetési vagy partnerlink ide kerülhet. */
+const TM='https://tmreptiles.eu/',ZS='https://www.zooplus.hu/search/results?q=',ZT='https://www.zooplus.hu/shop/top_markak/trixie_markak',ZP='https://www.zooplus.hu/',PS='https://www.petissimo.hu/kereses?search_keywords=',PT='https://www.petissimo.hu/',OS='https://okosgazdi.hu/kereses?query=',OG='https://okosgazdi.hu/',TX='https://trixie.shop/collections/',VL='https://www.versele.com/hu/hu/',ET='https://exo-terra.com/products/',ZM='https://zoomed.com/',JB='https://www.jbl.de/en/',SE='https://www.sera.de/de/',TE='https://www.tetra.net/hu-hu/termekek/',VK='https://www.vitakraft.com/hu/hu/termekek',JR='https://www.jr-farm.de/kleintier/',BP='https://www.beaphar.com/p/';
 const PL={
- 'Trixie':['https://trixie.shop/collections/',{'@kutya':'hund','@macska':'katze','@kisemlos':'kleintier','@madar':'vogel','@terra':'terraristik','@viziteknos':'terraristik',
-  'ürülékgyűjtő zacskó':'hundekotbeutel','póráz':'hundeleinen','tál':'hundenaepfe','fekhely':'hundebetten','hordozó@kutya':'transportboxen-hund','hordozó@macska':'transportboxen-katze','hordozó@kisemlos':'transportboxen-kleintier','hordozó@madar':'transport-vogel',
-  'labda@kutya':'hundespielzeug','labda@macska':'spielmauese-tiere-baelle-katze','kötél':'zerrspielzeug-hund','logikai játék':'intelligenzspielzeug-hund','kaparófa':'kratzbaeume','alomtálca':'katzentoiletten','horgászbot-játék':'katzenangeln','alagút@macska':'katzentunnel',
-  'alagút@kisemlos':'kleintierspielzeug','játszóalagút':'kleintierspielzeug','fűalagút':'kleintierspielzeug','fűlabda':'kleintierspielzeug','fa játszótér':'kleintierspielzeug','házikó':'kleintierhaeuser','fűház':'kleintierhaeuser','itató@kisemlos':'naepfe-traenken-raufen-kleintier','szénatartó':'naepfe-traenken-raufen-kleintier',
-  'fa rágójáték':'nagerspielzeug','futókerék':'laufteller-laufraeder-kleintier','homokfürdő':'https://trixie.shop/products/sandbad-1','hám és póráz':'kleintiergeschirre',
-  'fürdőház':'badehaeuser-vogel','ülőrúd':'sitzstangen-taue-vogel','etető':'naepfe-tranken-vogel','itató@madar':'naepfe-tranken-vogel','hinta':'vogelschaukeln','létra':'vogelleitern','rágójáték':'vogelspielzeug',
-  'kalciumpor':'futter-mineralstoffe-reptilien','terráriumi aljzat':'substrate-terrarium','fűtőlap':'klima-terrarium','hő- és páramérő':'klima-terrarium','permetező':'klima-terrarium','búvóhely':'dekoration-hoehlen-terrarium','műszikla':'dekoration-hoehlen-terrarium'}],
- 'Savic':['https://www.savic.be/products/',{'@kutya':'dogs','@kisemlos':'small-animals','@madar':'birds','Puppy Trainer pelenkatartó kölyköknek':'dogs','ketrec':'small-animals','alomtálca':'small-animals','saroktálca':'small-animals','kalitka':'birds'}],
- 'Ferplast':['https://www.ferplast.com/collections/',{'@kisemlos':'small-pet-cages','@madar':'bird-supplies','hordozó@kutya':'carriers-carrying-bags','hám':'harnesses-for-dogs','fekhely':'dog-kennels-and-beds','hordozó@macska':'cat-travel-products','alomtálca':'cat-litter-trays-and-toilette-homes',
-  'nagy alapterületű ketrec':'small-pet-cages','ketrec':'small-pet-cages','többszintes ketrec':'small-pet-cages','görényketrec':'small-pet-cages','kalitka':'bird-supplies'}],
- 'Kerbl':['https://www.kerbl.com/de/produkte/heimtier-11490/',{'@macska':'katzenbedarf-11540','@kisemlos':'nagerbedarf-11577','kaparófa':'katzenbedarf-11540/kratzmoebel-11541','fekhely':'katzenbedarf-11540/schlafplaetze-11545','kifutó':'nagerbedarf-11577/nagerstaelle-kaefige-gehege-11578','ketrec':'nagerbedarf-11577/nagerstaelle-kaefige-gehege-11578'}],
- 'Flexi':['https://flexi.de/de/',{'automata póráz':'produkte/'}],
- 'Julius-K9':['https://julius-k9.com/hu/',{'hám':'julius-k9-idc-powerham/','póráz':'fogos-gumis-ket-karabineres-milyen-porazt-valasszunk/'}],
- 'Ruffwear':['https://ruffwear.com/collections/',{'túrahám':'dog-harnesses','kutyakabát':'dog-apparel'}],
- 'Nobby':['https://www.nobby.de/',{'plüssjáték@kutya':'hund/beschaeftigung/pluesch/','rágójáték':'hund/beschaeftigung/vollgummi/','játékegér':'katze/beschaeftigung/spielmaeuse/','plüssjáték@macska':'katze/beschaeftigung/pluesch/'}],
- 'KONG':['https://www.kongcompany.com/',{'tölthető gumijáték':'dog-toys/rubber/','macskamentás rúgópárna':'cat-toys/'}],
- 'Catsan':['https://www.catsan.de/',{'ásványi alom':'products/katzenstreu/hygiene-plus-nicht-klumpende-streu'}],
- "Cat's Best":['https://www.catsbest.de/produkt/',{'csomósodó alom':'cats-best-original/','Universal növényi alom kisállatoknak':'cats-best-universal/','Universal nem csomósodó növényi alom':'cats-best-universal/'}],
- 'Catit':['https://www.catit.com/products/',{'itatókút':'drinking-fountains/','etetőrendszer':'feeders-dishes/','játékpálya':'toys/senses-circuits/','etetőlabirintus':'toys/senses-food-tree/'}],
- 'Petkit':['https://www.petkit.com/collections/',{'okos itatókút':'pet-water-fountain','okos alomtálca':'automatic-cat-litter-box'}],
- 'Chipsi':['https://www.chipsi.de/produkte/',{'faforgács':'chipsi-classic/','fagranulátum alom':'chipsi-ultra/','kukoricapellet alom':'chipsi-family/'}],
- 'JR Farm':['https://www.jr-farm.de/kleintier/',{'rágnivaló és jutalomfalat':'snacks','rágnivaló':'snacks','csincsillahomok a homokfürdőhöz':'einstreu'}],
- 'Versele-Laga':['https://www.versele.com/hu/hu/',{'@kisemlos':'az-%C3%B6n-%C3%A1llat%C3%A1nak/kiseml%C5%91s%C3%B6k','@madar':'az-%C3%B6n-%C3%A1llat%C3%A1nak/ketrecben-%C3%A9s-mad%C3%A1rh%C3%A1zban-tartott-madarak','fürdőhomok csincsillának':'https://www.versele.com/en/de/verselelaga/products/verselelaga-chinchillabathingsand'}],
- 'Vitakraft':['https://www.vitakraft.com/hu/hu/',{'@kisemlos':'termekek?minden-allat=ragcsalo','@madar':'termekek?minden-allat=madarak'}],
- 'Exo Terra':['https://exo-terra.com/products/',{'kalcium- és multivitaminpor':'nutrition/supplements/','terráriumi aljzat':'substrates/','terrárium':'terrariums/','kis terrárium':'terrariums/','faunárium':'terrariums/','hőlámpa':'heating/','UVB-fényforrás':'lighting/','UVB- és melegítőlámpa':'lighting/',
-  'hőmérő':'heating/thermo-hygrometers/','hő- és páramérő':'heating/thermo-hygrometers/','búvóhely':'decoration/hides/','mászóág':'decoration/vines/','műnövény':'decoration/plants/','itató':'hydration/water-dishes/','párásító':'hydration/humidity/','napozósziget':'decoration/hides/turtle-bank-medium/'}],
- 'Zoo Med':['https://zoomed.com/',{'kalcium- és vitaminpor':'category/terrarium-products/vitaminssupplements/','terráriumi aljzat':'category/terrarium-products/substrates/','hőlámpa':'category/terrarium-products/heatingthermostatsgauges/','fűtőlap':'category/terrarium-products/heatingthermostatsgauges/','termosztát':'category/terrarium-products/heatingthermostatsgauges/','hő- és páramérő':'category/terrarium-products/heatingthermostatsgauges/',
-  'UVB-fényforrás':'category/terrarium-products/lighting-accessories/','világítás':'category/terrarium-products/lighting-accessories/','búvóhely':'category/terrarium-products/terrarium-accessories/','itató':'category/terrarium-products/food-dishes/','teknőstáp':'natural-grassland-tortoise-food/','vízi teknőstáp':'aquatic-turtle-food-growth-formula/','úszó napozóstég':'turtle-dock-and-turtle-pond-dock/'}],
- 'JBL':['https://www.jbl.de/en/',{'kalcium- és vitaminkészítmény terráriumi állatoknak':'essentials-terrarium-feeding/section/163/feeding','UV- és melegítőlámpa':'essential-terrarium-lighting/section/152/the-lighting','PROTERRA eleség szárazföldi teknősöknek':'proterra/proterra-natural-variety','teknőseleség':'themeworld-terrarium-water-turtle-feeding/section/192/feeding-water-turtles',
-  'vízteszt':'theme-world/essential_section/132/jbl-themeworld-for-your-hobby','vízelőkészítő':'essentials-aquarium-water-treatment/section/66/water-treatment','szűrő':'theme-world/essential_section/40/jbl-themeworld-for-your-hobby','világítás':'essentials-aquarium-light/section/49/light','aljzat':'essentials-aquarium-substrate/section/57/substrate'}],
- 'Arcadia':['https://arcadiareptile.com/',{'UVB-fénycső és -lámpa':'lighting/','UVB-fényforrás':'lighting/'}],
- 'sera':['https://www.sera.de/de/',{'terráriumtechnika':'terrarium/Produkte/terrarium-technik/','teknőseleség@teknos':'terrarium/Produkte/terrarientiere-fuettern/tortoise/','teknőseleség@viziteknos':'terrarium/Produkte/terrarientiere-fuettern/turtle/','reptil aquatan vízelőkészítő':'produkt/terrarium/sera-reptil-aquatan/',
-  'süllyedő eleség':'suesswasseraquarium/Produkte/suesswasserfische-fuettern/wels-und-schmerlenfutter/','vízelőkészítő':'suesswasseraquarium/Produkte/suesswasseraquarien-pflegen/wasseraufbereitung/','vízteszt':'suesswasseraquarium/Produkte/suesswasseraquarien-pflegen/wasseranalyse/','haleleség':'suesswasseraquarium/Produkte/suesswasserfische-fuettern/','tengeri haleleség':'meerwasseraquarium/Produkte/meerwasserfische-fuettern/'}],
- 'Tetra':['https://www.tetra.net/hu-hu/termekek/',{'ReptoMin teknőseleség':'tetra-reptomin-sticks-1','vízelőkészítő':'taplalas-es-gondozas/akvarium/gondozas/vizkezeles','süllyedő eleség':'tetra-tabimin-1','vízteszt':'taplalas-es-gondozas/akvarium/gondozas/vizteszt','kezdő akváriumszett':'akvariumok-es-technika/akvarium/akvariumok-es-dekoraciok/akvariumkeszletek',
-  'műnövény':'akvariumok-es-technika/akvarium/akvariumok-es-dekoraciok/dekoracio','lemezes haleleség':'tetramin-flakes','granulált haleleség':'tetramin-granules-1'}],
- 'EHEIM':['https://eheim.com/en_GB/aquatics/',{'fűtő':'technology/aquarium-heaters/','akvárium':'aquariums/','áramoltató':'technology/streaming-pumps/'}],
- 'JUWEL':['https://www.juwel-aquarium.de/en/',{'akvárium':'aquariums','akváriumszett':'aquariums','háttér':'equipment/decoration/backgrounds','dekoráció':'equipment/decoration'}],
- 'AQUAEL':['https://www.aquael.com/products/aquaristics/',{'szűrő':'internal-filters/','fűtő':'heaters/','akvárium':'aquarium-sets/','világítás':'aquarium-lighting/'}],
- 'Tropic Marin':['https://www.tropic-marin.com/',{'tengeri só':'meersalz'}],
- 'Red Sea':['https://',{'tengeri só':'g1.redseafish.com/red-sea-salts/','vízteszt':'g1.redseafish.com/reef-care-program/tank-maturation/marine-care-multi-test-kit-maturation/','tengeri akváriumrendszer':'redseafish.com/aquarium-systems/reefer-g3'}]};
+ Trixie:{'@terra':OS+'trixie%20reptiland','@viziteknos':OS+'trixie%20reptiland','ürülékgyűjtő zacskó':TX+'hundekotbeutel','póráz':ZT+'/kutya_nyakorv_poraz','tál':ZT+'/kutya_eteto_itato',fekhely:ZT+'/kutyafekhely','hordozó@kutya':ZT+'/kutya_szallitas','hordozó@macska':ZT+'/macska_szallitas','hordozó@kisemlos':TX+'transportboxen-kleintier','hordozó@madar':TX+'transport-vogel','labda@kutya':ZT+'/kutyajatek','labda@macska':ZT+'/macskajatek','kötél':ZT+'/kutyajatek','logikai játék':ZT+'/kutyajatek','kaparófa':ZT+'/macskabutorok_kaparofak','alomtálca':ZT+'/macska_toalettek','horgászbot-játék':ZT+'/macskajatek','alagút@macska':ZT+'/macskajatek','alagút@kisemlos':ZT+'/ketrec_tartozekok_kiegeszitok','játszóalagút':ZT+'/ketrec_tartozekok_kiegeszitok','fűalagút':TX+'kleintierspielzeug','fűlabda':TX+'kleintierspielzeug','fa játszótér':TX+'kleintierspielzeug','házikó':TX+'kleintierhaeuser','fűház':TX+'kleintierhaeuser','itató@kisemlos':ZT+'/ketrec_tartozekok_kiegeszitok','szénatartó':ZT+'/ketrec_tartozekok_kiegeszitok','fa rágójáték':TX+'nagerspielzeug','futókerék':ZT+'/ketrec_tartozekok_kiegeszitok','homokfürdő':'https://trixie.shop/products/sandbad-1','hám és póráz':TX+'kleintiergeschirre','fürdőház':TX+'badehaeuser-vogel','ülőrúd':ZS+'trixie%20%C3%BCl%C5%91r%C3%BAd','etető':TX+'naepfe-tranken-vogel','itató@madar':TX+'naepfe-tranken-vogel',hinta:TX+'vogelschaukeln','létra':TX+'vogelleitern','rágójáték':TX+'vogelspielzeug',kalciumpor:TX+'futter-mineralstoffe-reptilien','terráriumi aljzat':OS+'trixie%20reptiland','fűtőlap':OS+'trixie%20reptiland','hő- és páramérő':OS+'trixie%20reptiland','permetező':TX+'klima-terrarium','búvóhely':TX+'dekoration-hoehlen-terrarium','műszikla':TX+'dekoration-hoehlen-terrarium',kutyapelenka:PS+'trixie+kutyapelenka','függőágy':ZT+'/ketrec_tartozekok_kiegeszitok'},
+ Savic:{'Puppy Trainer pelenkatartó kölyköknek':ZS+'savic%20puppy%20trainer',ketrec:ZS+'savic%20kis%C3%A1llat%20ketrec','alomtálca':'https://www.savic.be/products/small-animals','saroktálca':'https://www.savic.be/products/small-animals',kalitka:'https://www.savic.be/products/birds'},
+ Ferplast:{'hordozó@kutya':ZS+'ferplast%20sz%C3%A1ll%C3%ADt%C3%B3box','hám':ZS+'ferplast%20kutyah%C3%A1m',fekhely:ZS+'ferplast%20kutyafekhely','hordozó@macska':ZS+'ferplast%20sz%C3%A1ll%C3%ADt%C3%B3box','alomtálca':PS+'ferplast+macska+wc','nagy alapterületű ketrec':PS+'ferplast+ketrec',ketrec:PS+'ferplast+ketrec','többszintes ketrec':ZP+'shop/top_markak/ferplast','görényketrec':ZP+'shop/top_markak/ferplast',kalitka:'https://www.ferplast.com/collections/bird-supplies','kifutó':ZS+'ferplast%20kifut%C3%B3'},
+ Kerbl:{'kaparófa':ZS+'kerbl%20kapar%C3%B3fa',fekhely:'https://www.kerbl.com/de/produkte/heimtier-11490/katzenbedarf-11540/schlafplaetze-11545','kifutó':ZS+'kerbl%20kifut%C3%B3',ketrec:ZS+'kerbl%20kifut%C3%B3'},
+ Flexi:{'automata póráz':PT+'kutyaknak/nyakorv-ham-poraz/flexi-poraz'},
+ 'Julius-K9':{'hám':'https://julius-k9.com/hu/julius-k9-idc-powerham/','póráz':'https://julius-k9.com/hu/fogos-gumis-ket-karabineres-milyen-porazt-valasszunk/'},
+ Ruffwear:{'túrahám':ZS+'ruffwear','kutyakabát':'https://ruffwear.com/collections/dog-apparel'},
+ Nobby:{'plüssjáték@kutya':'https://www.nobby.de/hund/beschaeftigung/pluesch/','rágójáték':'https://www.nobby.de/hund/beschaeftigung/vollgummi/','játékegér':'https://www.nobby.de/katze/beschaeftigung/spielmaeuse/','plüssjáték@macska':'https://www.nobby.de/katze/beschaeftigung/pluesch/'},
+ KONG:{'tölthető gumijáték':PT+'kutyaknak/jatekok/kong','macskamentás rúgópárna':ZS+'kong%20kickeroo'},
+ Catsan:{'ásványi alom':ZS+'catsan'},
+ "Cat's Best":{'csomósodó alom':ZP+'shop/macska/macskaalom/cats_best/macskaalom/241249','Universal növényi alom kisállatoknak':ZP+'shop/macska/macskaalom/cats_best/macskaalom/244474','Universal nem csomósodó növényi alom':ZP+'shop/macska/macskaalom/cats_best/macskaalom/244474'},
+ Catit:{'itatókút':ZS+'catit%20itat%C3%B3k%C3%BAt','etetőrendszer':ZP+'shop/top_markak/catit','játékpálya':ZS+'catit%20senses','etetőlabirintus':ZS+'catit%20senses'},
+ Petkit:{'okos itatókút':ZS+'petkit%20itat%C3%B3k%C3%BAt','okos alomtálca':ZS+'petkit%20macska%20wc'},
+ Chipsi:{'faforgács':ZP+'shop/kisallat/szena_alom/faalapu/chipsi/244509','fagranulátum alom':ZP+'shop/kisallat/szena_alom/faalapu/chipsi/244508','kukoricapellet alom':ZP+'shop/kisallat/szena_alom/kukorica/244516'},
+ 'JR Farm':{'rágnivaló és jutalomfalat':ZS+'jr%20farm','rágnivaló':ZS+'jr%20farm','csincsillahomok a homokfürdőhöz':ZP+'shop/kisallat/apolas_kiegeszitok/furdohomok_furdo_kucko/244482'},
+ 'Versele-Laga':{'@kisemlos':VL+'az-%C3%B6n-%C3%A1llat%C3%A1nak/kiseml%C5%91s%C3%B6k','@madar':VL+'az-%C3%B6n-%C3%A1llat%C3%A1nak/ketrecben-%C3%A9s-mad%C3%A1rh%C3%A1zban-tartott-madarak','fürdőhomok csincsillának':'https://www.versele.com/en/de/verselelaga/products/verselelaga-chinchillabathingsand'},
+ Vitakraft:{'@kisemlos':VK+'?minden-allat=ragcsalo','@madar':VK+'?minden-allat=madarak'},
+ 'Exo Terra':{'kalcium- és multivitaminpor':TM+'kereses?search=exo%20terra%20calcium&description=true','terráriumi aljzat':TM+'terrarium-felszerelesek/terrarium-aljzatok-keltetokozegek','terrárium':ET+'terrariums/','kis terrárium':ET+'terrariums/','faunárium':ET+'terrariums/','hőlámpa':ET+'heating/','UVB-fényforrás':OS+'exo%20terra%20uvb','UVB- és melegítőlámpa':OS+'exo%20terra%20uvb','hőmérő':OS+'exo%20terra%20h%C5%91m%C3%A9r%C5%91','hő- és páramérő':OS+'exo%20terra%20h%C5%91m%C3%A9r%C5%91','búvóhely':ET+'decoration/hides/','mászóág':ET+'decoration/vines/','műnövény':OS+'exo%20terra%20m%C5%B1n%C3%B6v%C3%A9ny','itató':OS+'exo%20terra%20itat%C3%B3','párásító':ET+'hydration/humidity/','napozósziget':ET+'decoration/hides/turtle-bank-medium/'},
+ 'Zoo Med':{'kalcium- és vitaminpor':TM+'kereses?search=zoomed%20calcium&description=true','terráriumi aljzat':TM+'terrarium-felszerelesek/terrarium-aljzatok-keltetokozegek','hőlámpa':TM+'kereses?search=zoomed%20f%C5%B1t%C5%91&description=true','fűtőlap':TM+'kereses?search=zoomed%20f%C5%B1t%C5%91&description=true','termosztát':TM+'kereses?search=zoomed%20f%C5%B1t%C5%91&description=true','hő- és páramérő':TM+'zoomed','UVB-fényforrás':TM+'kereses?search=reptisun&description=true','világítás':TM+'kereses?search=reptisun&description=true','búvóhely':ZM+'category/terrarium-products/terrarium-accessories/','itató':ZM+'category/terrarium-products/food-dishes/','teknőstáp':ZM+'natural-grassland-tortoise-food/','vízi teknőstáp':ZM+'aquatic-turtle-food-growth-formula/','úszó napozóstég':TM+'kereses?search=zoomed%20tekn%C5%91s&description=true'},
+ JBL:{'kalcium- és vitaminkészítmény terráriumi állatoknak':JB+'essentials-terrarium-feeding/section/163/feeding','UV- és melegítőlámpa':JB+'essential-terrarium-lighting/section/152/the-lighting','PROTERRA eleség szárazföldi teknősöknek':JB+'proterra/proterra-natural-variety','teknőseleség':JB+'themeworld-terrarium-water-turtle-feeding/section/192/feeding-water-turtles','vízteszt':JB+'theme-world/essential_section/132/jbl-themeworld-for-your-hobby','vízelőkészítő':JB+'essentials-aquarium-water-treatment/section/66/water-treatment','szűrő':JB+'theme-world/essential_section/40/jbl-themeworld-for-your-hobby','világítás':JB+'essentials-aquarium-light/section/49/light',aljzat:JB+'essentials-aquarium-substrate/section/57/substrate'},
+ Arcadia:{'UVB-fénycső és -lámpa':TM+'arcadia','UVB-fényforrás':TM+'arcadia'},
+ sera:{'terráriumtechnika':SE+'terrarium/Produkte/terrarium-technik/','teknőseleség@teknos':OS+'sera%20tekn%C5%91s','teknőseleség@viziteknos':OS+'sera%20tekn%C5%91s','reptil aquatan vízelőkészítő':SE+'produkt/terrarium/sera-reptil-aquatan/','süllyedő eleség':SE+'suesswasseraquarium/Produkte/suesswasserfische-fuettern/wels-und-schmerlenfutter/','vízelőkészítő':OS+'sera%20aquatan','vízteszt':OS+'sera%20teszt','haleleség':OS+'sera%20vipan','tengeri haleleség':SE+'meerwasseraquarium/Produkte/meerwasserfische-fuettern/'},
+ Tetra:{'ReptoMin teknőseleség':TE+'tetra-reptomin-sticks-1','vízelőkészítő':TE+'taplalas-es-gondozas/akvarium/gondozas/vizkezeles','süllyedő eleség':TE+'tetra-tabimin-1','vízteszt':TE+'taplalas-es-gondozas/akvarium/gondozas/vizteszt','kezdő akváriumszett':TE+'akvariumok-es-technika/akvarium/akvariumok-es-dekoraciok/akvariumkeszletek','műnövény':TE+'akvariumok-es-technika/akvarium/akvariumok-es-dekoraciok/dekoracio','lemezes haleleség':TE+'tetramin-flakes','granulált haleleség':TE+'tetramin-granules-1'},
+ EHEIM:{'fűtő':'https://eheim.com/en_GB/aquatics/technology/aquarium-heaters/','akvárium':'https://eheim.com/en_GB/aquatics/aquariums/','áramoltató':'https://eheim.com/en_GB/aquatics/technology/streaming-pumps/'},
+ JUWEL:{'akvárium':'https://www.juwel-aquarium.de/en/aquariums','akváriumszett':'https://www.juwel-aquarium.de/en/aquariums','háttér':'https://www.juwel-aquarium.de/en/equipment/decoration/backgrounds','dekoráció':'https://www.juwel-aquarium.de/en/equipment/decoration'},
+ AQUAEL:{'szűrő':OS+'aquael','fűtő':'https://www.aquael.com/products/aquaristics/heaters/','akvárium':'https://www.aquael.com/products/aquaristics/aquarium-sets/','világítás':'https://www.aquael.com/products/aquaristics/aquarium-lighting/'},
+ 'Tropic Marin':{'tengeri só':'https://www.tropic-marin.com/meersalz'},
+ 'Red Sea':{'tengeri só':'https://g1.redseafish.com/red-sea-salts/','vízteszt':'https://g1.redseafish.com/reef-care-program/tank-maturation/marine-care-multi-test-kit-maturation/','tengeri akváriumrendszer':'https://redseafish.com/aquarium-systems/reefer-g3'},
+ Hunter:{'nyakörv':ZS+'hunter%20nyak%C3%B6rv','póráz':ZS+'hunter%20p%C3%B3r%C3%A1z',fekhely:ZS+'hunter%20kutyafekhely'},
+ FURminator:{'vedlés elleni kefe':ZP+'shop/top_markak/furminator'},
+ 'Chuckit!':{'labda és labdadobó':ZS+'chuckit'},
+ "Biokat's":{'csomósodó alom':ZS+'biokat\'s'}};
 /* egész soros ajánlások (konkrét termék vagy termékcsalád): terméknév → cím */
-const VL='https://www.versele.com/hu/hu/',VK='https://www.vitakraft.com/hu/hu/termekek',VKR=VK+'?minden-allat=ragcsalo',BP='https://www.beaphar.com/p/',BN='https://bunny-nature.de/produkte',JR='https://www.jr-farm.de/kleintier/';
-const ROWL={'Versele-Laga Cuni Junior Complete':VL+'complete/term%C3%A9kek/complete-cunijunior','Versele-Laga Cuni Adult Complete':VL+'complete/term%C3%A9kek/complete-cuniadult','Versele-Laga Cavia Complete':VL+'complete/term%C3%A9kek/complete-cavia','Versele-Laga Hamster Complete':VL+'complete/term%C3%A9kek/complete-hamstergerbil',
- 'Versele-Laga csincsillatáp (Nature vagy Complete)':VL+'complete/term%C3%A9kek/complete-chinchilladegu','Versele-Laga Ferret Complete':VL+'complete/term%C3%A9kek/complete-ferret',
- 'Versele-Laga Prestige hullámospapagáj-eleség':VL+'prestige/term%C3%A9kek/prestige-budgies','Versele-Laga Prestige nimfapapagáj-eleség':VL+'prestige/term%C3%A9kek','Versele-Laga Prestige kanárieleség':VL+'prestige/term%C3%A9kek/prestige-canaries','Versele-Laga Prestige díszpintyeleség':VL+'prestige/term%C3%A9kek/prestige-tropicalfinches',
+const ROWL={'Versele-Laga Cuni Junior Complete':VL+'complete/term%C3%A9kek/complete-cunijunior',
+ 'Versele-Laga Cuni Adult Complete':VL+'complete/term%C3%A9kek/complete-cuniadult',
+ 'Versele-Laga Cavia Complete':VL+'complete/term%C3%A9kek/complete-cavia',
+ 'Versele-Laga Hamster Complete':VL+'complete/term%C3%A9kek/complete-hamstergerbil',
+ 'Versele-Laga csincsillatáp (Nature vagy Complete)':VL+'complete/term%C3%A9kek/complete-chinchilladegu',
+ 'Versele-Laga Ferret Complete':VL+'complete/term%C3%A9kek/complete-ferret',
+ 'Versele-Laga Prestige hullámospapagáj-eleség':VL+'prestige/term%C3%A9kek/prestige-budgies',
+ 'Versele-Laga Prestige nimfapapagáj-eleség':VL+'prestige/term%C3%A9kek',
+ 'Versele-Laga Prestige kanárieleség':VL+'prestige/term%C3%A9kek/prestige-canaries',
+ 'Versele-Laga Prestige díszpintyeleség':VL+'prestige/term%C3%A9kek/prestige-tropicalfinches',
  'Versele-Laga NutriBird granulált táp':VL+'nutribird/term%C3%A9kek',
- 'Beaphar Care+ nyúltáp':BP+'care-plus','Beaphar Care+ tengerimalactáp':BP+'care-plus','Beaphar Care+ hörcsögtáp':BP+'care-plus','Beaphar Care+ csincsillatáp':BP+'care-plus',
- 'Beaphar XtraVital hullámospapagáj-eleség':BP+'xtravital-all-in-one-bird-food-blends','Beaphar XtraVital nagypapagáj-eleség':BP+'xtravital-all-in-one-bird-food-blends','Beaphar XtraVital kanárieleség':BP+'xtravital-all-in-one-bird-food-blends','Beaphar XtraVital egzótaeleség':BP+'xtravital-all-in-one-bird-food-blends',
- 'Bunny nyúltáp':BN,'Bunny tengerimalactáp':BN,'Bunny hörcsögtáp':BN,'Bunny csincsillatáp':BN,
- 'Vitakraft Menu Vital nyúltáp':VKR,'Vitakraft Menu Vital tengerimalactáp':VKR,'Vitakraft Menu Vital hörcsögeleség':VKR,'Vitakraft csincsillaeleség':VKR,'Vitakraft görényeledel':VKR,
- 'Vitakraft Menü hullámospapagáj-eleség':VK+'/menu-pearl','Vitakraft Menü nimfapapagáj-eleség':VK+'/menu-pearl','Vitakraft Menü kanárieleség':VK+'/menu-pearl','Vitakraft Menü egzótaeleség':VK+'/menu-pearl','Vitakraft Kräcker rúd':VK+'/kraecker',
- 'JR Farm nyúltáp':JR+'nach-tierart/zwergkaninchen','JR Farm tengerimalactáp':JR+'nach-tierart/meerschweinchen','JR Farm hörcsögeleség':JR+'nach-tierart/hamster','JR Farm csincsilla pellet':JR+'nach-tierart/chinchilla'};
+ 'Beaphar Care+ nyúltáp':ZS+'beaphar%20care%2B',
+ 'Beaphar Care+ tengerimalactáp':ZS+'beaphar%20care%2B',
+ 'Beaphar Care+ hörcsögtáp':BP+'care-plus',
+ 'Beaphar Care+ csincsillatáp':BP+'care-plus',
+ 'Beaphar XtraVital hullámospapagáj-eleség':BP+'xtravital-all-in-one-bird-food-blends',
+ 'Beaphar XtraVital nagypapagáj-eleség':BP+'xtravital-all-in-one-bird-food-blends',
+ 'Beaphar XtraVital kanárieleség':BP+'xtravital-all-in-one-bird-food-blends',
+ 'Beaphar XtraVital egzótaeleség':BP+'xtravital-all-in-one-bird-food-blends',
+ 'Bunny nyúltáp':ZS+'bunny%20nature',
+ 'Bunny tengerimalactáp':ZS+'bunny%20nature',
+ 'Bunny hörcsögtáp':'https://bunny-nature.de/produkte',
+ 'Bunny csincsillatáp':ZS+'bunny%20nature',
+ 'Vitakraft Menu Vital nyúltáp':VK+'?minden-allat=ragcsalo',
+ 'Vitakraft Menu Vital tengerimalactáp':VK+'?minden-allat=ragcsalo',
+ 'Vitakraft Menu Vital hörcsögeleség':VK+'?minden-allat=ragcsalo',
+ 'Vitakraft csincsillaeleség':VK+'?minden-allat=ragcsalo',
+ 'Vitakraft görényeledel':VK+'?minden-allat=ragcsalo',
+ 'Vitakraft Menü hullámospapagáj-eleség':VK+'/menu-pearl',
+ 'Vitakraft Menü nimfapapagáj-eleség':VK+'/menu-pearl',
+ 'Vitakraft Menü kanárieleség':VK+'/menu-pearl',
+ 'Vitakraft Menü egzótaeleség':VK+'/menu-pearl',
+ 'Vitakraft Kräcker rúd':VK+'/kraecker',
+ 'JR Farm nyúltáp':ZS+'jr%20farm%20ny%C3%BAl',
+ 'JR Farm tengerimalactáp':JR+'nach-tierart/meerschweinchen',
+ 'JR Farm hörcsögeleség':JR+'nach-tierart/hamster',
+ 'JR Farm csincsilla pellet':ZP+'shop/kisallat/eledel/csincsilla/jr_farm/430326',
+ 'Brit Animals Ferret':'https://petguru.hu/termek/brit-animals-ferret-700-g/'};
 /* több márkát felsoroló sor: a szövegben szereplő márkák külön linkek */
-const ROWSEG={'Széna: JR Farm, Vitakraft Vita Verde vagy Bunny':{t:'Széna',l:[['JR Farm',JR+'heu'],['Vitakraft Vita Verde',VKR],['Bunny',BN]]}};
+const ROWSEG={'Széna: JR Farm, Vitakraft Vita Verde vagy Bunny':{t:'Széna',l:[['JR Farm',JR+'heu'],['Vitakraft Vita Verde',VK+'?minden-allat=ragcsalo'],['Bunny','https://bunny-nature.de/produkte']]}};
 /* kutya- és macskatápok: a márka adott állathoz és életszakaszhoz tartozó kínálata [kölyök és növendék, felnőtt, idős] */
-const FL=[['Royal Canin','https://www.royalcanin.com/hu/',{kutya:['dogs/products/puppy-food','dogs/products/retail-products','dogs/products/retail-products'],macska:['cats/products/kitten-food','cats/products/retail-products','cats/products/retail-products']}],
- ["Hill's",'https://www.hillspet.co.hu/',{kutya:['dog-food?lifestage=puppy','dog-food?lifestage=adult','dog-food?lifestage=mature'],macska:['cat-food?lifestage=kitten','cat-food?lifestage=adult','cat-food?lifestage=mature']}],
- ['Purina Pro Plan','https://www.purina.hu/markak/pro-plan/',{kutya:['kutya','kutya','kutya'],macska:['macska','macska','macska']}],
- ['Purina Dog Chow','https://www.purina.hu/markak/',{kutya:['dog-chow','dog-chow','dog-chow']}],
- ['Acana','https://emea.acana.com/en/dogs/dog-food/',{kutya:['puppy','adult','senior']}],
- ['Eukanuba','https://www.eukanuba.com/products?lifestage%5Bdog-food%5D=',{kutya:['Puppy','Adult','Senior']}],
- ['Carnilove','https://carnilove.com/en/collections/',{kutya:['dry-dog-food','dry-dog-food','dry-dog-food'],macska:['dry-cat-food','dry-cat-food','dry-cat-food']}],
- ['Farmina','https://www.farmina.com/hu/',{kutya:['eshop-d-Eledelek-kuty%C3%A1knak.html','eshop-d-Eledelek-kuty%C3%A1knak.html','eshop-d-Eledelek-kuty%C3%A1knak.html'],macska:['eshop-c-Eledelek-macsk%C3%A1knak.html','eshop-c-Eledelek-macsk%C3%A1knak.html','eshop-c-Eledelek-macsk%C3%A1knak.html']}],
- ['Josera','https://shop.josera.com/hu-hu/collections/',{kutya:['kutyatap-kolykok','kutyatap-felnott','kutyatap-senior'],macska:['macskaeledel-kolykok','macskaeledel-felnott','macskaeledel-idos']}],
- ['Happy Dog','https://happydog.hu/termekkinalat/',{kutya:['koelyoek','adult','senior']}],
- ['Happy Cat','https://happycat.hu/macskaeledel/',{macska:['kitten','adult','senior']}],
- ['bosch','https://www.bosch-tiernahrung.de/bosch_de_de/hundefutter/lebensphase/',{kutya:['welpenfutter.html','adultfutter.html','seniorfutter.html']}],
- ['Applaws','https://applaws.com/us/',{macska:['age/kitten/','product-type/dry-food/','age/senior/']}],
- ['Animonda','https://animonda.de/katzen/katzenfutter/',{macska:['kitten/','adult/','senior/']}]];
+const FL=[['Royal Canin',{kutya:['https://www.royalcanin.com/hu/dogs/products/puppy-food','https://www.royalcanin.com/hu/dogs/products/retail-products','https://www.royalcanin.com/hu/dogs/products/retail-products'],macska:['https://www.royalcanin.com/hu/cats/products/kitten-food','https://www.royalcanin.com/hu/cats/products/retail-products','https://www.royalcanin.com/hu/cats/products/retail-products']}],
+ ["Hill's",{kutya:['https://www.hillspet.co.hu/dog-food?lifestage=puppy','https://www.hillspet.co.hu/dog-food?lifestage=adult','https://www.hillspet.co.hu/dog-food?lifestage=mature'],macska:['https://www.hillspet.co.hu/cat-food?lifestage=kitten','https://www.hillspet.co.hu/cat-food?lifestage=adult','https://www.hillspet.co.hu/cat-food?lifestage=mature']}],
+ ['Purina Pro Plan',{kutya:['https://www.purina.hu/markak/pro-plan/kutya','https://www.purina.hu/markak/pro-plan/kutya','https://www.purina.hu/markak/pro-plan/kutya'],macska:['https://www.purina.hu/markak/pro-plan/macska','https://www.purina.hu/markak/pro-plan/macska','https://www.purina.hu/markak/pro-plan/macska']}],
+ ['Purina Dog Chow',{kutya:['https://www.purina.hu/markak/dog-chow','https://www.purina.hu/markak/dog-chow','https://www.purina.hu/markak/dog-chow']}],
+ ['Acana',{kutya:[PT+'kutyaknak/szarazeledelek/acana',PT+'kutyaknak/szarazeledelek/acana',PT+'kutyaknak/szarazeledelek/acana']}],
+ ['Eukanuba',{kutya:[ZP+'shop/kutya/szaraz_kutyatap/eukanuba',ZP+'shop/kutya/szaraz_kutyatap/eukanuba',ZP+'shop/kutya/szaraz_kutyatap/eukanuba']}],
+ ['Carnilove',{kutya:[PT+'kutyaknak/szarazeledelek/carnilove',PT+'kutyaknak/szarazeledelek/carnilove',PT+'kutyaknak/szarazeledelek/carnilove'],macska:['https://carnilove.com/en/collections/dry-cat-food','https://carnilove.com/en/collections/dry-cat-food','https://carnilove.com/en/collections/dry-cat-food']}],
+ ['Farmina',{kutya:['https://www.farmina.com/hu/eshop-d-Eledelek-kuty%C3%A1knak.html','https://www.farmina.com/hu/eshop-d-Eledelek-kuty%C3%A1knak.html','https://www.farmina.com/hu/eshop-d-Eledelek-kuty%C3%A1knak.html'],macska:['https://www.farmina.com/hu/eshop-c-Eledelek-macsk%C3%A1knak.html','https://www.farmina.com/hu/eshop-c-Eledelek-macsk%C3%A1knak.html','https://www.farmina.com/hu/eshop-c-Eledelek-macsk%C3%A1knak.html']}],
+ ['Josera',{kutya:['https://shop.josera.com/hu-hu/collections/kutyatap-kolykok','https://shop.josera.com/hu-hu/collections/kutyatap-felnott','https://shop.josera.com/hu-hu/collections/kutyatap-senior'],macska:['https://shop.josera.com/hu-hu/collections/macskaeledel-kolykok','https://shop.josera.com/hu-hu/collections/macskaeledel-felnott','https://shop.josera.com/hu-hu/collections/macskaeledel-idos']}],
+ ['Happy Dog',{kutya:['https://happydog.hu/termekkinalat/koelyoek','https://happydog.hu/termekkinalat/adult','https://happydog.hu/termekkinalat/senior']}],
+ ['Happy Cat',{macska:['https://happycat.hu/macskaeledel/kitten','https://happycat.hu/macskaeledel/adult','https://happycat.hu/macskaeledel/senior']}],
+ ['bosch',{kutya:[ZP+'shop/kutya/szaraz_kutyatap/bosch',ZP+'shop/kutya/szaraz_kutyatap/bosch',ZP+'shop/kutya/szaraz_kutyatap/bosch']}],
+ ['Applaws',{macska:[ZS+'applaws%20sz%C3%A1raz%20macskat%C3%A1p',ZS+'applaws%20sz%C3%A1raz%20macskat%C3%A1p',ZS+'applaws%20sz%C3%A1raz%20macskat%C3%A1p']}],
+ ['Animonda',{macska:[ZS+'animonda%20sz%C3%A1raz%20macskat%C3%A1p',ZS+'animonda%20sz%C3%A1raz%20macskat%C3%A1p',ZS+'animonda%20sz%C3%A1raz%20macskat%C3%A1p']}],
+ ['Brit',{kutya:[ZP+'shop/kutya/szaraz_kutyatap/brit',ZP+'shop/kutya/szaraz_kutyatap/brit',ZP+'shop/kutya/szaraz_kutyatap/brit'],macska:[ZP+'shop/macska/szaraz_macskatap/brit_cat',ZP+'shop/macska/szaraz_macskatap/brit_cat',ZP+'shop/macska/szaraz_macskatap/brit_cat']}],
+ ['Perfect Fit',{macska:[PT+'macskaknak/szarazeledelek/perfect-fit',PT+'macskaknak/szarazeledelek/perfect-fit',PT+'macskaknak/szarazeledelek/perfect-fit']}]];
 const CLS={gyik:'terra',kigyo:'terra',teknos:'terra',keteltu:'terra',gerinctelen:'terra',viziteknos:'akva',vizi:'akva',edesvizi:'akva',tengeri:'akva'};
 /* az állat kulcsai a linkkereséshez, a legszűkebbtől: faj, készlet, csoport */
 const pctx=p=>{const k=kitOf(p),g=grp(p);return[p.species,k,k?CLS[k]:g==='madar'?'madar':g==='emlos'&&p.species!=='kutya'&&p.species!=='macska'?'kisemlos':null].filter(Boolean)};
 /* tétel címe a márkánál; üres tétellel a márka adott állathoz tartozó oldala */
-const plGet=(p,b,part)=>{const e=PL[b];if(!e)return null;const U=v=>/^https:/.test(v)?v:e[0]+v;for(const c of pctx(p)){const v=e[1][part+'@'+c];if(v!=null)return U(v)}return part&&e[1][part]!=null?U(e[1][part]):null};
+const plGet=(p,b,part)=>{const e=PL[b];if(!e)return null;for(const c of pctx(p)){const v=e[part+'@'+c];if(v)return v}return(part&&e[part])||null};
 const brandHome=(p,b)=>plGet(p,brandOf(b)||b,'')||brandUrl(b);
 const rowUrl=x=>x.u||ROWL[x[0]]||brandUrl(x[0]);
 /* vesszővel tagolt tételek; a zárójelen belüli vessző nem választ el */
@@ -832,7 +860,7 @@ const blink=(s,p)=>`<a class="blink" ${ext(p?brandHome(p,s):brandUrl(s))}>${esc(
 const brs=(s,p)=>String(s).split(', ').map(x=>blink(x,p)).join(', ');
 const SUPP=['Beaphar','GimCat','GimDog','8in1','BiogenicPet',"Dr. Clauder's",'Luposan','Vitakraft'];
 const brandList=p=>[...new Set([...foods(p).map(x=>x[0]),...Object.values(prodOf(p)||{}).flat().map(x=>x[0]),...(grp(p)==='emlos'?SUPP:[])])].join('; ');
-const PNOTE='Valóban létező, Magyarországon kapható márkák, ár nélkül. A kínálat és a pontos terméknév boltonként változhat; az életkor- és méretjelölést a csomagoláson ellenőrizd. A közép és prémium besorolás tájékoztató. Egy tételre koppintva a márka saját oldalán a termék vagy a termékkategória oldala nyílik meg új lapon; a márkanév a márka oldalát nyitja meg.';
+const PNOTE='Valóban létező, Magyarországon kapható márkák, ár nélkül. A kínálat és a pontos terméknév boltonként változhat; az életkor- és méretjelölést a csomagoláson ellenőrizd. A közép és prémium besorolás tájékoztató. Egy tételre koppintva a termék vagy a termékkategória oldala nyílik meg új lapon: a márka magyar oldalán vagy egy magyar webshopban, ha ott megvan; különben a márka saját oldalán. A linkek nem fizetett hirdetések.';
 const VIT={kutya:'Teljes értékű táp mellett az egészséges kutyának általában nincs szüksége külön vitaminra. A zsírban oldódó vitaminok (főleg az A- és a D-vitamin) túladagolva ártalmasak, ezért kiegészítőt csak célzottan, az állatorvossal egyeztetve adj. Embereknek szánt készítményt ne adj neki.',
  macska:'Teljes értékű táp mellett az egészséges macskának általában nincs szüksége külön vitaminra. A zsírban oldódó vitaminok (főleg az A- és a D-vitamin) túladagolva ártalmasak, ezért kiegészítőt csak célzottan, az állatorvossal egyeztetve adj. Embereknek szánt készítményt ne adj neki.',
  nyul:'Jó széna, friss zöldek és minőségi táp mellett a nyúlnak általában nincs szüksége vitaminkiegészítésre. Kiegészítőt csak állatorvosi javaslatra adj.',
