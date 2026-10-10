@@ -3,57 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PetLife</title>
+<title>PetVia</title>
 <meta name="description" content="Kisállat életútkövető és tanácsadó: oltások, teendők, táplálkozás és nevelés az állatod korához igazítva.">
-<meta name="theme-color" content="#F2F6F1">
+<meta name="theme-color" content="#F1F6EF">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="PetLife">
+<meta name="apple-mobile-web-app-title" content="PetVia">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
 <style>
 :root{
-  /* Fenyő, Zúzmara, Papír, Tinta, Kavics, Sáfrány; --acc = a kiválasztott állat fajcsoportjának akcentszíne */
-  --bg:#F2F6F1;--card:#FFFFFF;--ink:#14201C;--muted:#5B6B64;--line:#DDE5DE;--soft:#E6ECE6;
-  --brand:#0F3D33;--brand-ink:#FFFFFF;--ball:#F2B33D;--ball-ink:#14201C;
-  --acc:#1F5A4C;--hero:var(--acc);--hero-ink:#FFFFFF;--hero-soft:rgba(255,255,255,.28);
-  --alert:#B93661;--alert-ink:#FFFFFF;--alert-bg:#FBE8EE;--info:#2B6CA8;--info-bg:#E5EFF9;--tip:#6B4A00;--tip-bg:#FBEFD0;
+  --bg:#F1F6EF;--card:#FFFFFF;--ink:#14352D;--muted:#586E66;--line:#D9E4DA;--soft:#E3EDE4;
+  --brand:#1F7A5A;--brand-ink:#FFFFFF;--ball:#D9F25C;--ball-ink:#28380A;
+  --hero:#14352D;--hero-ink:#EEF5EE;--hero-soft:rgba(255,255,255,.18);
+  --alert:#B93661;--alert-ink:#FFFFFF;--alert-bg:#FBE8EE;--info:#2B6CA8;--info-bg:#E5EFF9;
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0E1714;--card:#17231F;--ink:#E8EFEA;--muted:#9DB0A7;--line:#2A3A34;--soft:#1E2C27;
-  --brand:#7FD1B5;--brand-ink:#0E1714;
-  --alert:#F28BAB;--alert-ink:#2A0F19;--alert-bg:#3A1C28;--info:#8DBDEB;--info-bg:#1A2E42;--tip:#F2B33D;--tip-bg:#2A2412;
+  --bg:#0E1D19;--card:#162A25;--ink:#E6F0E9;--muted:#9BB1A8;--line:#284139;--soft:#1E3731;
+  --brand:#58C99A;--brand-ink:#0B2019;--hero:#1C3A32;--hero-ink:#EEF5EE;
+  --alert:#F28BAB;--alert-ink:#2A0F19;--alert-bg:#3A1C28;--info:#8DBDEB;--info-bg:#1A2E42;
 }}
 :root[data-theme="dark"]{
-  --bg:#0E1714;--card:#17231F;--ink:#E8EFEA;--muted:#9DB0A7;--line:#2A3A34;--soft:#1E2C27;
-  --brand:#7FD1B5;--brand-ink:#0E1714;
-  --alert:#F28BAB;--alert-ink:#2A0F19;--alert-bg:#3A1C28;--info:#8DBDEB;--info-bg:#1A2E42;--tip:#F2B33D;--tip-bg:#2A2412;
+  --bg:#0E1D19;--card:#162A25;--ink:#E6F0E9;--muted:#9BB1A8;--line:#284139;--soft:#1E3731;
+  --brand:#58C99A;--brand-ink:#0B2019;--hero:#1C3A32;--hero-ink:#EEF5EE;
+  --alert:#F28BAB;--alert-ink:#2A0F19;--alert-bg:#3A1C28;--info:#8DBDEB;--info-bg:#1A2E42;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%}
 html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
-h1,h2,h3,.brand{font-family:Fraunces,Georgia,serif;font-weight:600;line-height:1.15;margin:0;letter-spacing:-.005em}
-h1{font-size:27px}h2{font-size:20px;margin:26px 0 10px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+h1,h2,h3,.brand{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;line-height:1.15;margin:0;letter-spacing:-.01em}
+h1{font-size:26px;font-weight:800}h2{font-size:19px;font-weight:700;margin:26px 0 10px}
 p{margin:0 0 10px}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--brand);outline-offset:2px}
 #app{height:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;padding-bottom:64px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px}
-.brand{font-size:25px;color:var(--brand)}
-.topr{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:1;min-width:0}
-.gear{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);color:var(--brand);display:grid;place-items:center;padding:0}
-.gear[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
-.ic{width:1.3em;height:1.3em;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.25em}
-.pill{display:flex;align-items:center;gap:8px;min-height:44px;min-width:0;max-width:calc(100% - 52px);padding:4px 14px 4px 4px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);font-weight:600}
+.brand{font-weight:800;font-size:22px;display:flex;align-items:center;gap:8px}
+.brand svg{width:22px;height:22px}
+.pill{display:flex;align-items:center;gap:8px;min-height:44px;max-width:60%;padding:4px 14px 4px 4px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);font-weight:600}
 .pill b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #view{flex:1;overflow-y:auto;padding:6px 16px 88px}
 #view.chatmode{overflow:hidden;display:flex;flex-direction:column;padding:0}
@@ -61,18 +57,11 @@ button{cursor:pointer}
 .tabs>div{max-width:560px;margin:0 auto;display:flex;height:64px}
 .tab{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:600;color:var(--muted)}
 .tab i{display:grid;place-items:center;width:48px;height:30px;border-radius:15px}
-.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.tab[aria-current=page]{color:var(--brand);font-weight:700}
-.tab[aria-current=page] svg{stroke-width:2.1}
-/* kiemelt középső gomb: Tanácsadó */
-.tab.mid{color:var(--ink);justify-content:flex-end;padding-bottom:6px}
-.tab.mid i{width:54px;height:54px;border-radius:50%;margin-top:-26px;background:var(--ball);color:var(--ball-ink);box-shadow:0 0 0 5px var(--card)}
-.tab.mid svg{width:26px;height:26px}
-.tab.mid[aria-current=page] i{background:var(--brand);color:var(--brand-ink)}
-.ava{flex:none;width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--soft);color:var(--brand);display:grid;place-items:center}
-.ava svg{width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.ava.big{width:72px;height:72px;border:3px solid var(--hero-soft)}
-.hero span.ava{background:rgba(255,255,255,.18);color:#fff}
+.tab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-current=page]{color:var(--ink)}
+.tab[aria-current=page] i{background:var(--ball);color:var(--ball-ink)}
+.ava{flex:none;width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--soft);display:grid;place-items:center;font-size:20px}
+.ava.big{width:72px;height:72px;font-size:38px;border:3px solid var(--ball)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:0 20px;border:0;border-radius:14px;background:var(--brand);color:var(--brand-ink);font-weight:700}
 .btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
 .btn.danger{background:var(--alert);color:var(--alert-ink)}
@@ -81,24 +70,24 @@ button{cursor:pointer}
 .btn:disabled{opacity:.5}
 .row{display:flex;gap:10px;align-items:center}
 .sub,.hint{color:var(--muted);font-size:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
 /* hős kártya az életút-sávval */
-.hero{background:var(--hero);color:var(--hero-ink);border-radius:24px;padding:18px 18px 16px}
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:22px;padding:18px 18px 16px}
 .hero .who{display:flex;gap:14px;align-items:center}
 .hero h1{font-size:28px}
-.hero .meta{font-size:15px}
-.hero .edit{margin-left:auto;align-self:flex-start;flex:none;width:44px;height:44px;border-radius:12px;border:1.5px solid var(--hero-soft);background:none;color:inherit;display:grid;place-items:center;padding:0}
+.hero .meta{opacity:.85;font-size:15px}
+.hero .edit{margin-left:auto;align-self:flex-start;flex:none;width:44px;height:44px;border-radius:12px;border:1.5px solid var(--hero-soft);background:none;color:inherit;font-size:18px}
 .trail{margin:22px 0 8px}
 .trail-bar{position:relative;display:flex;gap:6px;height:10px}
 .seg{flex:1;border-radius:5px;background:var(--hero-soft)}
-.seg.past{background:rgba(255,255,255,.62)}
-.seg.cur{background:linear-gradient(to right,#fff var(--f),var(--hero-soft) var(--f))}
-.ballmark{position:absolute;top:50%;width:22px;height:22px;transform:translate(-50%,-50%)}
+.seg.past{background:var(--ball)}
+.seg.cur{background:linear-gradient(to right,var(--ball) var(--f),var(--hero-soft) var(--f))}
+.ballmark{position:absolute;top:50%;width:26px;height:26px;transform:translate(-50%,-50%)}
 .ballmark svg{display:block;width:100%;height:100%}
-.trail-lab{display:flex;gap:6px;margin-top:10px;font-size:13px}
+.trail-lab{display:flex;gap:6px;margin-top:10px;font-size:13px;opacity:.7}
 .trail-lab span{flex:1}
-.trail-lab .on{font-weight:700}
-.hero .next{font-size:14px;margin:12px 0 0}
+.trail-lab .on{opacity:1;font-weight:700;color:var(--ball)}
+.hero .next{font-size:14px;margin:12px 0 0;opacity:.9}
 .banner{display:flex;gap:12px;align-items:center;background:var(--ball);color:var(--ball-ink);border-radius:18px;padding:14px 16px;margin-bottom:14px;font-weight:600}
 .banner .btn{background:var(--ball-ink);color:var(--ball)}
 /* teendők */
@@ -109,11 +98,11 @@ button{cursor:pointer}
 .tasks b{display:block}
 .when{display:block;font-size:14px;color:var(--muted)}
 .late .when{color:var(--alert);font-weight:600}
-.tag{display:inline-block;font-size:12px;font-weight:600;border-radius:6px;padding:1px 7px;margin:6px 6px 0 0;background:var(--tip-bg);color:var(--tip)}
+.tag{display:inline-block;font-size:12px;font-weight:600;border-radius:6px;padding:1px 7px;margin:6px 6px 0 0;background:var(--info-bg);color:var(--info)}
 .tag.must{background:var(--alert-bg);color:var(--alert)}
 .tips{list-style:none;margin:0;padding:0}
 .tips li{position:relative;padding:2px 0 2px 26px;margin-bottom:12px}
-.tips li::before{content:"";position:absolute;left:4px;top:10px;width:9px;height:9px;border-radius:50%;background:var(--ball)}
+.tips li::before{content:"";position:absolute;left:0;top:7px;width:12px;height:12px;border-radius:50%;background:var(--ball);border:2px solid var(--ink)}
 .disc{display:block;color:var(--muted);font-size:13px;margin-top:6px}
 .note{background:var(--info-bg);color:var(--info);border-radius:14px;padding:12px 14px;font-size:14px;margin:14px 0}
 /* életút */
@@ -130,8 +119,8 @@ button{cursor:pointer}
 .tl .card p{font-size:14px;color:var(--muted);margin:6px 0 0}
 .tl .acts{display:flex;gap:8px;align-items:center;margin-top:10px}
 .tl .ok{color:var(--brand);font-weight:700;font-size:14px}
-.tl>li.stage{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:18px;padding:8px 0 2px}
-.tl>li.stage small{display:block;font:500 13px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--muted)}
+.tl>li.stage{font-family:"Bricolage Grotesque",Figtree,sans-serif;font-weight:700;font-size:17px;padding:8px 0 2px}
+.tl>li.stage small{display:block;font:500 13px Figtree,system-ui,sans-serif;color:var(--muted)}
 .tl>li.stage::before{content:"";position:absolute;left:-25px;top:15px;width:12px;height:12px;background:var(--ink);transform:rotate(45deg)}
 .tl>li.today{display:flex;align-items:center;gap:10px;font-weight:700}
 .tl>li.today .ballmark{position:absolute;left:-19px;top:50%}
@@ -152,9 +141,9 @@ button{cursor:pointer}
 .seg2{display:flex;gap:8px;overflow-x:auto;margin:14px -16px 0;padding:0 16px 6px;scrollbar-width:none}
 .seg2::-webkit-scrollbar{display:none}
 .seg2 button{flex:none;min-height:44px;padding:0 16px;border-radius:22px;border:1.5px solid var(--line);background:var(--card);font-weight:600}
-.seg2 button[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.seg2 button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .short{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.num{font:600 30px/1.1 Fraunces,Georgia,serif}
+.num{font:800 30px/1.1 "Bricolage Grotesque",Figtree,system-ui,sans-serif}
 .chart{display:block;width:100%;height:auto;margin-top:12px}
 .bad{list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0}
 .bad li{background:var(--alert-bg);color:var(--alert);border-radius:10px;padding:6px 10px;font-weight:600;font-size:14px}
@@ -165,7 +154,7 @@ button{cursor:pointer}
 a.btn{text-decoration:none}
 .btn[aria-disabled=true]{opacity:.5;pointer-events:none}
 .back{margin-left:-8px}
-.fab{position:fixed;z-index:6;right:max(16px,calc(50% - 264px));bottom:calc(76px + env(safe-area-inset-bottom,0px));min-height:52px;padding:0 18px;border-radius:26px;border:0;background:var(--brand);color:var(--brand-ink);font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 6px 16px -6px rgba(8,22,18,.55)}
+.fab{position:fixed;z-index:6;right:max(16px,calc(50% - 264px));bottom:calc(76px + env(safe-area-inset-bottom,0px));min-height:52px;padding:0 18px;border-radius:26px;border:2px solid #14352D;background:var(--ball);color:var(--ball-ink);font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 6px 16px -6px rgba(8,22,18,.55)}
 .sheet.chatsheet{display:flex;flex-direction:column;height:88%;padding:14px 0 0;overflow:hidden}
 .chatsheet .composer{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 .aitext{white-space:pre-wrap;overflow-wrap:anywhere}
@@ -188,13 +177,13 @@ textarea{padding:12px 14px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips label{position:relative}
 .chips input{position:absolute;opacity:0;inset:0;min-height:0}
-.chips span,.chip{display:flex;align-items:center;gap:6px;min-height:48px;padding:0 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-weight:600}
-.chips input:checked+span,.chip[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.chips span{display:flex;align-items:center;min-height:48px;padding:0 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-weight:600}
+.chips input:checked+span{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .chips input:focus-visible+span{outline:3px solid var(--brand);outline-offset:2px}
-.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.tile{min-height:104px;padding:8px 4px;border-radius:18px;border:1.5px solid var(--line);background:var(--card);font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
-.tile em{font-style:normal;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--t);color:#fff;font-size:20px}
-.tile[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{min-height:84px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tile em{font-style:normal;font-size:30px;line-height:1.1}
+.tile[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .steps{display:flex;gap:6px;margin:4px 0 16px}
 .steps i{flex:1;height:6px;border-radius:3px;background:var(--soft)}
 .steps i.on{background:var(--brand)}
@@ -211,32 +200,26 @@ textarea{padding:12px 14px}
 .list li+li{border-top:1px solid var(--line)}
 .list .grow{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;min-height:48px}
 .empty{text-align:center;padding:36px 8px}
-.empty .big{width:88px;height:88px;margin:0 auto;border-radius:50%;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-size:36px}
+.empty .big{font-size:64px;line-height:1}
 .empty h1{margin:14px 0 8px;font-size:30px}
-/* Gondozás lap */
-.hub{display:flex;flex-direction:column;gap:10px;margin-top:16px}
-.hub button{display:flex;align-items:center;gap:14px;min-height:76px;padding:12px 16px;border-radius:20px;border:1px solid var(--line);background:var(--card);text-align:left}
-.hub i{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:var(--soft);color:var(--brand);font-size:19px;font-style:normal}
-.hub b{display:block}
-.hub small{display:block;font-size:14px;color:var(--muted)}
 </style>
 </head>
 <body>
 <div id="app">
   <header class="top">
-    <div class="brand">PetLife</div>
-    <div class="topr"><button class="pill" id="petPill" data-act="pets" hidden></button><button class="gear" id="gear" data-act="tab" data-tab="more" aria-label="Beállítások, fiók, állataim"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="font-size:17px"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.6"/><circle cx="8" cy="17" r="2.6"/></svg></button></div>
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#D9F25C" stroke="currentColor" stroke-width="2"/><path d="M5 5c4 3 4 11 0 14M19 5c-4 3-4 11 0 14" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>PetVia</div>
+    <button class="pill" id="petPill" data-act="pets" hidden></button>
   </header>
   <main id="view"></main>
 </div>
 <nav class="tabs" aria-label="Fő navigáció"><div>
   <button class="tab" data-act="tab" data-tab="home"><i><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></i>Főoldal</button>
   <button class="tab" data-act="tab" data-tab="path"><i><svg viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/></svg></i>Életút</button>
-  <button class="tab mid" data-act="tab" data-tab="ai"><i><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></i>Tanácsadó</button>
-  <button class="tab" data-act="tab" data-tab="hub"><i><svg viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M9 7c0-1 1-1 1-2M14 7c0-1 1-1 1-2"/></svg></i>Gondozás</button>
   <button class="tab" data-act="tab" data-tab="health"><i><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></i>Egészség</button>
+  <button class="tab" data-act="tab" data-tab="ai"><i><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></i>Tanácsadó</button>
+  <button class="tab" data-act="tab" data-tab="more"><i><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg></i>Több</button>
 </div></nav>
-<button class="fab" id="fab" data-act="ask" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Kérdezz</button>
+<button class="fab" id="fab" data-act="ask" hidden><span aria-hidden="true">💬</span>Kérdezz</button>
 <div id="sheet" hidden></div>
 <div id="toast" role="status" hidden></div>
 
@@ -263,52 +246,9 @@ function fmtAge(p){const b=D(p.birth),t=today(),{m}=monthsBetween(b,t),total=Mat
 const span=d=>d<14?`${d} nap`:d<60?`${Math.round(d/7)} hét`:d<700?`${Math.round(d/30.44)} hónap`:`${Math.round(d/365.25)} év`;
 const fmtDate=d=>d.toLocaleDateString('hu-HU',{year:'numeric',month:'short',day:'numeric'});
 const val=(v,p)=>typeof v==='function'?v(p):v;
-/* BIZTONSÁG – A réteg (kliensoldali szűrés): a szabad szöveges profilmezőkben csak betű, szám, szóköz és alapvető írásjel maradhat, legfeljebb 40 karakter.
-   Ezek a mezők kerülnek később az AI-nak átadott profilba, ezért itt szűrjük őket. */
-const clean=(s,n=40)=>String(s??'').normalize('NFC').replace(/[^\p{L}\p{N} .,'()\-]/gu,'').replace(/\s+/g,' ').trim().slice(0,n);
-
-/* ---------- ikonok: egységes, vonalas készlet ---------- */
-const IC={
- paw:'<circle cx="7" cy="9" r="1.8"/><circle cx="12" cy="6.5" r="1.8"/><circle cx="17" cy="9" r="1.8"/><path d="M12 12c-3 0-5 2.5-5 4.5 0 1.5 1.2 2.5 2.8 2.5 1 0 1.4-.5 2.2-.5s1.2.5 2.2.5c1.6 0 2.8-1 2.8-2.5 0-2-2-4.5-5-4.5z"/>',
- feather:'<path d="M20 4c-7 0-12 4-12 10v2h2c6 0 10-5 10-12z"/><path d="M4 20l8-8"/>',
- scale:'<path d="M12 3l4 4-4 4-4-4zM6 11l4 4-4 4-4-4zM18 11l4 4-4 4-4-4z"/>',
- drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
- fish:'<path d="M8 12c2-3.5 5-5 8-5 2.5 0 4.5 2 6 5-1.5 3-3.5 5-6 5-3 0-6-1.5-8-5z"/><path d="M8 12L3 8v8z"/>',
- pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
- vet:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>',
- vacc:'<path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
- care:'<circle cx="6" cy="7" r="2.5"/><circle cx="6" cy="17" r="2.5"/><path d="M8 8.5L20 18M8 15.5L20 6"/>',
- shed:'<path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/>',
- memo:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
- other:'<path d="M7 4h10v16l-5-4-5 4z"/>',
- bowl:'<path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M9 7c0-1 1-1 1-2M14 7c0-1 1-1 1-2"/>',
- home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
- bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/>',
- pin:'<path d="M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>'};
-const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
 
 /* ---------- törzsadatok (tájékoztató jellegű) ---------- */
-/* fajcsoportok: n = név, i = ikon, c = akcentszín (a hős kártya színe) */
-const GROUPS={emlos:{n:'Emlős',i:'paw',c:'#B84E28'},madar:{n:'Madár',i:'feather',c:'#2A78B8'},hullo:{n:'Hüllő',i:'scale',c:'#5C7A1F'},keteltu:{n:'Kétéltű',i:'drop',c:'#0F7F78'},hal:{n:'Hal',i:'fish',c:'#4A55B5'},egyeb:{n:'Egyéb',i:'paw',c:'#1F5A4C'}};
-const SPECIES={kutya:{n:'Kutya',g:'emlos'},macska:{n:'Macska',g:'emlos'},nyul:{n:'Nyúl',g:'emlos'},tengerimalac:{n:'Tengerimalac',g:'emlos'},horcsog:{n:'Hörcsög',g:'emlos'},csincsilla:{n:'Csincsilla',g:'emlos'},goreny:{n:'Vadászgörény',g:'emlos'},
-  hullamos:{n:'Hullámos papagáj',g:'madar'},nimfa:{n:'Nimfapapagáj',g:'madar'},kanari:{n:'Kanári',g:'madar'},pinty:{n:'Díszpinty',g:'madar'},
-  leopardgekko:{n:'Leopárdgekkó',g:'hullo'},agama:{n:'Szakállas agáma',g:'hullo'},kiralypiton:{n:'Királypiton',g:'hullo'},kukoricasiklo:{n:'Kukoricasikló',g:'hullo'},gorogteknos:{n:'Görög teknős',g:'hullo'},mocsariteknos:{n:'Mocsári teknős',g:'hullo'},diszteknos:{n:'Díszteknős',g:'hullo'},
-  axolotl:{n:'Axolotl',g:'keteltu'},levelibeka:{n:'Levelibéka',g:'keteltu'},unka:{n:'Unka',g:'keteltu'},
-  edesvizi:{n:'Édesvízi díszhal',g:'hal'},harcoshal:{n:'Harcoshal',g:'hal'},
-  egyeb:{n:'Egyéb',g:'egyeb'}};
-const sp=p=>SPECIES[p.species]||SPECIES.egyeb;
-const grp=p=>sp(p).g;
-/* védett vagy korlátozás alá eső fajok: csak a biztosan ismert tényt írjuk le, konkrét jogszabály megnevezése nélkül */
-const FLAG_GEN='A tartás, a beszerzés vagy a szaporítás jogszabályi korlátozás alá eshet: a hatályos szabályt a természetvédelmi hatóságnál ellenőrizd.';
-const CITES='a veszélyeztetett fajok kereskedelméről szóló egyezmény (CITES) hatálya alá tartozik';
-const FLAG={mocsariteknos:'A mocsári teknős Magyarországon védett faj.',
-  gorogteknos:`A görög teknős ${CITES}: származási igazolás kell hozzá.`,
-  diszteknos:'A vörösfülű és a sárgafülű ékszerteknős szerepel az Európai Unió inváziós fajokról szóló jegyzékén. Szabadon engedni tilos.',
-  kiralypiton:`A királypiton ${CITES}: vásárláskor kérj származási igazolást.`,
-  axolotl:`Az axolotl ${CITES}: vásárláskor kérj származási igazolást.`,
-  levelibeka:'A hazai zöld levelibéka védett faj, a természetből befogni tilos. Hobbiállatként trópusi levelibékákat tartanak.',
-  unka:'A vöröshasú unka Magyarországon őshonos, védett faj, a természetből befogni tilos. Hobbiállatként jellemzően a kínai tűzhasú unkát tartják.'};
-const flagHtml=k=>FLAG[k]?`<p class="note">${FLAG[k]} ${FLAG_GEN}</p>`:'';
+const SPECIES={kutya:{n:'Kutya',e:'🐶'},macska:{n:'Macska',e:'🐱'},nyul:{n:'Nyúl',e:'🐰'},tengerimalac:{n:'Tengerimalac',e:'🐹'},horcsog:{n:'Hörcsög',e:'🐹'},egyeb:{n:'Egyéb',e:'🐾'}};
 const SIZES={s:'kicsi',m:'kozepes',l:'nagy',g:'orias'};
 const SIZE_HU={kicsi:'kistestű',kozepes:'közepes testű',nagy:'nagytestű',orias:'óriás testű'};
 const SIZE_HINT={kicsi:'Kicsi (kb. 10 kg alatt)',kozepes:'Közepes (kb. 10–25 kg)',nagy:'Nagy (kb. 25–45 kg)',orias:'Óriás (kb. 45 kg felett)'};
@@ -320,25 +260,7 @@ const BREEDS={
   macska:['Abesszin','Bengáli','Brit rövidszőrű','Burma','Devon rex','Európai rövidszőrű (házi macska)','Maine coon','Norvég erdei','Orosz kék','Perzsa','Ragdoll','Skót lógófülű','Szent birman','Szfinx','Sziámi','Szibériai'],
   nyul:['Angóra','Belga óriás','Hermelin','Holland nyúl','Kosorrú törpenyúl','Magyar óriás','Oroszlánfejű törpenyúl','Rex','Színes törpenyúl','Új-zélandi fehér'],
   tengerimalac:['Rövidszőrű (sima)','Rozettás (abesszin)','Perui','Sheltie','Texel','Teddy','Rex','Koronás (crested)','Szőrtelen (skinny)'],
-  horcsog:['Szíriai aranyhörcsög','Dzsungáriai törpehörcsög','Roborovszki-törpehörcsög',"Campbell-törpehörcsög",'Kínai csíkoshörcsög'],
-  csincsilla:['Standard szürke','Fehér','Bézs','Fekete bársony','Ébenfekete','Ibolya'],
-  goreny:['Vadas (görényszínű)','Albínó','Sötét szemű fehér','Pezsgő','Ezüst','Angóra'],
-  hullamos:['Zöld','Kék','Lutino (sárga)','Albínó (fehér)','Tarka','Standard (kiállítási)'],
-  nimfa:['Vadas (szürke)','Lutino','Fehérfejű','Gyöngyös','Tarka','Fahéj'],
-  kanari:['Énekes kanári','Színkanári','Alakkanári'],
-  pinty:['Zebrapinty','Japán sirálykapinty','Gould-amandina'],
-  leopardgekko:['Vad színezetű (normál)','High yellow','Tangerine','Mack snow','Albínó','Blizzard'],
-  agama:['Normál','Hypo','Translucent','Leatherback','Citrus','Red'],
-  kiralypiton:['Normál','Pastel','Albínó','Piebald','Mojave','Banana'],
-  kukoricasiklo:['Normál (vad színezetű)','Amelanisztikus','Anerythrisztikus','Snow','Okeetee','Motley'],
-  gorogteknos:['Nyugati alfaj','Keleti alfaj'],
-  mocsariteknos:[],
-  diszteknos:['Vörösfülű ékszerteknős','Sárgafülű ékszerteknős','Hieroglifás ékszerteknős','Közönséges pézsmateknős'],
-  axolotl:['Vad színezetű','Leucisztikus (rózsaszín)','Albínó','Arany albínó','Melanoid'],
-  levelibeka:['Korallujjú levelibéka','Vörösszemű levelibéka'],
-  unka:['Kínai tűzhasú unka','Vöröshasú unka'],
-  edesvizi:['Guppi','Neonhal','Aranyhal','Páncélosharcsa','Díszsügér','Szivárványhal'],
-  harcoshal:['Fátyolfarkú','Félhold (halfmoon)','Koronafarkú','Plakat','Delta']};
+  horcsog:['Szíriai aranyhörcsög','Dzsungáriai törpehörcsög','Roborovszki-törpehörcsög','Campbell-törpehörcsög','Kínai csíkoshörcsög']};
 for(const k in BREEDS)BREEDS[k].sort((a,b)=>a.localeCompare(b,'hu'));
 
 const STAGES=['kolyok','novendek','felnott','idos'];
@@ -347,27 +269,13 @@ const STAGE_INTO={novendek:'növendék korba',felnott:'felnőtt korba',idos:'id�
 const STAGE_START={novendek:'Növendékkor kezdete',felnott:'Felnőttkor kezdete',idos:'Idős kor kezdete'};
 /* szakaszhatárok hónapban: [növendék, felnőtt, idős] */
 const LIMITS={'kutya:kicsi':[6,12,120],'kutya:kozepes':[6,12,96],'kutya:nagy':[6,18,84],'kutya:orias':[6,24,72],
-  macska:[6,12,120],nyul:[3,8,72],tengerimalac:[2,6,60],horcsog:[1,3,18],csincsilla:[3,12,120],goreny:[4,12,48],
-  /* hosszú életű fajoknál (teknős, papagáj, kígyó) hosszabb időskála, rövid életűeknél (díszpinty, guppi) rövidebb */
-  hullamos:[3,9,72],nimfa:[4,12,144],kanari:[2,9,84],pinty:[1.5,4,60],
-  leopardgekko:[2,12,144],agama:[4,18,84],kiralypiton:[6,36,240],kukoricasiklo:[6,30,180],gorogteknos:[24,120,480],mocsariteknos:[24,96,480],diszteknos:[12,60,300],
-  axolotl:[3,12,120],levelibeka:[3,18,120],unka:[3,18,120],
-  harcoshal:[1.5,5,30],'hal:Guppi':[1,3,24],'hal:Neonhal':[2,8,48],'hal:Aranyhal':[3,18,120],'hal:Páncélosharcsa':[2,10,60],'hal:Díszsügér':[2,10,72],'hal:Szivárványhal':[2,9,60]};
-/* az első szakasz neve fajcsoportonként más */
-const STAGE1={madar:'Fióka',hullo:'Juvenilis',keteltu:'Juvenilis',hal:'Ivadék'};
-const stHU=(p,s)=>(s==='kolyok'&&STAGE1[grp(p)])||STAGE_HU[s];
+  macska:[6,12,120],nyul:[3,8,72],tengerimalac:[2,6,60],horcsog:[1,3,18]};
 const sizeOf=p=>p.species!=='kutya'?null:(p.breed&&p.breed!=='mix'&&DOGSIZE[p.breed])||p.size||'kozepes';
-const limitsFor=p=>p.species==='kutya'?LIMITS['kutya:'+sizeOf(p)]:p.species==='edesvizi'?LIMITS['hal:'+p.breed]||null:LIMITS[p.species]||null;
+const limitsFor=p=>p.species==='kutya'?LIMITS['kutya:'+sizeOf(p)]:LIMITS[p.species]||null;
 function stageAt(p,at){const L=limitsFor(p);if(!L)return null;const m=ageMAt(p,at);return m<L[0]?'kolyok':m<L[1]?'novendek':m<L[2]?'felnott':'idos'}
 const stageOf=p=>stageAt(p,today());
-const speciesLabel=p=>sp(p)===SPECIES.egyeb?(p.speciesName||'Egyéb állat'):sp(p).n;
-const breedLabel=p=>{const b=p.breed&&p.breed!=='mix'?p.breed:'';return p.species==='egyeb'?b:b||(p.species==='edesvizi'?'vegyes állomány':grp(p)==='emlos'?'keverék vagy ismeretlen fajta':'')};
-/* súly: a kis testű fajoknál grammban kérjük és írjuk ki, a tárolás mindig kg */
-const GRAM=new Set(['horcsog','csincsilla']);
-const gramSp=p=>GRAM.has(p.species)||['madar','hullo','keteltu'].includes(grp(p));
-const wU=p=>gramSp(p)?'g':'kg';
-const wNum=(p,kg)=>gramSp(p)?String(Math.round(kg*1000)):fmtKg(kg);
-const wTxt=(p,kg)=>`${wNum(p,kg)} ${wU(p)}`;
+const speciesLabel=p=>p.species==='egyeb'?(p.speciesName||'Egyéb állat'):SPECIES[p.species].n;
+const breedLabel=p=>{const b=p.breed&&p.breed!=='mix'?p.breed:'';return p.species==='egyeb'?b:b||'keverék vagy ismeretlen fajta'};
 const petName=p=>p.name||speciesLabel(p);
 const ageAtAdd=p=>ageMAt(p,D(p.createdAt));
 const seniorM=p=>(limitsFor(p)||[])[2];
@@ -408,33 +316,6 @@ const MS={
  egyeb:[
   {key:'vet1',t:'Első állatorvosi vizsgálat',d:'Olyan állatorvosnál, aki ért az adott fajhoz.',ageM:0,always:1,dueFn:p=>D(p.createdAt)},
   {key:'check',t:'Éves állatorvosi ellenőrzés',d:'Általános állapotfelmérés a fajhoz értő állatorvosnál.',every:12,fromM:12}]};
-/* új fajok: a felvétel napjától számolunk (AT_ADD), az éves teendők a felvétel után egy évvel esedékesek (YEARLY) */
-const AT_ADD=p=>D(p.createdAt),YEARLY=p=>ageAtAdd(p)+12;
-const EXVET={key:'vet1',t:'Első vizsgálat egzotikus állatorvosnál',d:'Általános állapotfelmérés és bélsárvizsgálat parazitákra, a fajhoz értő állatorvosnál.',ageM:0,always:1,dueFn:AT_ADD};
-const EXCHECK={key:'check',t:'Éves ellenőrzés egzotikus állatorvosnál',d:'Állapotfelmérés, testsúly, szükség esetén bélsárvizsgálat.',every:12,fromM:YEARLY};
-const UVB={key:'uvb',t:'UVB-fényforrás cseréje',d:'Az UVB-kibocsátás akkor is csökken, ha a lámpa még világít. A cserét a gyártó ajánlása szerint végezd, jellemzően 6–12 havonta.',every:12,fromM:YEARLY};
-const BIRDVET={key:'vet1',t:'Első vizsgálat madarakhoz értő állatorvosnál',d:'Általános állapotfelmérés, testsúly, a csőr és a karmok ellenőrzése.',ageM:0,always:1,dueFn:AT_ADD};
-const BIRDCHECK={key:'check',t:'Éves ellenőrzés madarakhoz értő állatorvosnál',d:'Állapotfelmérés, testsúly, a csőr és a karmok ellenőrzése.',every:12,fromM:YEARLY};
-const MOLT=(a,b,d)=>({key:'molt1',t:'Első vedlés',d,ageM:a,byM:b});
-const CYCLE={key:'cycle',t:'Akvárium beüzemelése (ciklusolás)',d:'A lakók betelepítése előtt a szűrőnek be kell járódnia: addigra az ammónia és a nitrit szintje nullára csökken. Vízteszttel ellenőrizd.',ageM:0,always:1,dueFn:AT_ADD};
-const SMALLVET=d=>({key:'vet1',t:'Első állatorvosi vizsgálat',d,ageM:2});
-Object.assign(MS,{
- csincsilla:[{key:'sep',t:'Ivarok szétválasztása',d:'Elválasztás után, kb. 8 hetes kor körül a fiatal hímeket külön kell választani a nőstényektől.',ageM:1.8,byM:2.5},
-  SMALLVET('Kisemlősökhöz értő állatorvosnál: általános állapot, fogak. Csincsillánál nincs rutinszerű védőoltás.'),CHECK,SENIOR],
- goreny:[SMALLVET('Görényekhez értő állatorvosnál: általános állapot, az oltási program megbeszélése.'),
-  {key:'vacc',t:'Védőoltások megbeszélése (szopornyica, veszettség)',d:'Vadászgörénynél a szopornyica elleni oltás általánosan ajánlott; a veszettség elleni oltás külföldi utazáshoz szükséges. A programot az állatorvos állítja össze.',ageM:2},
-  {key:'chip',t:'Mikrochip (ajánlott)',d:'Külföldi utazáshoz, állatútlevélhez szükséges.',ageM:3},
-  NEUTER(6,'Nőstény görénynél a tartós tüzelés veszélyes lehet: az ivartalanítás vagy a hormonimplantátum lehetőségét és idejét az állatorvossal beszéld meg.'),
-  {key:'vaccY',t:'Emlékeztető oltás',d:'A gyakoriság az oltóanyagtól függ; az állatorvos megmondja, mikor esedékes.',every:12,anchors:['vacc'],needsAnchor:true},CHECK,SENIOR],
- hullamos:[BIRDVET,MOLT(3,4,'Kb. 3–4 hónapos korban a fiatalkori tollazatot felnőtt tollazat váltja. Vedléskor több pihenésre és változatos étrendre van szüksége.'),BIRDCHECK],
- nimfa:[BIRDVET,MOLT(6,12,'Kb. 6–12 hónapos kor között zajlik az első vedlés; ekkorra alakul ki a felnőtt színezet.'),BIRDCHECK],
- kanari:[BIRDVET,MOLT(2,4,'A fiatal kanári első, részleges vedlése néhány hónapos korban zajlik. Vedléskor több pihenésre és változatos étrendre van szüksége.'),BIRDCHECK],
- pinty:[BIRDVET,MOLT(1.5,3,'A fiatal díszpintyek néhány hónapos korukra színeződnek ki felnőtt tollazatba.'),BIRDCHECK],
- leopardgekko:[EXVET,EXCHECK],agama:[EXVET,UVB,EXCHECK],kiralypiton:[EXVET,EXCHECK],kukoricasiklo:[EXVET,EXCHECK],
- gorogteknos:[EXVET,UVB,EXCHECK],mocsariteknos:[EXVET,UVB,EXCHECK],diszteknos:[EXVET,UVB,EXCHECK],
- axolotl:[CYCLE,EXVET],levelibeka:[EXVET,EXCHECK],unka:[EXVET,EXCHECK],
- edesvizi:[CYCLE],harcoshal:[CYCLE]});
-const msFor=p=>MS[p.species]||MS.egyeb;
 
 const TIPS={
  kutya:{kolyok:['A szocializáció fő időszaka kb. 3–14 hetes kor: mutass neki sokféle embert, hangot és helyzetet, mindig jó élménnyel.','Kölyöktápot kapjon, a napi adagot 3–4 részre osztva.','Szobatisztaság: evés, alvás és játék után rögtön vidd ki, és dicsérd meg, ha kint végzi a dolgát.'],
@@ -457,52 +338,10 @@ const TIPS={
   novendek:['A szíriai aranyhörcsögöt mindig egyedül tartsd.','Éjszaka aktív: nappal hagyd pihenni, este foglalkozz vele.'],
   felnott:['Éjszaka aktív: nappal hagyd pihenni, este foglalkozz vele.','Mély alom kell az ásáshoz és elég nagy futókerék, amelyben nem homorít a háta.','A szíriai aranyhörcsögöt mindig egyedül tartsd.'],
   idos:['Tedd könnyen elérhetővé az itatót és az eleséget, a mászókat alacsonyítsd le.','Figyeld a súlyát és az étvágyát; változásnál kérj állatorvosi tanácsot.']}};
-/* új fajok: all = minden életszakaszban érvényes, mellette szakaszfüggő kiegészítés */
-const BIRD_SICK='A felborzolt toll, az aluszékonyság vagy az étvágytalanság madárnál sürgős jel: mielőbb vidd állatorvoshoz.';
-const BIRD_FOOD='A magkeverék mellé adj friss zöldeket és kalciumforrást (pl. szépiacsontot). Avokádót soha ne kapjon.';
-const PREY='A zsákmányállat ne legyen vastagabb a kígyó legvastagabb pontjánál.';
-Object.assign(TIPS,{
- csincsilla:{kolyok:['Lassan szoktasd kézhez: ülj a ketrec mellé, és kínálj falatot a tenyeredből.'],
-  all:['Hűvös, száraz helyen tartsd: a meleget és a párát rosszul tűri.','Hetente többször kínálj homokfürdőt csincsillahomokkal; vízzel ne fürdesd.','Az étrend alapja a széna és a csincsillatáp; cukros, zsíros csemegét ne adj.'],
-  idos:['Mérd rendszeresen a súlyát, és figyeld a fogait: a fogyás vagy a nyáladzás fogproblémát jelezhet.']},
- goreny:{kolyok:['Kölyökkorban tanítsd meg következetesen, büntetés nélkül, hogy a kézbe harapás nem játék.','Alomtálcára szoktatható: tedd a tálcát abba a sarokba, amelyet magától választ.'],
-  all:['Húsevő: magas fehérjetartalmú görénytápot kapjon; gyümölcs, zöldség és tejtermék nem való neki.','Naponta több óra felügyelt, ketrecen kívüli mozgásra és játékra van szüksége.','Társas állat: párban vagy csoportban érzi jól magát.'],
-  idos:['Szőrhullás, fogyás vagy levertség esetén kérj állatorvosi vizsgálatot: idős görénynél gyakoriak a hormonális betegségek.']},
- hullamos:{kolyok:['Az első napokban hagyd megszokni az új helyét, csak utána kezdd kézhez szoktatni.','A fiatal madár hamar megtanul kézre szállni: gyakorolj naponta néhány percet, jutalomfalattal.'],
-  all:['Társas madár: párban vagy csapatban érzi jól magát.','Naponta repülhessen szabadon biztonságos szobában: zárt ablak, kikapcsolt tűzhely, felügyelet.',BIRD_FOOD],idos:[BIRD_SICK]},
- nimfa:{kolyok:['Az első napokban hagyd megszokni az új helyét; a kézhez szoktatást rövid, nyugodt alkalmakkal kezdd.'],
-  all:['Társas madár: sok foglalkozást vagy madártársat igényel.','Naponta repülhessen szabadon biztonságos szobában: zárt ablak, kikapcsolt tűzhely, felügyelet.','Sok tollport termel: jót tesz neki a rendszeres permetezés vagy a fürdési lehetőség.',BIRD_FOOD],idos:[BIRD_SICK]},
- kanari:{all:['Tágas, vízszintesen hosszú kalitka kell neki, hogy repülhessen.','Kínálj rendszeresen fürdővizet: a kanári szívesen fürdik.','Huzattól, konyhai gőztől és füsttől védett helyen tartsd.',BIRD_FOOD],idos:[BIRD_SICK]},
- pinty:{all:['Társas madár: legalább párban tartsd.','Tágas, vízszintesen hosszú kalitka vagy röpde kell neki a repüléshez.','Kínálj rendszeresen fürdővizet, és legyen elérhető kalciumforrás (pl. szépiacsont).','Kézhez ritkán szelídül: megfigyelni való madár, ne erőltesd a kézbevételt.'],idos:[BIRD_SICK]},
- leopardgekko:{kolyok:['A fiatal gekkó gyakrabban eszik, mint a felnőtt; az eleségrovar ne legyen szélesebb, mint a gekkó két szeme közötti távolság.'],
-  all:['Meleg és hűvös oldal is kell a terráriumban, hogy maga szabályozhassa a testhőjét. Hőmérővel ellenőrizd.','Vedléshez párás búvóhelyre van szüksége; vedlés után nézd meg, nem maradt-e bőr a lábujjain.','Az eleségrovarokat kalciumporral szórd be; a vitaminozás rendjét egzotikus állatorvossal egyeztesd.','A farkát ne fogd meg: veszély esetén ledobhatja.'],
-  idos:['Mérd rendszeresen a súlyát: a farok vékonyodása fogyást jelez.']},
- agama:{kolyok:['A fiatal agáma étrendjében több a rovar; ahogy nő, fokozatosan nő a zöldek aránya.'],
-  all:['Erős UVB-fényre és meleg sütkérezőhelyre van szüksége; a hőmérsékletet hőmérővel ellenőrizd.','Felnőttként az étrendje nagyobb része zöld levél és zöldség, kisebb része rovar.','Az eleséget kalciumporral szórd be; a vitaminozás rendjét egzotikus állatorvossal egyeztesd.','Egyedül tartsd: a szakállas agáma nem társas állat.'],
-  idos:['Idős korban lassabb, és kevesebbet eszik; a tartós étvágytalanságot vizsgáltasd ki.']},
- kiralypiton:{kolyok:[PREY],
-  all:['Szűk, sötét búvóhely kell a meleg és a hűvös oldalon is: enélkül stresszes lesz, és nem eszik.','Biztonságosan zárható terráriumban tartsd, mert ügyesen megszökik.','Előre leölt (fagyasztott, felengedett) zsákmányt adj: az élő rágcsáló megsebesítheti. Etetés után 1–2 napig ne vedd kézbe.','Vedlés előtt a szeme elkékül, és gyakran nem eszik: ez természetes. Ilyenkor emeld a páratartalmat.']},
- kukoricasiklo:{kolyok:[PREY],
-  all:['Biztonságosan zárható terráriumban tartsd: a kukoricasikló kis résen is kifér.','Meleg és hűvös oldal kell neki, mindkettőn búvóhellyel.','Előre leölt (fagyasztott, felengedett) zsákmányt adj. Etetés után 1–2 napig ne vedd kézbe.','Vedlés előtt a szeme elkékül; ha a bőr darabokban jön le, kevés a pára.']},
- gorogteknos:{kolyok:['A fiatal teknős páncélja még puha: UVB-fény és kalciumban gazdag étrend kell az egészséges növekedéséhez.'],
-  all:['Növényevő: vadon termő zöldek (pl. pitypang, útifű) és levelek legyenek az étrend alapja; gyümölcsöt csak ritkán, húst ne adj.','Napfény vagy UVB-lámpa nélkül nem tudja hasznosítani a kalciumot.','Nyáron a legjobb neki a szökésbiztos kerti kifutó, árnyékkal és búvóhellyel.','A téli pihenő (hibernáció) előkészítését előre egyeztesd egzotikus állatorvossal: beteg vagy sovány teknőst teleltetni veszélyes.']},
- mocsariteknos:{all:['Vízi teknős: nagy úszótér, szűrt víz és száraz napozóhely kell neki UVB-fénnyel.','Főleg állati eredetű táplálékot eszik, például halat, gilisztát, vízi rovarokat.','A vizet tartsd tisztán: erős szűrő és rendszeres részleges vízcsere kell.']},
- diszteknos:{kolyok:['A fiatal ékszerteknős főleg állati eredetű táplálékot eszik; ahogy nő, egyre több növényt adj.'],
-  all:['Nagy úszótér, erős szűrő és száraz napozóhely kell neki meleg- és UVB-lámpával.','Az ékszerteknősök felnőttként nagyra nőnek, és évtizedekig élnek: a medencét ehhez méretezd.','Szabadon engedni tilos és káros: kárt tesz a hazai élővilágban.','A vizet tartsd tisztán: rendszeres részleges vízcsere kell.']},
- axolotl:{all:['Hűvös vizet igényel: a tartósan meleg víz megbetegíti. Hőmérővel ellenőrizd, nyáron hűtsd.','Gyenge áramlású szűrő és beüzemelt (ciklusolt) akvárium kell neki; a vízértékeket teszttel ellenőrizd.','Az aljzat finom homok vagy csupasz üveg legyen: a kavicsot lenyelheti.','Kézbe ne vedd: a bőre és a kopoltyúja nagyon sérülékeny.','Húsevő: gilisztát vagy axolotl-pelletet adj; halakkal ne tartsd együtt.']},
- levelibeka:{all:['Magas, jól szellőző, párás terrárium kell neki mászóágakkal és növényekkel.','Rovarevő: az eleségrovarokat kalcium- és vitaminporral szórd be.','A bőre érzékeny: csak ha muszáj, tiszta, nedves kézzel vagy kesztyűvel fogd meg.','Klórmentesített vizet használj a permetezéshez és az itatótálba.']},
- unka:{all:['Félig vízi, félig szárazföldi terrárium kell neki, sekély vízzel és kimászóval.','A bőrváladéka irritáló: fogás után moss kezet, és ne nyúlj a szemedhez.','Rovarevő: az eleségrovarokat kalcium- és vitaminporral szórd be.','Klórmentesített vizet használj, és tartsd tisztán a vízrészt.']},
- edesvizi:{all:['Halat csak beüzemelt (ciklusolt) akváriumba telepíts: a nitrit már kis mennyiségben is mérgező.','Hetente cserélj részlegesen vizet, klórmentesített, hasonló hőmérsékletű vízzel.','Annyit etess, amennyit pár perc alatt megesznek: a túletetés rontja a vízminőséget.','A szűrőanyagot akváriumvízben öblítsd, ne csapvízben: így megmaradnak a hasznos baktériumok.']},
- harcoshal:{all:['A hímeket külön tartsd: egymással verekednek.','Fűtött, szűrt, lefedett akvárium kell neki; a pohár és a gömbakvárium nem megfelelő.','Gyenge áramlást, növényeket és a felszín közelében pihenőhelyet igényel.','Naponta kis adagot etess; hetente cserélj részlegesen vizet, klórmentesített vízzel.']}});
-/* halfajonként egy-egy kiemelt tudnivaló */
-const VTIP={Aranyhal:'Az aranyhal nagyra nő, és sok szennyezést termel: tágas akvárium és erős szűrő kell neki; fűtést általában nem igényel.',Neonhal:'Rajhal: legalább 6–10 példányt tarts együtt.',Guppi:'Elevenszülő és szapora: tervezd meg, mi lesz az ivadékokkal.',
-  'Páncélosharcsa':'Csapatban él, és a talajon keresgél: finom, lekerekített aljzat és legalább 5–6 társ kell neki.','Díszsügér':'Sok díszsügér territoriális: búvóhelyekkel tagolt akvárium és gondosan választott társak kellenek.','Szivárványhal':'Mozgékony rajhal: hosszú akvárium és legalább 6 társ kell neki.'};
-function tipsFor(p,st){const T=TIPS[p.species];if(!T)return TIPS_OTHER;
-  const a=[...(p.species==='edesvizi'&&VTIP[p.breed]?[VTIP[p.breed]]:[]),...((st&&T[st])||[]),...(T.all||[])];return a.length?a.slice(0,5):TIPS_OTHER}
 const TIPS_OTHER=['Keress olyan állatorvost, aki ért ehhez a fajhoz.','A faj igényeiről (hely, hőmérséklet, étrend) kérdezd a Tanácsadót.'];
-const EVCAT={vet:[ic('vet'),'Állatorvos'],vacc:[ic('vacc'),'Oltás'],care:[ic('care'),'Ápolás'],shed:[ic('shed'),'Vedlés'],memo:[ic('memo'),'Emlék'],other:[ic('other'),'Egyéb']};
-const DISC='A PetLife nem helyettesíti az állatorvosi vizsgálatot.';
-const BALL='<span class="ballmark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#F2B33D" stroke="#14201C" stroke-width="2.5"/></svg></span>';
+const EVCAT={vet:['🩺','Állatorvos'],vacc:['💉','Oltás'],care:['✂️','Ápolás'],memo:['📸','Emlék'],other:['📌','Egyéb']};
+const DISC='A PetVia nem helyettesíti az állatorvosi vizsgálatot.';
+const BALL='<span class="ballmark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#D9F25C" stroke="#14352D" stroke-width="2"/><path d="M5 5c4 3 4 11 0 14M19 5c-4 3-4 11 0 14" fill="none" stroke="#14352D" stroke-width="1.6"/></svg></span>';
 
 const FOOD={
  kutya:{freq:{kolyok:'Naponta 3–4 alkalommal, 4 hónapos kor után 3 alkalommal.',novendek:'Naponta 2–3 alkalommal.',felnott:'Naponta 2 alkalommal, nagyjából azonos időben.',idos:'Naponta 2 vagy több kisebb adagban.'},meals:{kolyok:3,novendek:2,felnott:2,idos:2},
@@ -569,15 +408,7 @@ const VIT={kutya:'Teljes értékű táp mellett az egészséges kutyának által
  nyul:'Jó széna, friss zöldek és minőségi táp mellett a nyúlnak általában nincs szüksége vitaminkiegészítésre. Kiegészítőt csak állatorvosi javaslatra adj.',
  tengerimalac:'A tengerimalac szervezete nem állít elő C-vitamint, ezért naponta szüksége van rá a táplálékból: C-vitaminban gazdag zöldségből és tengerimalactápból. Külön C-vitamin-készítményről az állatorvossal egyeztess.',
  horcsog:'Változatos, jó minőségű eleség mellett a hörcsögnek általában nincs szüksége külön vitaminra.',
- egyeb:'A faj vitaminigényéről a fajhoz értő állatorvos tud biztosat mondani.',
- csincsilla:'Jó minőségű széna és csincsillatáp mellett általában nincs szükség külön vitaminra. Kiegészítőt csak állatorvosi javaslatra adj.',
- goreny:'Teljes értékű görénytáp mellett az egészséges görénynek általában nincs szüksége külön vitaminra. Kiegészítőt csak állatorvosi javaslatra adj.'};
-const VITG={madar:'Változatos étrend mellett az egészséges díszmadárnak általában nincs szüksége külön vitaminra. Kalciumforrás (pl. szépiacsont) legyen elérhető. Vitaminkészítményt csak madarakhoz értő állatorvos javaslatára adj, mert a túladagolás ártalmas.',
- hullo:'A rovarevő és a növényevő hüllőknek jellemzően kalcium- és vitaminpótlás kell, az egész zsákmányállattal etetett kígyóknak általában nem. A készítményt, a gyakoriságot és az UVB-világítás szükségességét a fajhoz értő állatorvossal egyeztesd: a túladagolás is ártalmas.',
- keteltu:'A rovarevő kétéltűek eleségét kalcium- és vitaminporral szokás beszórni; az axolotlnál a változatos, teljes értékű eleség az alap. A készítményt és a gyakoriságot a fajhoz értő állatorvossal egyeztesd.'};
-const vitFor=p=>VIT[p.species]||VITG[grp(p)]||VIT.egyeb;
-/* az Egészség lap részei fajcsoportonként: halnál nincs oltás, parazitakezelés és súlymérés; madárnál, hüllőnél és kétéltűnél nincs rutinoltás és rutin parazitakezelés */
-const htFor=p=>{const g=grp(p);return Object.keys(HT).filter(k=>g==='hal'?k==='sym'||k==='vet':!['madar','hullo','keteltu'].includes(g)||(k!=='vacc'&&k!=='par'))};
+ egyeb:'A faj vitaminigényéről a fajhoz értő állatorvos tud biztosat mondani.'};
 const SMALL_YOUNG_GP=[['Megérkezés','Az első napokban hagyd megnyugodni, búvóhellyel. Kézből adott zölddel barátkozz vele.'],['Hely','Nagy, sík alapterület kell neki, nem emeletek. A rácsos aljzat nem való a lábának.']];
 const SMALL_YOUNG_H=[['Megérkezés','Az első napokban ne vedd kézbe, csak etesd és beszélj hozzá. Utána tenyérből kínálj falatot.'],['Hely','Nagy alapterületű ketrec vagy terrárium kell, vastag alommal az ásáshoz és zárt futófelületű kerékkel.']];
 const CARE={
@@ -674,8 +505,9 @@ const PLAY={
   games:['Szétszórt eleség keresése','Ásás vastag alomban','Alagút, papírguriga','Homokfürdő'],engage:'Este, amikor magától felébred, kínálj falatot a tenyeredből, és hagyd, hogy rád másszon.'}};
 const CT={guide:'Útmutató',home:'Otthon',les:'Leckék',play:'Játék és mozgás',prob:'Problémák'};
 const TOPIC={path:'az életút, a mérföldkövek és az oltások',health:'az egészség, a tünetek és a megelőzés',food:'a táplálkozás és a tápválasztás',care:'a tartás, az otthoni felszerelés, a tanítás, a játék és a mozgás',prod:'a termékek és a felszerelés',vets:'az állatorvosi vizsgálatok és az állatorvos-választás'};
-const TOPIC_HU={home:'Általános',hub:'Gondozás',path:'Életút',health:'Egészség',food:'Táplálkozás',care:'Tartás és nevelés',prod:'Termékek',vets:'Állatorvosok',more:'Általános'};
+const TOPIC_HU={home:'Általános',path:'Életút',health:'Egészség',food:'Táplálkozás',care:'Tartás és nevelés',prod:'Termékek',vets:'Állatorvosok',more:'Általános'};
 const TOPIC_Q={path:['Milyen oltások és vizsgálatok várhatók a következő évben?','Mire készüljek a következő életszakaszban?'],health:['Milyen jelekre figyeljek ebben a korban?','Milyen vitamin vagy kiegészítő jöhet szóba?'],food:['Milyen tápot válasszak neki?','Hányszor és mennyit etessem?'],care:['Mivel foglaljam le napközben?','Mit tanítsak neki most?'],prod:['Milyen felszerelés kell neki most?','Milyen játékot ajánlasz?'],vets:['Milyen gyakran vigyem állatorvoshoz?','Mit kérdezzek az első vizsgálaton?']};
+const SHORT='<div class="short"><button class="btn ghost" data-act="tab" data-tab="food">Táplálkozás</button><button class="btn ghost" data-act="tab" data-tab="care">Tartás és nevelés</button><button class="btn ghost" data-act="tab" data-tab="prod">Termékek</button><button class="btn ghost" data-act="tab" data-tab="vets">Állatorvosok</button></div>';
 
 /* ---------- állapot és mentés ---------- */
 const LS='petlife.v1';
@@ -706,7 +538,8 @@ const cdoc=k=>{const uid=cloud.uid,q=()=>cloud.sb.from(SB_TABLE);return{
   delete:async()=>{un(await q().delete().eq('user_id',uid).eq('key',k))}}};
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
 function save(...keys){S.updatedAt=Date.now();S.pend=true;saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200)}
-const soft=()=>{if(!$('#sheet').hidden||tab==='ai')renderTop();else render()};
+/* a Tanácsadó fülön csak akkor rajzolunk újra, ha épp nem ír és nem vár válaszra */
+const soft=()=>{if(!$('#sheet').hidden||(tab==='ai'&&(chatBusy||document.activeElement===$('#chatIn'))))renderTop();else render()};
 async function flush(){
   if(!cloud.ok||cloud.busy||!cloud.dirty.size)return;
   cloud.busy=true;const keys=[...cloud.dirty],uid=cloud.uid,was=cloud.state;cloud.dirty.clear();
@@ -789,7 +622,7 @@ async function initCloud(){
 }
 function applyTheme(){const t=S.settings.theme,r=document.documentElement;
   if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else if(HOST_THEME)r.setAttribute('data-theme',HOST_THEME);else r.removeAttribute('data-theme');
-  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=getComputedStyle(r).getPropertyValue('--bg').trim()||'#F2F6F1'}
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=getComputedStyle(r).getPropertyValue('--bg').trim()||'#F1F6EF'}
 const pet=()=>S.pets.find(p=>p.id===S.settings.activePetId)||S.pets[0]||null;
 /* egy állat bejegyzései típus szerint, a legújabb elöl: w = súly, sym = tünet, par = parazitakezelés, own = saját esemény */
 const recs=(p,kind)=>S.events.filter(e=>e.petId===p.id&&e.kind===kind).sort((a,c)=>a.date<c.date?1:a.date>c.date?-1:0);
@@ -800,7 +633,7 @@ function syncWeight(p){const l=recs(p,'w');if(l[0])p.weight=l[0].kg}
 function buildItems(p){
   const b=D(p.birth),created=D(p.createdAt),done={},items=[];
   S.events.filter(e=>e.petId===p.id&&e.kind==='ms').sort((a,c)=>a.date<c.date?-1:1).forEach(e=>(done[e.key]=done[e.key]||[]).push(e));
-  for(const m of msFor(p)){
+  for(const m of MS[p.species]||MS.egyeb){
     if(m.every){
       (done[m.key]||[]).forEach(e=>items.push({m,done:e,date:D(e.date)}));
       const anchors=[m.key,...(m.anchors||[])].flatMap(k=>done[k]||[]).map(e=>D(e.date)).sort((a,c)=>c-a);
@@ -834,36 +667,37 @@ function whenText(i){
 const tags=m=>`<span class="tag">tájékoztató</span>${m.mand?'<span class="tag must">jogszabály írja elő</span>':''}`;
 
 /* ---------- nézetek ---------- */
-const ava=(p,big)=>p.photo?`<img class="ava${big?' big':''}" src="${p.photo}" alt="">`:`<span class="ava${big?' big':''}" aria-hidden="true">${ic(GROUPS[grp(p)].i)}</span>`;
+const ava=(p,big)=>p.photo?`<img class="ava${big?' big':''}" src="${p.photo}" alt="">`:`<span class="ava${big?' big':''}" aria-hidden="true">${SPECIES[p.species].e}</span>`;
 function trail(p){
   const L=limitsFor(p);if(!L)return'<p class="next">Ennél a fajnál nem számolunk életszakaszt, csak az életkort követjük. A fajra szabott tanácsokat a Tanácsadó adja.</p>';
   const st=stageOf(p),i=STAGES.indexOf(st),m=ageM(p),lo=[0,...L][i],hi=i<3?L[i]:L[2]*1.5,f=Math.min(.9,Math.max(.08,(m-lo)/(hi-lo)));
   let next='Idős korban a kényelem és a rendszeres ellenőrzés a legfontosabb.';
   if(i<3){const d=Math.round((addM(D(p.birth),L[i])-today())/DAY);next=`Kb. ${span(Math.max(d,1))} múlva lép ${STAGE_INTO[STAGES[i+1]]}.`}
-  return`<div class="trail" role="img" aria-label="Életszakasz: ${stHU(p,st)}"><div class="trail-bar">${STAGES.map((s,k)=>`<span class="seg ${k<i?'past':k===i?'cur':''}"${k===i?` style="--f:${Math.round(f*100)}%"`:''}></span>`).join('')}<span style="position:absolute;left:${((i+f)/4*100).toFixed(1)}%;top:50%">${BALL}</span></div>
-  <div class="trail-lab">${STAGES.map((s,k)=>`<span class="${k===i?'on':''}">${stHU(p,s)}</span>`).join('')}</div></div>
+  return`<div class="trail" role="img" aria-label="Életszakasz: ${STAGE_HU[st]}"><div class="trail-bar">${STAGES.map((s,k)=>`<span class="seg ${k<i?'past':k===i?'cur':''}"${k===i?` style="--f:${Math.round(f*100)}%"`:''}></span>`).join('')}<span style="position:absolute;left:${((i+f)/4*100).toFixed(1)}%;top:50%">${BALL}</span></div>
+  <div class="trail-lab">${STAGES.map((s,k)=>`<span class="${k===i?'on':''}">${STAGE_HU[s]}</span>`).join('')}</div></div>
   <p class="next">${next} A szakaszhatárok tájékoztató jellegűek.</p>`}
-function vEmpty(){return`<div class="empty"><div class="big">${ic('paw')}</div><h1>Kövesd végig a kedvenced életét</h1>
-  <p class="sub">Add meg a faját, fajtáját és korát, és a PetLife mindig az aktuális életszakaszához illő teendőket és tippeket mutatja.</p>
+function vEmpty(){return`<div class="empty"><div class="big">🐾</div><h1>Kövesd végig a kedvenced életét</h1>
+  <p class="sub">Add meg a faját, fajtáját és korát, és a PetVia mindig az aktuális életszakaszához illő teendőket és tippeket mutatja.</p>
   <p><button class="btn" data-act="petNew">Állat felvétele</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
 function vHome(p){
   const st=stageOf(p),items=buildItems(p),due=dueList(p,items),t=today();
   const soon=S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&D(e.date)>=t&&D(e.date)-t<=30*DAY).sort((a,c)=>a.date<c.date?-1:1);
-  const tips=tipsFor(p,st),size=sizeOf(p),par=parDue(p).filter(x=>x.date-t<=30*DAY);
+  const tips=st?TIPS[p.species][st]:TIPS_OTHER,size=sizeOf(p),par=parDue(p).filter(x=>x.date-t<=30*DAY);
   const sex={him:'hím',nosteny:'nőstény'}[p.sex];
-  return`${p.lastStage&&st&&p.lastStage!==st?`<div class="banner"><div style="flex:1">${esc(petName(p))} ${STAGE_INTO[st]||'új szakaszba'} lépett. A teendők és a tippek mostantól ehhez igazodnak.</div><button class="btn small" data-act="stageAck">Rendben</button></div>`:''}
+  return`${p.lastStage&&st&&p.lastStage!==st?`<div class="banner"><div style="flex:1">🎉 ${esc(petName(p))} ${STAGE_INTO[st]||'új szakaszba'} lépett. A teendők és a tippek mostantól ehhez igazodnak.</div><button class="btn small" data-act="stageAck">Rendben</button></div>`:''}
   <section class="hero"><div class="who">${ava(p,1)}<div style="min-width:0"><h1>${esc(petName(p))}</h1>
-   <div class="meta">${esc([p.name?speciesLabel(p).toLowerCase():'',breedLabel(p),size?SIZE_HU[size]:'',sex,p.count?p.count+' db':'',p.tankL?fmtKg(p.tankL)+' literes akvárium':''].filter(Boolean).join(', '))}</div>
-   <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+stHU(p,st).toLowerCase():''}</div></div>
-   <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">${ic('pen')}</button></div>${trail(p)}</section>${flagHtml(p.species)}
+   <div class="meta">${esc([p.name?speciesLabel(p).toLowerCase():'',breedLabel(p),size?SIZE_HU[size]:'',sex].filter(Boolean).join(', '))}</div>
+   <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+STAGE_HU[st].toLowerCase():''}</div></div>
+   <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">✎</button></div>${trail(p)}</section>
   <h2>Teendők és emlékeztetők</h2>
   ${due.length||soon.length||par.length?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}
    ${par.map(x=>`<li class="${x.date<t?'late':''}"><div><b>${PAR_SHORT[x.t]} esedékes</b><span class="when">${fmtDate(x.date)}${x.date<t?', már elmúlt':''}</span></div><button class="btn small" data-act="parNew" data-t="${x.t}">Rögzítés</button></li>`).join('')}
    ${soon.map(e=>`<li><div><b>${EVCAT[e.cat||'other'][0]} ${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}</span></div><button class="btn ghost small" data-act="evEdit" data-id="${e.id}">Megnyitás</button></li>`).join('')}</ul>`
    :'<p class="sub">A következő 30 napban nincs esedékes teendő. A teljes tervet az Életút fülön látod.</p>'}
-  <h2>Tippek ${st?stHU(p,st).toLowerCase()+' korra':TIPS[p.species]?'a tartáshoz':'a kezdéshez'}</h2>
+  <h2>Tippek ${st?STAGE_HU[st].toLowerCase()+' korra':'a kezdéshez'}</h2>
   <ul class="tips">${tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
-  <button class="btn ghost" style="margin-top:6px" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button>`}
+  ${SHORT}
+  <button class="btn ghost" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button>`}
 function vPath(p){
   const b=D(p.birth),L=limitsFor(p),arr=buildItems(p);
   S.events.filter(e=>e.petId===p.id&&e.kind==='own').forEach(e=>arr.push({own:e,date:D(e.date)}));
@@ -872,7 +706,7 @@ function vPath(p){
   const ord=x=>x.birth?0:x.stage?1:x.now?3:x.pending?4:2;
   arr.sort((a,c)=>a.date-c.date||ord(a)-ord(c));
   const row=x=>{
-    if(x.birth)return`<li class="stage">${['madar','hullo'].includes(grp(p))?(p.est?'Becsült kelés':'Kelés'):p.est?'Becsült születés':'Születés'}<small>${fmtDate(x.date)}</small></li>`;
+    if(x.birth)return`<li class="stage">${p.est?'Becsült születés':'Születés'}<small>${fmtDate(x.date)}</small></li>`;
     if(x.stage)return`<li class="stage">${STAGE_START[x.stage]}<small>${x.date>today()?'várhatóan ':''}${fmtDate(x.date)}</small></li>`;
     if(x.now)return`<li class="today" id="tlToday">${BALL}Ma</li>`;
     if(x.own){const e=x.own,c=EVCAT[e.cat||'other'];return`<li class="it own"><div class="card"><b>${c[0]} ${esc(e.title)}</b><span class="when">${fmtDate(x.date)}, ${c[1].toLowerCase()}</span>${e.note?`<p>${esc(e.note)}</p>`:''}<div class="acts"><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></div></div></li>`}
@@ -885,22 +719,22 @@ function vPath(p){
   <p class="note">A mérföldkövek tájékoztató jellegűek, a magyarországi előírások és az általános ajánlások alapján. ${DISC}</p>`}
 let hTab='vacc';
 const delBtn=id=>`<button class="btn text" data-act="recDel" data-id="${id}">Törlés</button>`;
-function chart(l,p){ /* l: régi → új */
+function chart(l){ /* l: régi → új */
   if(l.length<2)return'<p class="sub" style="margin:10px 0 0">Legalább két mérés kell a grafikonhoz.</p>';
   l=l.slice(-24);const W=320,H=150,px=40,pr=10,pt=12,pb=24,xs=l.map(e=>+D(e.date)),ys=l.map(e=>e.kg),hi=Math.max(...ys),lo=Math.min(...ys);
   const x0=xs[0],x1=xs[xs.length-1]===x0?x0+DAY:xs[xs.length-1],pad=(hi-lo)*.15||hi*.05,y0=lo-pad,y1=hi+pad;
   const X=x=>px+(x-x0)/(x1-x0)*(W-px-pr),Y=y=>pt+(1-(y-y0)/(y1-y0))*(H-pt-pb),pts=l.map((e,k)=>[X(xs[k]).toFixed(1),Y(e.kg).toFixed(1)]);
-  const grid=v=>`<line x1="${px}" x2="${W-pr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)"/><text x="${px-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${wNum(p,v)}</text>`;
-  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Súlygörbe: ${l.length} mérés, ${wTxt(p,ys[0])}-tól ${wTxt(p,ys[ys.length-1])}-ig" font-size="11" fill="var(--muted)">
+  const grid=v=>`<line x1="${px}" x2="${W-pr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)"/><text x="${px-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${fmtKg(v)}</text>`;
+  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Súlygörbe: ${l.length} mérés, ${fmtKg(ys[0])} kg-tól ${fmtKg(ys[ys.length-1])} kg-ig" font-size="11" fill="var(--muted)">
   ${grid(hi)}${hi!==lo?grid(lo):''}<polyline points="${pts.map(q=>q.join(',')).join(' ')}" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
   ${pts.map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="3.5" fill="var(--card)" stroke="var(--brand)" stroke-width="2"/>`).join('')}
   <text x="${px}" y="${H-6}">${fmtDate(D(l[0].date))}</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${fmtDate(D(l[l.length-1].date))}</text></svg>`}
 function vHealth(p){
-  const t=today(),tabs=htFor(p);let b='';if(!tabs.includes(hTab))hTab=tabs[0];
+  const t=today();let b='';
   if(hTab==='vacc'){
     const it=buildItems(p).filter(i=>VACC.has(i.m.key)).sort((a,c)=>a.date-c.date),pend=it.filter(i=>i.pending);
     const got=[...it.filter(i=>i.done).map(i=>({d:i.done.date,t:i.m.t,n:i.done.note,ms:i.done.id})),...recs(p,'own').filter(e=>e.cat==='vacc').map(e=>({d:e.date,t:e.title,n:e.note,ev:e.id}))].sort((a,c)=>a.d<c.d?1:-1);
-    const none={csincsilla:'Csincsillánál nincs rutinszerű védőoltás.',tengerimalac:'Tengerimalacnál nincs rutinszerű védőoltás.',horcsog:'Hörcsögnél nincs rutinszerű védőoltás.',egyeb:'Az oltási igényt a fajhoz értő állatorvos határozza meg.'}[p.species]||'Most nincs várható oltás a tervben.';
+    const none={tengerimalac:'Tengerimalacnál nincs rutinszerű védőoltás.',horcsog:'Hörcsögnél nincs rutinszerű védőoltás.',egyeb:'Az oltási igényt a fajhoz értő állatorvos határozza meg.'}[p.species]||'Most nincs várható oltás a tervben.';
     b=`<h2>Esedékes és várható</h2>${pend.length?`<ul class="tasks">${pend.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${statusOf(i)==='missed'?'Ha megvolt, jelöld be.':whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}</ul>`:`<p class="sub">${none}</p>`}
     <h2>Beadott oltások</h2>${got.length?`<ul class="tasks">${got.map(g=>`<li><div><b>${esc(g.t)}</b><span class="when">${fmtDate(D(g.d))}${g.n?', '+esc(g.n):''}</span></div>${g.ms?`<button class="btn text" data-act="untick" data-id="${g.ms}">Visszavonás</button>`:`<button class="btn text" data-act="evEdit" data-id="${g.ev}">Szerkesztés</button>`}</li>`).join('')}</ul>`:'<p class="sub">Még nincs rögzített oltás.</p>'}
     <p style="margin-top:12px"><button class="btn ghost" data-act="evNew" data-cat="vacc">Egyéb oltás rögzítése</button></p>`}
@@ -912,11 +746,11 @@ function vHealth(p){
       <button class="btn small" data-act="parNew" data-t="${k}">Kezelés rögzítése</button>
       ${l.length?`<ul class="list" style="margin-top:8px">${l.slice(0,6).map(e=>`<li><div style="flex:1;min-width:0">${fmtDate(D(e.date))}<span class="when">${esc(e.product||'készítmény nincs megadva')}</span></div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}</div>`}).join('')+`<p class="sub" style="margin-top:14px">${info}</p>`}
   if(hTab==='w'){
-    const l=recs(p,'w'),last=l[0],prev=l[1],d=last&&prev?Math.round((last.kg-prev.kg)*1e4)/1e4:null;
-    const diff=d===null?'':d?`, ${d>0?'+':'−'}${wTxt(p,Math.abs(d))} az előző méréshez képest`:', változatlan';
-    b=`<div class="card" style="margin-top:14px">${last?`<div class="num">${wTxt(p,last.kg)}</div><span class="when">${fmtDate(D(last.date))}${diff}</span>${chart([...l].reverse(),p)}`:'<p class="sub" style="margin:0">Még nincs rögzített mérés.</p>'}</div>
+    const l=recs(p,'w'),last=l[0],prev=l[1],d=last&&prev?Math.round((last.kg-prev.kg)*100)/100:null;
+    const diff=d===null?'':d?`, ${d>0?'+':'−'}${fmtKg(Math.abs(d))} kg az előző méréshez képest`:', változatlan';
+    b=`<div class="card" style="margin-top:14px">${last?`<div class="num">${fmtKg(last.kg)} kg</div><span class="when">${fmtDate(D(last.date))}${diff}</span>${chart([...l].reverse())}`:'<p class="sub" style="margin:0">Még nincs rögzített mérés.</p>'}</div>
     <p style="margin-top:12px"><button class="btn" data-act="wNew">Súly rögzítése</button></p>
-    ${l.length?`<h2>Mérések</h2><ul class="list">${l.slice(0,12).map(e=>`<li><div style="flex:1"><b>${wTxt(p,e.kg)}</b><span class="when">${fmtDate(D(e.date))}</span></div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}
+    ${l.length?`<h2>Mérések</h2><ul class="list">${l.slice(0,12).map(e=>`<li><div style="flex:1"><b>${fmtKg(e.kg)} kg</b><span class="when">${fmtDate(D(e.date))}</span></div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}
     <p class="sub" style="margin-top:14px">Hirtelen fogyás vagy hízás esetén kérj állatorvosi tanácsot.</p>`}
   if(hTab==='sym'){
     const l=recs(p,'sym');
@@ -926,14 +760,14 @@ function vHealth(p){
       :e.ai?`<details class="acc" style="margin:8px 0 0"${e.id===symOpen?' open':''}><summary>Lehetséges okok (nem diagnózis)</summary><div class="aitext">${esc(e.ai)}</div><small class="disc" style="margin-bottom:10px">${DISC}</small></details>`
       :`<p style="margin:8px 0 0"><button class="btn ghost small" data-act="symAi" data-id="${e.id}"${aiRun?' disabled':''}>Lehetséges okok kérése</button></p>`}${aiErr&&aiErr.key===k?`<p class="err">${esc(aiErr.t)}</p>`:''}</li>`}).join('')}</ul>`
     :'<p class="sub" style="margin-top:14px">Még nincs rögzített tünet. Mentéskor kérheted, hogy a Tanácsadó felsorolja a lehetséges okokat, és megírja, mire figyelj.</p>'}`}
-  if(hTab==='vit')b=`<h2>Vitaminok és kiegészítők</h2><p>${vitFor(p)}</p>${aiBox(p,'vit','Személyre szabott ajánlás kérése')}<p class="sub" style="margin-top:12px">Az ajánlás típusokat és létező, Magyarországon kapható márkákat említ, adagolás nélkül. Mielőtt bármit adnál, egyeztess az állatorvossal.</p>`;
+  if(hTab==='vit')b=`<h2>Vitaminok és kiegészítők</h2><p>${VIT[p.species]}</p>${aiBox(p,'vit','Személyre szabott ajánlás kérése')}<p class="sub" style="margin-top:12px">Az ajánlás típusokat és létező, Magyarországon kapható márkákat említ, adagolás nélkül. Mielőtt bármit adnál, egyeztess az állatorvossal.</p>`;
   if(hTab==='vet'){
     const l=recs(p,'own').filter(e=>e.cat==='vet');
     b=`<p style="margin-top:14px"><button class="btn" data-act="evNew" data-cat="vet">Látogatás rögzítése</button></p>
     ${l.length?`<ul class="tasks" style="margin-top:14px">${l.map(e=>`<li><div><b>${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}${D(e.date)>t?', tervezett':''}</span>${e.note?`<span class="when">${esc(e.note)}</span>`:''}</div><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></li>`).join('')}</ul>`:'<p class="sub" style="margin-top:14px">Még nincs rögzített látogatás. A jövőbeli időpont emlékeztetőként megjelenik a Főoldalon.</p>'}
     <p style="margin-top:12px"><button class="btn ghost" data-act="tab" data-tab="vets">Állatorvos keresése</button></p>`}
-  return`<h1>Egészség</h1><div class="seg2" role="group" aria-label="Az Egészség részei">${tabs.map(k=>[k,HT[k]]).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}<p class="note">${DISC}</p>`}
-const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
+  return`<h1>Egészség</h1><div class="seg2" role="group" aria-label="Az Egészség részei">${Object.entries(HT).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}<p class="note">${DISC}</p>`}
+const BACK='<button class="btn text back" data-act="tab" data-tab="more">‹ Több</button>';
 function vFood(p){
   const F=FOOD[p.species],st=stageOf(p),L=limitsFor(p);
   if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div><p class="note">${DISC}</p>`;
@@ -945,9 +779,9 @@ function vFood(p){
     <label class="f"><span>A táp energiatartalma (kcal / 100 g, a csomagolásról)</span><input id="kcalIn" inputmode="decimal" value="${k100?fmtKg(k100):''}" placeholder="pl. 360"></label>
     ${g?`<p><b>Ez kb. ${g[0]}–${g[1]} g naponta</b> ebből a tápból${meals?`, ${meals} étkezésre osztva alkalmanként kb. ${Math.round(g[0]/meals)}–${Math.round(g[1]/meals)} g`:''}. A jutalomfalatot is számold bele.</p>`:'<p class="sub">Írd be az értéket, és grammra váltom.</p>'}
     <p class="sub" style="margin:0">Tájékoztató becslés a testsúlyból, az életszakaszból és az ivartalanításból. Az egyéni igény eltérhet: a táp etetési táblázata és az állatorvos az irányadó.${st==='kolyok'||st==='novendek'?' Növésben a súly gyorsan változik, mérd és frissítsd gyakran.':''}</p>`}
-  return`${BACK}<h1>Táplálkozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p>
+  return`${BACK}<h1>Táplálkozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${st?', '+STAGE_HU[st].toLowerCase():''}</p>
   <h2>Napi adag</h2><div class="card">${portion}</div>
-  <h2>Ajánlott tápok ${stHU(p,st).toLowerCase()} korra</h2>${tierChips()}<div style="height:10px"></div>${prodList(foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>${aiBox(p,'food','Személyre szabott tápajánlás kérése')}
+  <h2>Ajánlott tápok ${STAGE_HU[st].toLowerCase()} korra</h2>${tierChips()}<div style="height:10px"></div>${prodList(foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>${aiBox(p,'food','Személyre szabott tápajánlás kérése')}
   <h2>Etetési gyakoriság</h2><p>${F.freq?F.freq[st]:F.freqAll}</p>
   <h2>Tápváltás</h2>${F.base?'<p>Kisemlősnél lassan, legalább 2 hét alatt válts, az új eleséget fokozatosan a régihez keverve.</p>'
     :`<p>Új tápra fokozatosan, 7–10 nap alatt válts, a régihez keverve.</p><div class="plan">${[['1–3. nap',25],['4–6. nap',50],['7–9. nap',75],['10. naptól',100]].map(([d,n])=>`<div><i style="--h:${n}%"></i><b>${n}%</b><span>${d}</span></div>`).join('')}</div>
@@ -962,6 +796,7 @@ function aiBox(p,key,label){
   const r=(S.ai[p.id]||{})[key],k=p.id+':'+key,run=aiRun&&aiRun.key===k;
   return`<div class="card" style="margin-top:12px">${run?`<div class="aitext" id="aiOut">${esc(aiRun.text)||'Gondolkodom…'}</div><p style="margin:10px 0 0"><button class="btn ghost small" data-act="aiStop">Leállítás</button></p>`
     :r?`<div class="aitext">${esc(r.t)}</div><small class="disc">${DISC}</small><p style="margin:10px 0 0"><button class="btn ghost small" data-act="aiGo" data-key="${key}"${aiRun?' disabled':''}>Új ajánlás kérése</button></p>`
+    :aiGate()?`<p class="sub" style="margin:0 0 10px">Személyre szabott ajánláshoz lépj be a fiókodba.</p><button class="btn ghost" data-act="auOpen" data-m="in">Belépés</button>`
     :`<button class="btn" data-act="aiGo" data-key="${key}"${aiRun?' disabled':''}>${label}</button>`}${aiErr&&aiErr.key===k?`<p class="err" style="margin-bottom:0">${esc(aiErr.t)}</p>`:''}</div>`}
 function aiTask(p,key){
   if(key==='vit')return`Feladat: ajánlj ennek az állatnak vitaminokat és táplálékkiegészítőket. Írd le, mely típusok lehetnek hasznosak a faja, fajtája, mérete, életszakasza és a naplózott adatai alapján, és melyek fölöslegesek. Adagolást ne írj. Jelezd, hogy teljes értékű táp mellett egészséges állatnak többnyire nincs szüksége külön vitaminra, a túladagolás ártalmas lehet, és a kiegészítőt az állatorvossal kell egyeztetni. Márkát csak ezek közül említs: ${SUPP.join(', ')}. Árat ne írj. Legfeljebb 150 szó.`;
@@ -973,10 +808,10 @@ function aiTask(p,key){
   return`Feladat: a(z) „${PCAT[c]}" kategóriából ajánlj ennek az állatnak 3 terméket vagy terméktípust márkával, a faja, mérete és életszakasza alapján. Röviden indokold, és írd meg, mire figyeljen a választásnál. Csak ebből a listából válassz: ${l.map(x=>x.slice(0,-1).join(' – ')+(x[x.length-1]==='p'?' (prémium)':' (közép)')).join('; ')}.${tier==='all'?'':` Csak a ${tier==='p'?'prémium':'közép'} kategóriából ajánlj.`} Árat ne írj. Legfeljebb 130 szó.`}
 async function runAi(key,task,store){
   const p=pet();if(!p||aiRun)return;aiErr=null;const k=p.id+':'+key;aiRun={key:k,text:'',ctl:new AbortController()};render();
-  try{const sample=await getSample();if(!sample)throw{code:'none'};
-    const res=await sample(chatContext(p,task),{cache:false,signal:aiRun.ctl.signal,onText:({text})=>{aiRun.text=text;const o=$('#aiOut');if(o)o.textContent=text}});
+  try{const sample=aiSample;
+    const res=await sample(chatContext(p,task),{signal:aiRun.ctl.signal,onText:({text})=>{aiRun.text=text;const o=$('#aiOut');if(o)o.textContent=text}});
     store(res.text)}
-  catch(e){if(e&&e.text)store(e.text);if(!e||e.code!=='cancelled')aiErr={key:k,t:ERR[e&&e.code]||ERR.def}}
+  catch(e){if(e&&e.text)store(e.text);if(!e||e.code!=='cancelled')aiErr={key:k,t:aiErrText(e)}}
   aiRun=null;save('chat');render()}
 const symAsk=e=>{symOpen=e.id;runAi('sym:'+e.id,`Feladat: a felhasználó ezt a tünetet rögzítette az állatnál: „${e.text}" (${e.date}, a saját megítélése szerint ${SEV[e.sev]||'nem besorolt'}). Sorold fel röviden a 3–5 leggyakoribb lehetséges okot ennél a fajnál és életkorban, a valószínűbbtől haladva. Mondd ki, hogy ezek lehetőségek, nem diagnózis. Írd le, mit érdemes otthon megfigyelni, és milyen jelek esetén kell azonnal vagy 24 órán belül állatorvoshoz fordulni. Gyógyszert és adagolást ne javasolj. Legfeljebb 170 szó.`,t=>{e.ai=t})};
 let cTab='guide',lesOpen='';
@@ -986,8 +821,8 @@ function vCare(p){
   const ask=(q,l='Kérdezd erről a Tanácsadót')=>`<button class="btn text" style="padding:0" data-act="askQ" data-q="${esc(q)}">${l}</button>`;
   let b='';
   if(cTab==='guide'){const st=careSt&&C.g[careSt]?careSt:cur;
-    b=`<div class="seg2" role="group" aria-label="Életszakasz">${STAGES.map(x=>`<button data-act="careSt" data-v="${x}" aria-pressed="${x===st}">${stHU(p,x)}${x===cur?' (most)':''}</button>`).join('')}</div>
-    <h2>Útmutató ${stHU(p,st).toLowerCase()} korra</h2>${C.g[st].map(([t,d])=>`<div class="card guide"><b>${t}</b><p>${d}</p></div>`).join('')}
+    b=`<div class="seg2" role="group" aria-label="Életszakasz">${STAGES.map(x=>`<button data-act="careSt" data-v="${x}" aria-pressed="${x===st}">${STAGE_HU[x]}${x===cur?' (most)':''}</button>`).join('')}</div>
+    <h2>Útmutató ${STAGE_HU[st].toLowerCase()} korra</h2>${C.g[st].map(([t,d])=>`<div class="card guide"><b>${t}</b><p>${d}</p></div>`).join('')}
     <h2>Ötletek a mindennapokra</h2><ul class="tips">${C.i.map(x=>`<li>${x}</li>`).join('')}</ul>`}
   if(cTab==='home')b=`<h2>Mire van szüksége otthon?</h2>${HOME[p.species].map(([t,d,br])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${br?`<p style="color:var(--ink)"><span class="tag" style="margin:0 6px 0 0">bevált márkák</span>${br}</p>`:''}</div>`).join('')}
     <p class="sub" style="margin-top:10px">${PNOTE}</p><h2>Személyre szabott ajánlás</h2>${aiBox(p,'home','Mi kell neki pontosan? Ajánlás kérése')}`;
@@ -996,42 +831,39 @@ function vCare(p){
       return`<details class="acc"${lesOpen===x.k?' open':''}><summary>${ok?'<span class="ok">✓</span>':''}${x.t}${now?'<span class="tag" style="margin:0">most időszerű</span>':''}</summary><ol class="steps2">${x.s.map(t=>`<li>${t}</li>`).join('')}</ol>${x.tip?`<p class="sub">${x.tip}</p>`:''}
       <p><button class="btn small${ok?' ghost':''}" data-act="lesDone" data-k="${x.k}">${ok?'Még gyakoroljuk':'Megtanulta'}</button></p><p>${ask(x.t+': hogyan tanítsam meg neki lépésről lépésre, és mit tegyek, ha elakadunk?','Elakadtatok? Kérdezd a Tanácsadót')}</p></details>`}).join('')}`}
   if(cTab==='play'){const P=PLAY[p.species];
-    b=`<h2>Mozgásigény ${stHU(p,cur).toLowerCase()} korban</h2><p>${P.need[cur]||P.need.all}</p>${P.walk?`<h2>Séta</h2><p>${P.walk}</p>`:''}
+    b=`<h2>Mozgásigény ${STAGE_HU[cur].toLowerCase()} korban</h2><p>${P.need[cur]||P.need.all}</p>${P.walk?`<h2>Séta</h2><p>${P.walk}</p>`:''}
     <h2>Játékok</h2><ul class="tips">${P.games.map(x=>`<li>${x}</li>`).join('')}</ul><p class="sub">Bevált játékmárkák: ${PROD[p.species].jatek.map(x=>`${x[0]} (${x[1]})`).join('; ')}.</p>
     <h2>Így foglalkozz vele</h2><p>${P.engage}</p><h2>Személyre szabott terv</h2>${aiBox(p,'play','Napi mozgás- és játékterv kérése')}`}
   if(cTab==='prob')b=`<h2>Gyakori problémák</h2>${C.p.map(([q,a])=>`<details class="acc"><summary>${q}</summary><p>${a}</p><p>${ask(q+': mit tegyek?')}</p></details>`).join('')}`;
-  return`${BACK}<h1>Tartás és nevelés</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}, ${stHU(p,cur).toLowerCase()}</p>
+  return`${BACK}<h1>Tartás és nevelés</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}, ${STAGE_HU[cur].toLowerCase()}</p>
   <div class="seg2" role="group" aria-label="A Tartás és nevelés részei">${Object.entries(CT).map(([k,n])=>`<button data-act="cTab" data-v="${k}" aria-pressed="${cTab===k}">${n}</button>`).join('')}</div>${b}`}
 function vProd(p){
   const P=PROD[p.species],st=stageOf(p);
   if(!P)return`${BACK}<h1>Ajánlott termékek</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített terméklista.</p><p class="sub">Felszerelésről a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>`;
-  return`${BACK}<h1>Ajánlott termékek</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}, ${stHU(p,st).toLowerCase()}</p>
+  return`${BACK}<h1>Ajánlott termékek</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}, ${STAGE_HU[st].toLowerCase()}</p>
   <div class="seg2" role="group" aria-label="Kategória">${Object.entries(PCAT).map(([k,n])=>`<button data-act="pCat" data-v="${k}" aria-pressed="${pCat===k}">${n}</button>`).join('')}</div>${tierChips()}<div style="height:10px"></div>
   ${prodList(pCat==='tap'?foods(p):P[pCat]||[])}<p class="sub" style="margin-top:10px">${PNOTE}</p>
   <h2>Személyre szabott ajánlás</h2>${aiBox(p,'prod_'+pCat,'AI-ajánlás kérése ebben a kategóriában')}`}
 function vVets(){
-  const p=pet(),ex=!!p&&['hullo','keteltu','hal','madar'].includes(grp(p)),c=S.settings.city||'',a=(q,l,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${l}</a>`;
-  return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A PetLife nem ajánl és nem tárol állatorvosokat.${ex?' Ennél a fajnál egzotikus állatokhoz értő állatorvost keresünk.':''}</p>
+  const c=S.settings.city||'',a=(q,l,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${l}</a>`;
+  return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A PetVia nem ajánl és nem tárol állatorvosokat.</p>
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
-  <div id="mapBtns">${a(ex?'egzotikus állatorvos':'állatorvos',ex?'Egzotikus állatorvos keresése a térképen':'Állatorvos keresése a térképen','')}<div style="height:10px"></div>${a('állatorvosi ügyelet','Ügyelet keresése a térképen','ghost')}</div>
+  <div id="mapBtns">${a('állatorvos','Állatorvos keresése a térképen','')}<div style="height:10px"></div>${a('állatorvosi ügyelet','Ügyelet keresése a térképen','ghost')}</div>
   <p class="sub" style="margin-top:12px">A térkép új lapon nyílik meg, a település megadása után.</p>`}
-function vHub(p){
-  const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
-  return`<h1>Gondozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}</p>
-  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}</div>`}
 /* chat */
 let chatBusy=null,chatCtl=null,streamText='',chatNote='',sampleP=null,chatSheet=false,chatTopic='';
 const chatLog=p=>S.chat[p.id]||[];
 function chatLogHtml(p){
   const log=chatLog(p),st=stageOf(p);
   if(!log.length&&chatBusy!==p.id){
-    const q=chatSheet&&TOPIC_Q[chatTopic]?[...TOPIC_Q[chatTopic]]:[`Mire figyeljek most${st?' '+stHU(p,st).toLowerCase()+' korban':''}?`,...({hal:['Milyen vízértékekre figyeljek?','Mivel és milyen gyakran etessem?'],hullo:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?'],keteltu:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?']}[grp(p)]||['Mit ne adjak neki enni?','Mennyi mozgásra és játékra van szüksége?'])];
+    const q=chatSheet&&TOPIC_Q[chatTopic]?[...TOPIC_Q[chatTopic]]:[`Mire figyeljek most${st?' '+STAGE_HU[st].toLowerCase()+' korban':''}?`,'Mit ne adjak neki enni?','Mennyi mozgásra és játékra van szüksége?'];
     if(p.species==='kutya'&&st==='kolyok')q.push('Hogyan szoktassam szobatisztaságra?');
+    if(aiGate())return`<p class="sub">A Tanácsadó ${esc(petName(p))} profilja alapján válaszol a kérdéseidre. A használatához lépj be a fiókodba.</p><p><button class="btn" data-act="auOpen" data-m="in">Belépés</button></p><p><button class="btn ghost" data-act="auOpen" data-m="up">Regisztráció</button></p><small class="disc">${DISC}</small>`;
     return`<p class="sub">Kérdezz bármit ${esc(petName(p))} táplálásáról, egészségéről, tartásáról vagy neveléséről. A válasz a profiljához és az életszakaszához igazodik.</p>
     <div class="sugs">${q.map(x=>`<button data-act="chatSug">${esc(x)}</button>`).join('')}</div>${chatNote?`<div class="msg e">${esc(chatNote)}</div>`:''}<small class="disc">${DISC}</small>`}
   return log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}<small class="disc">${DISC}</small></div>`).join('')
    +(chatBusy===p.id?`<div class="msg a"><div class="bubble" id="pending">${esc(streamText)||'Gondolkodom…'}</div></div>`:'')+(chatNote?`<div class="msg e">${esc(chatNote)}</div>`:'')}
-function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p></div>
+function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+STAGE_HU[st].toLowerCase():''}</p></div>
   ${chatLog(p).length&&!chatBusy?'<button class="btn ghost small" data-act="chatClear">Törlés</button>':''}</div>
   <div id="msgs" aria-live="polite">${chatLogHtml(p)}</div>
   <div class="composer"><textarea id="chatIn" rows="1" maxlength="2000" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
@@ -1048,11 +880,12 @@ function vMore(){
   const cur=pet(),th=S.settings.theme;
   const store=!cloud.uid?'Az adataid csak ezen az eszközön tárolódnak. Ha törlöd az appot vagy a böngésző adatait, elvesznek.'
     :{sync:'Szinkronizálás a fiókoddal…',cloud:'Az adataid a fiókodhoz mentve, így a többi eszközödön is megjelennek.',error:`A fiókba mentés most nem sikerült. Az eszközön megvannak az adatok, kapcsolat esetén újra megpróbálom.${cloud.err?` (hibakód: ${esc(cloud.err)})`:''}`}[cloud.state]||'Mentés ellenőrzése…';
-  return`<h1>Beállítások</h1><h2>Állataim</h2>
-  ${S.pets.length?`<ul class="list">${S.pets.map(p=>{const st=stageOf(p);return`<li>${ava(p)}<button class="grow" data-act="petUse" data-id="${p.id}"><b>${esc(petName(p))}</b>${cur&&cur.id===p.id?' ✓':''}<span class="when">${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</span></button><button class="btn ghost small" data-act="petEdit" data-id="${p.id}">Szerkesztés</button></li>`}).join('')}</ul>`:'<p class="sub">Még nincs felvett állat.</p>'}
+  return`<h1>Több</h1><h2>Állataim</h2>
+  ${S.pets.length?`<ul class="list">${S.pets.map(p=>{const st=stageOf(p);return`<li>${ava(p)}<button class="grow" data-act="petUse" data-id="${p.id}"><b>${esc(petName(p))}</b>${cur&&cur.id===p.id?' ✓':''}<span class="when">${fmtAge(p)}${st?', '+STAGE_HU[st].toLowerCase():''}</span></button><button class="btn ghost small" data-act="petEdit" data-id="${p.id}">Szerkesztés</button></li>`}).join('')}</ul>`:'<p class="sub">Még nincs felvett állat.</p>'}
   <p style="margin-top:10px"><button class="btn" data-act="petNew">Új állat felvétele</button></p>
   <h2>Fiók</h2>${accountHtml()}
   <h2>Megjelenés</h2><div class="chips">${[['auto','Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,n])=>`<label><input type="radio" name="theme" value="${v}"${th===v?' checked':''}><span>${n}</span></label>`).join('')}</div>
+  <h2>Útmutatók</h2>${SHORT}
   <h2>Telepítés</h2>${installHtml()}
   <h2>Adatok</h2><p class="sub">${store}</p><button class="btn danger" data-act="wipeAsk">Adatok törlése</button>
   <p class="note">A mérföldkövek és a szakaszhatárok tájékoztató jellegűek. Kutyánál a veszettség elleni oltást a 164/2008. (XII. 20.) FVM rendelet, a mikrochipet a 41/2010. (II. 26.) Korm. rendelet írja elő. ${DISC}</p>`}
@@ -1087,15 +920,13 @@ function auErr(e){const c=String((e&&e.code)||''),m=String((e&&e.message)||'').t
   if(navigator.onLine===false||m.includes('fetch')||m.includes('network'))return'Nincs internetkapcsolat. Próbáld újra később.';
   return`Most nem sikerült. Próbáld újra kicsit később.${c?` (hibakód: ${c.slice(0,40)})`:''}`}
 function renderTop(){const p=pet(),b=$('#petPill');b.hidden=!p;if(p)b.innerHTML=`${ava(p)}<b>${esc(petName(p))}</b><span aria-hidden="true">▾</span>`;
-  document.documentElement.style.setProperty('--acc',GROUPS[p?grp(p):'egyeb'].c);$('#gear').setAttribute('aria-pressed',tab==='more');
-  const cur={food:'hub',vets:'hub',care:'hub',prod:'hub'}[tab]||tab;$('#fab').hidden=!p||tab==='ai';document.querySelectorAll('.tab').forEach(t=>t.dataset.tab===cur?t.setAttribute('aria-current','page'):t.removeAttribute('aria-current'))}
+  const cur={food:'more',vets:'more',care:'more',prod:'more'}[tab]||tab;$('#fab').hidden=!p||tab==='ai';document.querySelectorAll('.tab').forEach(t=>t.dataset.tab===cur?t.setAttribute('aria-current','page'):t.removeAttribute('aria-current'))}
 function render(opt={}){
   const p=pet(),v=$('#view'),draft=$('#chatIn')?$('#chatIn').value:'';
   renderTop();v.className='';
   if(tab==='more')v.innerHTML=vMore();
   else if(tab==='vets')v.innerHTML=vVets();
   else if(!p)v.innerHTML=vEmpty();
-  else if(tab==='hub')v.innerHTML=vHub(p);
   else if(tab==='home')v.innerHTML=vHome(p);
   else if(tab==='path')v.innerHTML=vPath(p);
   else if(tab==='health')v.innerHTML=vHealth(p);
@@ -1115,38 +946,32 @@ function closeSheet(){$('#sheet').hidden=true;$('#sheet').innerHTML='';W=null;wz
 let W=null,wzStep=0;
 function wizard(id){
   const p=id&&S.pets.find(x=>x.id===id);
-  W=p?{...p,group:grp(p),count:p.count??'',tankL:p.tankL??'',weight:p.weight==null?'':gramSp(p)?Math.round(p.weight*1000):p.weight,step:3,mode:'date',edit:true,ey:'',em:'',ew:'',err:''}
-     :{group:'',species:'',speciesName:'',breed:'mix',size:'',count:'',tankL:'',birth:'',est:false,mode:'date',ey:'',em:'',ew:'',name:'',sex:'',neutered:'',weight:'',photo:'',step:1,err:''};
+  W=p?{...p,weight:p.weight??'',step:3,mode:'date',edit:true,ey:'',em:'',ew:'',err:''}
+     :{species:'',speciesName:'',breed:'mix',size:'',birth:'',est:false,mode:'date',ey:'',em:'',ew:'',name:'',sex:'',neutered:'',weight:'',photo:'',step:1,err:''};
   drawWizard();
 }
 function readWizard(){const f=$('#wz');if(!f)return;f.querySelectorAll('[name]').forEach(el=>{if(el.type==='radio'){if(el.checked)W[el.name]=el.value}else if(el.type!=='file')W[el.name]=el.value.trim()})}
 const radio=(name,opts,cur)=>`<div class="chips">${opts.map(([v,n])=>`<label><input type="radio" name="${name}" value="${v}"${cur===v?' checked':''}><span>${n}</span></label>`).join('')}</div>`;
 function drawWizard(){
-  const w=W,t=iso(today()),g=grp(w);let body='';
-  if(w.step===1)body=`<h2>Milyen állat?</h2><div class="tiles">${Object.entries(GROUPS).map(([k,x])=>`<button class="tile" data-act="wzGroup" data-v="${k}" aria-pressed="${w.group===k}"><em style="--t:${x.c}">${ic(x.i)}</em>${x.n}</button>`).join('')}</div>
-    ${w.group&&w.group!=='egyeb'?`<div class="f"><span>Melyik faj?</span><div class="chips">${Object.entries(SPECIES).filter(([,x])=>x.g===w.group).map(([k,x])=>`<button type="button" class="chip" data-act="wzSpecies" data-v="${k}" aria-pressed="${w.species===k}">${x.n}</button>`).join('')}</div></div>`:''}
-    ${w.species==='egyeb'?`<label class="f"><span>Milyen állat pontosan?</span><input name="speciesName" value="${esc(w.speciesName)}" placeholder="pl. degu, törpesün, botsáska" maxlength="40"></label>`:''}${flagHtml(w.species)}`;
+  const w=W,t=iso(today());let body='';
+  if(w.step===1)body=`<h2>Milyen állat?</h2><div class="tiles">${Object.entries(SPECIES).map(([k,s])=>`<button class="tile" data-act="wzSpecies" data-v="${k}" aria-pressed="${w.species===k}"><em>${s.e}</em>${s.n}</button>`).join('')}</div>
+    ${w.species==='egyeb'?`<label class="f"><span>Milyen állat pontosan?</span><input name="speciesName" value="${esc(w.speciesName)}" placeholder="pl. vadászgörény, papagáj" maxlength="40"></label>`:''}`;
   if(w.step===2){
-    const dogKnown=w.species==='kutya'&&w.breed!=='mix'&&DOGSIZE[w.breed],list=BREEDS[w.species]||[];
-    const ttl=w.species==='edesvizi'?'Halfaj':g==='emlos'||g==='egyeb'?'Fajta':'Változat',mix=w.species==='edesvizi'?'Vegyes állomány / nem tudom':g==='emlos'?'Keverék / nem tudom':'Nem tudom';
-    body=`<h2>${ttl}</h2>${w.species==='egyeb'
+    const dogKnown=w.species==='kutya'&&w.breed!=='mix'&&DOGSIZE[w.breed];
+    body=`<h2>Fajta</h2>${w.species==='egyeb'
       ?`<label class="f"><span>Fajta (nem kötelező)</span><input name="breed" value="${esc(w.breed==='mix'?'':w.breed)}" maxlength="40"></label>`
-      :list.length?`<label class="f"><span>Válassz a listából</span><select name="breed" id="wzBreed"><option value="mix">${mix}</option>${list.map(b=>`<option${w.breed===b?' selected':''}>${esc(b)}</option>`).join('')}</select></label>`
-      :'<p class="sub">Ennél a fajnál nincs választható változat, lépj tovább.</p>'}
+      :`<label class="f"><span>Válassz a listából</span><select name="breed" id="wzBreed"><option value="mix">Keverék / nem tudom</option>${BREEDS[w.species].map(b=>`<option${w.breed===b?' selected':''}>${esc(b)}</option>`).join('')}</select></label>`}
     ${w.species==='kutya'?(dogKnown?`<p class="sub">Méret a fajta alapján: ${SIZE_HU[dogKnown]}. Ettől függ, mikor számít felnőttnek és idősnek.</p>`
-      :`<div class="f"><span>Mekkora (lesz) felnőttként?</span>${radio('size',Object.entries(SIZE_HINT),w.size)}</div><p class="sub">A nagyobb testű kutyák később nőnek fel és korábban számítanak idősnek.</p>`):''}
-    ${w.species==='edesvizi'?'<p class="sub">A halfajtól függ, mikor számít felnőttnek és idősnek. Vegyes állománynál csak az életkort követjük.</p>':''}`}
+      :`<div class="f"><span>Mekkora (lesz) felnőttként?</span>${radio('size',Object.entries(SIZE_HINT),w.size)}</div><p class="sub">A nagyobb testű kutyák később nőnek fel és korábban számítanak idősnek.</p>`):''}`}
   if(w.step===3)body=`<h2>Kor és adatok</h2>
     <div class="f"><span>Mit tudsz a koráról?</span>${radio('mode',[['date','Tudom a születésnapját'],['est','Csak becsülni tudom']],w.mode)}</div>
     ${w.mode==='date'?`<label class="f"><span>Születési dátum</span><input type="date" name="birth" value="${esc(w.birth)}" max="${t}"></label>`
       :`<div class="f"><span>Becsült kor</span><div class="three">${[['ey','év'],['em','hónap'],['ew','hét']].map(([k,n])=>`<label><input type="number" inputmode="numeric" min="0" name="${k}" value="${esc(w[k])}" placeholder="${n}" aria-label="${n}"></label>`).join('')}</div><span class="hint" style="font-weight:400;margin-top:6px">Ebből születési dátumot számolunk, így az app magától követi az öregedést.</span></div>`}
-    <label class="f"><span>${g==='hal'?'Név (nem kötelező, pl. az akvárium neve)':'Név (nem kötelező)'}</span><input name="name" value="${esc(w.name)}" maxlength="40" autocomplete="off"></label>
+    <label class="f"><span>Név (nem kötelező)</span><input name="name" value="${esc(w.name)}" maxlength="30" autocomplete="off"></label>
     <div class="f"><span>Fotó (nem kötelező)</span><div class="row">${w.photo?`<img class="ava big" src="${w.photo}" alt="">`:''}<label class="btn ghost small" style="position:relative">${w.photo?'Csere':'Fotó választása'}<input type="file" id="photoIn" accept="image/*" style="position:absolute;inset:0;opacity:0;min-height:0"></label>${w.photo?'<button class="btn text" data-act="wzNoPhoto">Eltávolítás</button>':''}</div></div>
-    ${g==='hal'?`<label class="f"><span>Hány hal él az akváriumban?</span><input type="number" inputmode="numeric" min="1" max="999" name="count" value="${esc(w.count)}" placeholder="pl. 6"></label>
-    <label class="f"><span>Az akvárium mérete literben</span><input name="tankL" inputmode="decimal" value="${esc(w.tankL)}" placeholder="pl. 60"></label>`
-    :`<div class="f"><span>Ivar (nem kötelező)</span>${radio('sex',[['him','Hím'],['nosteny','Nőstény'],['','Nem tudom']],w.sex)}</div>
-    ${g==='emlos'||g==='egyeb'?`<div class="f"><span>Ivartalanított? (nem kötelező)</span>${radio('neutered',[['igen','Igen'],['nem','Nem'],['','Nem tudom']],w.neutered)}</div>`:''}
-    <label class="f"><span>Súly ${gramSp(w)?'grammban':'kg-ban'} (nem kötelező)</span><input name="weight" inputmode="decimal" value="${esc(w.weight)}" placeholder="${gramSp(w)?'pl. 65':'pl. 12,5'}"></label>`}`;
+    <div class="f"><span>Ivar (nem kötelező)</span>${radio('sex',[['him','Hím'],['nosteny','Nőstény'],['','Nem tudom']],w.sex)}</div>
+    <div class="f"><span>Ivartalanított? (nem kötelező)</span>${radio('neutered',[['igen','Igen'],['nem','Nem'],['','Nem tudom']],w.neutered)}</div>
+    <label class="f"><span>Súly kg-ban (nem kötelező)</span><input name="weight" inputmode="decimal" value="${esc(w.weight)}" placeholder="pl. 12,5"></label>`;
   openSheet(`<div id="wz"><div class="steps" aria-label="${w.step}. lépés a 3-ból">${[1,2,3].map(n=>`<i class="${n<=w.step?'on':''}"></i>`).join('')}</div>${body}
     ${w.err?`<p class="err" role="alert">${esc(w.err)}</p>`:''}
     <button class="btn" data-act="wzNext">${w.step<3?'Tovább':w.edit?'Változások mentése':'Állat mentése'}</button>
@@ -1154,24 +979,21 @@ function drawWizard(){
     ${w.edit&&w.step===3?`<button class="btn text" style="width:100%;color:var(--alert)" data-act="petDelAsk" data-id="${w.id}">Állat törlése</button>`:''}</div>`,wzStep===w.step&&!w.err);wzStep=w.step;
 }
 function wizardNext(){
-  readWizard();const w=W,g=grp(w);w.err='';
-  if(w.step===1){if(!w.species)w.err=w.group?'Válaszd ki a fajt.':'Válaszd ki, milyen állatról van szó.';else if(w.species==='egyeb'&&!clean(w.speciesName))w.err='Írd be, milyen állat.'}
+  readWizard();const w=W;w.err='';
+  if(w.step===1){if(!w.species)w.err='Válaszd ki, milyen állatról van szó.';else if(w.species==='egyeb'&&!w.speciesName)w.err='Írd be, milyen állat.'}
   else if(w.step===2){if(w.species==='egyeb'&&!w.breed)w.breed='';if(w.species==='kutya'&&!(w.breed!=='mix'&&DOGSIZE[w.breed])&&!w.size)w.err='Válaszd ki a kutya méretét.'}
   else{
     let birth=null;const t=today();
     if(w.mode==='date'){if(!w.birth)w.err='Add meg a születési dátumot, vagy válaszd a becsült kort.';else birth=D(w.birth)}
     else{const y=+w.ey||0,m=+w.em||0,k=+w.ew||0;if(y<0||m<0||k<0||!(y||m||k))w.err='Adj meg legalább egy értéket a becsült korhoz (év, hónap vagy hét).';else{birth=addM(t,-(y*12+m));birth.setDate(birth.getDate()-k*7)}}
     if(birth&&(isNaN(birth)||birth>t))w.err='A születési dátum nem lehet a jövőben.';
-    else if(birth&&birth<addM(t,-Math.max(480,((limitsFor(w)||[])[2]||0)*3)))w.err='Ez a dátum túl régi. Ellenőrizd az évszámot.';
-    const fish=g==='hal',gr=gramSp(w);let kg=null,cnt=null,tank=null;
-    if(fish){cnt=parseInt(w.count,10);tank=parseFloat(String(w.tankL).replace(',','.'));
-      if(!w.err&&!(cnt>=1&&cnt<=999))w.err='Add meg, hány hal él az akváriumban (1 és 999 között).';else if(!w.err&&!(tank>0&&tank<=10000))w.err='Add meg az akvárium méretét literben, pl. 60.'}
-    else if(w.weight!==''){kg=parseFloat(String(w.weight).replace(',','.'));if(gr)kg/=1000;if(!(kg>0&&kg<200))w.err=gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.'}
+    else if(birth&&birth<addM(t,-480))w.err='Ez a dátum túl régi. Ellenőrizd az évszámot.';
+    let kg=null;if(w.weight!==''){kg=parseFloat(String(w.weight).replace(',','.'));if(!(kg>0&&kg<200))w.err='A súlyt számmal add meg kg-ban, pl. 12,5.'}
     if(!w.err){
       const old=w.edit&&S.pets.find(x=>x.id===w.id),bs=iso(birth);
-      const p={id:old?old.id:newId(),name:clean(w.name),species:w.species,speciesName:w.species==='egyeb'?clean(w.speciesName):'',breed:(w.species==='egyeb'?clean(w.breed):w.breed)||'mix',size:w.size,count:cnt,tankL:tank,birth:bs,
-        est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:fish?'':w.sex,neutered:g==='emlos'||g==='egyeb'?w.neutered:'',weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{}};
-      p.lastStage=old&&old.birth===bs&&old.species===p.species&&String(limitsFor(old))===String(limitsFor(p))?old.lastStage:stageOf(p);
+      const p={id:old?old.id:newId(),name:w.name,species:w.species,speciesName:w.species==='egyeb'?w.speciesName:'',breed:w.breed||'mix',size:w.size,birth:bs,
+        est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:w.sex,neutered:w.neutered,weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{}};
+      p.lastStage=old&&old.birth===bs&&old.species===p.species&&sizeOf(old)===sizeOf(p)?old.lastStage:stageOf(p);
       if(old)S.pets[S.pets.indexOf(old)]=p;else S.pets.push(p);
       if(kg&&(!old||old.weight!==kg)){S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===iso(t)));S.events.push({id:newId(),petId:p.id,kind:'w',date:iso(t),kg})}
       S.settings.activePetId=p.id;const keys=(old?old.photo:'')!==p.photo?['photo_'+p.id]:[];
@@ -1187,7 +1009,7 @@ function pickPhoto(input){
   fr.readAsDataURL(f)}
 
 /* ---------- lapok: mérföldkő, esemény, megerősítés ---------- */
-function tickSheet(key){const p=pet(),m=msFor(p).find(x=>x.key===key);if(!m)return;const t=iso(today());
+function tickSheet(key){const p=pet(),m=(MS[p.species]||MS.egyeb).find(x=>x.key===key);if(!m)return;const t=iso(today());
   openSheet(`<h2>${esc(m.t)}</h2><p class="sub">${esc(m.d)}</p><label class="f"><span>Mikor volt?</span><input type="date" id="tkDate" value="${t}" max="${t}"></label>
   <label class="f"><span>Megjegyzés (nem kötelező)</span><input id="tkNote" maxlength="120" placeholder="pl. állatorvos, oltóanyag neve"></label><p class="err" id="tkErr" role="alert" hidden></p>
   <button class="btn" data-act="tickSave" data-key="${key}">Megvolt, mentés</button><button class="btn ghost" data-act="close">Mégse</button>`)}
@@ -1200,7 +1022,7 @@ function eventSheet(id,cat='other'){const e=id?S.events.find(x=>x.id===id):null;
   <button class="btn" data-act="evSave" data-id="${e?e.id:''}">Esemény mentése</button>${e?`<button class="btn ghost" style="color:var(--alert)" data-act="evDel" data-id="${e.id}">Esemény törlése</button>`:''}<button class="btn ghost" data-act="close">Mégse</button>`)}
 const dateF=(id,label)=>{const t=iso(today());return`<label class="f"><span>${label}</span><input type="date" id="${id}" value="${t}" max="${t}"></label>`};
 const sheetEnd=(act,label,extra='')=>`<p class="err" id="hErr" role="alert" hidden></p><button class="btn" data-act="${act}"${extra}>${label}</button><button class="btn ghost" data-act="close">Mégse</button>`;
-function wSheet(){const gr=gramSp(pet());openSheet(`<h2>Súly rögzítése</h2><label class="f"><span>Súly ${gr?'grammban':'kg-ban'}</span><input id="wKg" inputmode="decimal" placeholder="${gr?'pl. 65':'pl. 12,5'}"></label>${dateF('hDate','Mérés dátuma')}${sheetEnd('wSave','Súly mentése')}`)}
+function wSheet(){openSheet(`<h2>Súly rögzítése</h2><label class="f"><span>Súly kg-ban</span><input id="wKg" inputmode="decimal" placeholder="pl. 12,5"></label>${dateF('hDate','Mérés dátuma')}${sheetEnd('wSave','Súly mentése')}`)}
 function symSheet(){openSheet(`<h2>Tünet rögzítése</h2><label class="f"><span>Mit vettél észre?</span><textarea id="syText" rows="2" maxlength="200" placeholder="pl. reggel óta nem eszik"></textarea></label>${dateF('hDate','Mikor?')}
   <div class="f"><span>Mennyire tűnik súlyosnak?</span>${radio('sySev',Object.entries(SEV).map(([k,v])=>[k,v[0].toUpperCase()+v.slice(1)]),'enyhe')}</div>
   <p class="sub">Súlyos vagy gyorsan romló tünetnél ne várj: fordulj állatorvoshoz.</p><p class="err" id="hErr" role="alert" hidden></p>
@@ -1212,38 +1034,61 @@ function confirmSheet(title,text,yes,act,id=''){openSheet(`<h2>${title}</h2><p>$
 const showErr=(sel,t)=>{const el=$(sel);el.textContent=t;el.hidden=false};
 
 /* ---------- AI tanácsadó ---------- */
-const SYS='Te a PetLife tapasztalt, barátságos kisállat-tanácsadója vagy. Magyarul, tegeződve, röviden és gyakorlatiasan válaszolj, mindig a megadott állat fajára, fajtájára és életszakaszára szabva. Ne állíts fel diagnózist, gyógyszert és adagolást ne javasolj. Sürgős tünetnél (pl. légzési nehézség, görcs, mérgezés gyanúja, erős vérzés) azonnali állatorvosi ellátást javasolj. Ha valamiben nem vagy biztos, mondd meg.';
-const ERR={not_granted:'A Tanácsadóhoz engedélyezned kell a Claude használatát ezen az oldalon. Töltsd újra az oldalt, és engedélyezd.',rate_limited:'Túl sok kérdés érkezett rövid idő alatt. Várj egy percet, majd küldd el újra.',session_expired:'Lejárt a munkamenet. Töltsd újra az oldalt, majd küldd el újra a kérdést.',prompt_too_large:'Túl hosszú lett a beszélgetés. Töröld az előzményeket a Törlés gombbal, és kérdezz újra.',refused:'Erre a kérdésre a Tanácsadó nem tud válaszolni. Fogalmazd meg másképp.',none:'A Tanácsadó ebben a változatban még nincs bekapcsolva. Hamarosan érkezik.',def:'Most nem sikerült választ kapni. Küldd el újra a kérdést.'};
-const ADD='Kérésre felsorolhatod egy tünet lehetséges okait, de mindig jelezd, hogy ez nem diagnózis, és mondd meg, mikor kell állatorvoshoz fordulni. Vitamint és táplálékkiegészítőt típus szerint ajánlhatsz, adagolás nélkül, állatorvosi egyeztetést javasolva. Terméket csak létező, Magyarországon kapható márkától ajánlj, ár nélkül.';
+const ERR={login:'A Tanácsadó fiókkal használható. Lépj be a Több fülön, a Fiók résznél.',daily_limit:'Mára elfogyott a kérdéskereted. Holnap újra kérdezhetsz.',rate_limited:'Túl sok kérdés érkezett rövid idő alatt. Várj egy percet, majd küldd el újra.',session_expired:'Lejárt a belépésed. Lépj be újra a Több fülön, majd küldd el újra a kérdést.',prompt_too_large:'Túl hosszú lett a beszélgetés. Töröld az előzményeket a Törlés gombbal, és kérdezz újra.',refused:'Erre a kérdésre a Tanácsadó nem tud válaszolni. Fogalmazd meg másképp.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',setup:'A Tanácsadó beállítása még nem teljes.',none:'A Tanácsadó most nem érhető el.',def:'Most nem sikerült választ kapni. Küldd el újra a kérdést.'};
+const aiErrText=e=>{const c=e&&ERR[e.code]?e.code:'def';return ERR[c]+((c==='setup'||c==='def')&&e&&e.detail?` (hibakód: ${String(e.detail).slice(0,40)})`:'')};
 function chatContext(p,task){
   const st=stageOf(p),items=buildItems(p),size=sizeOf(p);
   const hist=[...items.filter(i=>i.done).map(i=>[i.done.date,`${i.m.t} (megtörtént)${i.done.note?' – '+i.done.note:''}`]),
     ...S.events.filter(e=>e.petId===p.id&&e.kind==='own').map(e=>[e.date,`${e.title}${e.note?' – '+e.note:''}`])].sort((a,b)=>a[0]<b[0]?-1:1).slice(-25).map(x=>`- ${x[0]}: ${x[1]}`);
   const due=dueList(p,items).map(i=>`- ${i.m.t}${i.unknown?'':' ('+iso(i.date)+')'}`);
   const or=(a)=>a.length?a:['- nincs bejegyzés'];
-  const w=recs(p,'w').slice(0,5).map(e=>`- ${e.date}: ${wTxt(p,e.kg)}`),sy=recs(p,'sym').slice(0,5).map(e=>`- ${e.date}: ${e.text} (${SEV[e.sev]||'nincs besorolva'})`),
+  const w=recs(p,'w').slice(0,5).map(e=>`- ${e.date}: ${e.kg} kg`),sy=recs(p,'sym').slice(0,5).map(e=>`- ${e.date}: ${e.text} (${SEV[e.sev]||'nincs besorolva'})`),
     pa=recs(p,'par').slice(0,4).map(e=>`- ${e.date}: ${PAR_SHORT[e.ptype]}${e.product?' – '+e.product:''}`);
-  return[SYS,ADD,'',`Mai dátum: ${iso(today())}`,'','Az állat profilja:',`- Név: ${p.name||'nincs megadva'}`,`- Faj: ${speciesLabel(p)} (fajcsoport: ${GROUPS[grp(p)].n.toLowerCase()})`,`- Fajta: ${breedLabel(p)||'nincs megadva'}`,
-    size?`- Méret: ${SIZE_HU[size]}`:null,`- Életkor: ${fmtAge(p)} (születési dátum: ${p.birth}${p.est?', becsült':''})`,`- Életszakasz: ${st?stHU(p,st):'ennél a fajnál nincs meghatározva'}`,
-    `- Ivar: ${{him:'hím',nosteny:'nőstény'}[p.sex]||'nincs megadva'}`,grp(p)==='emlos'||grp(p)==='egyeb'?`- Ivartalanított: ${p.neutered||'nincs megadva'}`:null,grp(p)==='hal'?`- Állomány: ${p.count||'?'} db, ${p.tankL?fmtKg(p.tankL):'?'} literes akvárium`:`- Súly: ${p.weight?wTxt(p,p.weight):'nincs megadva'}`,'',
+  return[`Mai dátum: ${iso(today())}`,'','Az állat profilja:',`- Név: ${p.name||'nincs megadva'}`,`- Faj: ${speciesLabel(p)}`,`- Fajta: ${breedLabel(p)||'nincs megadva'}`,
+    size?`- Méret: ${SIZE_HU[size]}`:null,`- Életkor: ${fmtAge(p)} (születési dátum: ${p.birth}${p.est?', becsült':''})`,`- Életszakasz: ${st?STAGE_HU[st]:'ennél a fajnál nincs meghatározva'}`,
+    `- Ivar: ${{him:'hím',nosteny:'nőstény'}[p.sex]||'nincs megadva'}`,`- Ivartalanított: ${p.neutered||'nincs megadva'}`,`- Súly: ${p.weight?p.weight+' kg':'nincs megadva'}`,'',
     'Előzmények az életútból:',...(hist.length?hist:['- nincs rögzített esemény']),'','Esedékes teendők:',...(due.length?due:['- nincs']),'','Súlymérések:',...or(w),'','Tünetnapló:',...or(sy),'','Parazita elleni kezelések:',...or(pa),'',
     `Ha márkát vagy terméket említesz, csak ezek közül válassz: ${brandList(p)}.`,'','Sima szöveggel válaszolj, markdown formázás nélkül.',task||'A felhasználó üzenetei következnek.'].filter(x=>x!==null).join('\n');
 }
-const getSample=()=>sampleP||(sampleP=(window.claude&&claude.use?claude.use('sample'):Promise.resolve(null)).catch(()=>null));
+/* ---------- Tanácsadó: hívás a szerveroldali függvényen át ----------
+   A kérés a belépett felhasználó nevében megy; a rendszerprompt és az AI-kulcs a szerveren van.
+   Válasz: soronkénti JSON, {"t":"szöveg"} darabok, a végén {"done":true,"cut":false} vagy {"error":"…"}. */
+const AI_URL=SB_URL.replace(/\/$/,'')+'/functions/v1/advisor';
+const aiGate=()=>CFG_OK&&!cloud.uid&&cloud.state!=='pending';
+async function aiSample(input,{signal,onText}={}){
+  if(!CFG_OK||!cloud.sb)throw{code:cloud.state==='pending'?'def':'none'};
+  if(!cloud.uid)throw{code:'login'};
+  if(navigator.onLine===false)throw{code:'offline'};
+  let tok='';try{const r=await cloud.sb.auth.getSession();tok=(r.data&&r.data.session&&r.data.session.access_token)||''}catch(e){}
+  if(!tok)throw{code:'session_expired'};
+  const turns=typeof input==='string'?[{role:'user',content:input}]:input;
+  let res;try{res=await fetch(AI_URL,{method:'POST',signal,headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({context:turns[0].content,messages:turns.slice(1)})})}
+  catch(e){throw{code:e&&e.name==='AbortError'?'cancelled':'offline'}}
+  if(!res.ok){let j={};try{j=await res.json()}catch(e){}
+    throw{code:typeof j.code==='string'&&ERR[j.code]?j.code:res.status===401?'session_expired':res.status===404?'setup':'def',detail:typeof j.detail==='string'?j.detail:res.status===404?'advisor':String(res.status)}}
+  const rd=res.body.getReader(),dec=new TextDecoder();let buf='',text='',end=null;
+  try{for(;;){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+    while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;let j;try{j=JSON.parse(line)}catch(e){continue}
+      if(typeof j.t==='string'){text+=j.t;onText&&onText({text})}
+      else if(j.error)throw{code:j.error==='refused'?'refused':'def',detail:String(j.error),text};
+      else if(j.done)end=j}}}
+  catch(e){if(e&&typeof e.code==='string')throw e;throw{code:e&&e.name==='AbortError'?'cancelled':'def',detail:'megszakadt',text}}
+  if(!end)throw{code:'def',detail:'megszakadt',text};
+  return{text,truncated:!!end.cut}}
 async function sendChat(text){
   const p=pet();text=(text||'').trim();if(!p||chatBusy||!text)return;
   const log=S.chat[p.id]=S.chat[p.id]||[];log.push({r:'u',t:text.slice(0,2000),ts:Date.now()});
   chatBusy=p.id;chatNote='';streamText='';save('chat');redrawChat(true);
   const tp=chatSheet&&TOPIC[chatTopic]?`A felhasználó most a(z) „${TOPIC_HU[chatTopic]}" képernyőről kérdez: elsősorban erre a témára figyelj (${TOPIC[chatTopic]}). `:'';
   try{
-    const sample=await getSample();if(!sample)throw{code:'none'};
+    const sample=aiSample;
     const turns=[{role:'user',content:chatContext(p,tp+'A felhasználó üzenetei következnek.')},...log.slice(-13).map(m=>({role:m.r==='u'?'user':'assistant',content:m.t}))];
     chatCtl=new AbortController();
-    const res=await sample(turns,{cache:false,signal:chatCtl.signal,onText:({text})=>{streamText=text;const b=$('#pending');if(b){b.textContent=text;scrollChat()}}});
+    const res=await sample(turns,{signal:chatCtl.signal,onText:({text})=>{streamText=text;const b=$('#pending');if(b){b.textContent=text;scrollChat()}}});
     log.push({r:'a',t:res.text,ts:Date.now(),...(res.truncated?{cut:1}:{})});
   }catch(e){
     if(e&&e.text)log.push({r:'a',t:e.text,ts:Date.now(),cut:1});
-    if(!e||e.code!=='cancelled')chatNote=ERR[e&&e.code]||ERR.def;
+    if(!e||e.code!=='cancelled')chatNote=aiErrText(e);
   }
   chatBusy=null;chatCtl=null;streamText='';if(log.length>60)log.splice(0,log.length-60);save('chat');redrawChat();
 }
@@ -1257,8 +1102,7 @@ const ACT={
   petUse(el){S.settings.activePetId=el.dataset.id;chatNote='';careSt=null;save();closeSheet();if(tab==='more')tab='home';render({top:true,toToday:true})},
   petDelAsk(el){const p=S.pets.find(x=>x.id===el.dataset.id);confirmSheet('Biztosan törlöd?',`${esc(petName(p))} profilja, eseményei és beszélgetései véglegesen törlődnek.`,'Igen, törlöm','petDel',p.id)},
   petDel(el){const id=el.dataset.id;S.pets=S.pets.filter(p=>p.id!==id);S.events=S.events.filter(e=>e.petId!==id);delete S.chat[id];delete S.ai[id];if(S.settings.activePetId===id)S.settings.activePetId=null;save('chat','photo_'+id);closeSheet();tab='home';render({top:true});toast('Állat törölve')},
-  wzGroup(el){readWizard();const v=el.dataset.v;if(W.group!==v){W.group=v;W.species=v==='egyeb'?'egyeb':'';W.breed='mix';W.size='';W.weight=''}W.err='';drawWizard()},
-  wzSpecies(el){readWizard();if(W.species!==el.dataset.v){W.species=el.dataset.v;W.breed='mix';W.size='';W.weight=''}W.err='';drawWizard()},
+  wzSpecies(el){readWizard();if(W.species!==el.dataset.v){W.species=el.dataset.v;W.breed='mix';W.size=''}W.err='';drawWizard()},
   wzNext:wizardNext,wzBack(){readWizard();W.err='';W.step--;drawWizard()},wzNoPhoto(){readWizard();W.photo='';drawWizard()},
   stageAck(){const p=pet();p.lastStage=stageOf(p);save();render()},
   tick(el){tickSheet(el.dataset.key)},
@@ -1272,7 +1116,7 @@ const ACT={
   evDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Esemény törölve')},
   hTab(el){hTab=el.dataset.k;render()},
   wNew(){wSheet()},symNew(){symSheet()},parNew(el){parSheet(el.dataset.t)},
-  wSave(){const p=pet(),gr=gramSp(p),kg=parseFloat($('#wKg').value.replace(',','.'))/(gr?1000:1),d=$('#hDate').value;if(!(kg>0&&kg<200))return showErr('#hErr',gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
+  wSave(){const kg=parseFloat($('#wKg').value.replace(',','.')),d=$('#hDate').value,p=pet();if(!(kg>0&&kg<200))return showErr('#hErr','A súlyt számmal add meg kg-ban, pl. 12,5.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===d));S.events.push({id:newId(),petId:p.id,kind:'w',date:d,kg});syncWeight(p);save();closeSheet();render();toast('Súly mentve')},
   symSave(el){const text=$('#syText').value.trim(),d=$('#hDate').value,ai=el.dataset.ai;if(!text)return showErr('#hErr','Írd le röviden, mit vettél észre.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     const e={id:newId(),petId:pet().id,kind:'sym',date:d,text,sev:($('input[name=sySev]:checked')||{}).value||''};S.events.push(e);save();closeSheet();render();toast('Tünet mentve');if(ai)symAsk(e)},
@@ -1310,7 +1154,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey&&e.target.id==='chatIn'&&matchMedia('(pointer:fine)').matches){e.preventDefault();if(!chatBusy)sendChat(e.target.value)}});
 
 Object.assign(ACT,{
-  auOpen(el){authSheet(el.dataset.m)},
+  auOpen(el){chatSheet=false;authSheet(el.dataset.m)},
   auMode(el){authSheet(el.dataset.m,$('#auMail')?$('#auMail').value.trim():'')},
   async auGo(){
     if(auBusy||!cloud.sb)return;const m=auMode,mail=$('#auMail').value.trim().toLowerCase(),pw=$('#auPw')?$('#auPw').value:'';
@@ -1349,12 +1193,12 @@ const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator
 const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 function installHtml(){
   const why='Telepítve saját ikont kap, teljes képernyőn és internet nélkül is elindul.';
-  if(standalone())return'<p class="sub">A PetLife telepítve van erre az eszközre.</p>';
+  if(standalone())return'<p class="sub">A PetVia telepítve van erre az eszközre.</p>';
   if(installEvt)return`<p class="sub">${why}</p><button class="btn" data-act="install">Telepítés a kezdőképernyőre</button>`;
   return`<p class="sub">${why} ${isIOS?'iPhone-on Safariban koppints a Megosztás gombra, majd válaszd a „Főképernyőhöz adás" pontot.':'A böngésző menüjében válaszd az „Alkalmazás telepítése" vagy a „Hozzáadás a kezdőképernyőhöz" pontot.'}</p>`}
 ACT.install=async()=>{if(!installEvt)return;const ev=installEvt;installEvt=null;ev.prompt();try{await ev.userChoice}catch(e){}if(tab==='more')render()};
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(tab==='more')render()});
-addEventListener('appinstalled',()=>{installEvt=null;toast('PetLife telepítve');if(tab==='more')render()});
+addEventListener('appinstalled',()=>{installEvt=null;toast('PetVia telepítve');if(tab==='more')render()});
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
 if('serviceWorker'in navigator)addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});
   if(standalone()&&navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})});
