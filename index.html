@@ -603,7 +603,7 @@ Object.assign(VTIP,{Platti:'Elevenszülő: 3–6 hallal kezdj, és egy hímre k�
   'Malawi-sügér':'Kemény, lúgos vizet igényel (pH 7,7–8,6); a sziklalakó fajokat az agresszió csökkentésére sűrűn telepítik.','Koi':'Kerti tóba való: 80 cm-nél is nagyobbra nőhet, és 30 évnél tovább élhet.',
   'Bohóchal':'Párban él; a pár nagyobb, domináns tagja a nőstény.','Palettás doktorhal':'25–30 cm-re megnő: nagy akvárium kell neki. Algát és planktont is eszik.','Sárga doktorhal':'Főleg algát legel: növényi eleség legyen az étrend alapja. Kb. 20 cm-re megnő.',
   'Mandarinhal':'Az élő kőről apró rákokat eszik, a száraz eleséget többnyire nem fogadja el: csak nagy, beérett, élőköves akváriumba való.','Királygramma':'Sziklaépítmény és búvóhely kell neki; ugrik, ezért fedd le az akváriumot.','Zöld korallsügér':'Rajhal: legalább 6 példányt tarts együtt.'});
-function tipsFor(p,st){const T=TIPS[p.species];if(!T)return TIPS_OTHER;
+function tipsFor(p,st){const T=TIPS[gkey(p)]||TIPS[p.species];if(!T)return TIPS_OTHER;
   const a=[...(stock(p)&&VTIP[p.breed]?[VTIP[p.breed]]:[]),...((st&&T[st])||[]),...(T.all||[])];return a.length?a.slice(0,5):TIPS_OTHER}
 const TIPS_OTHER=['Keress olyan állatorvost, aki ért ehhez a fajhoz.','A faj igényeiről (hely, hőmérséklet, étrend) kérdezd a Tanácsadót.'];
 const EVCAT={vet:[ic('vet'),'Állatorvos'],vacc:[ic('vacc'),'Oltás'],care:[ic('care'),'Ápolás'],shed:[ic('shed'),'Vedlés'],memo:[ic('memo'),'Emlék'],other:[ic('other'),'Egyéb']};
@@ -1086,7 +1086,7 @@ const GSRC={kutya:{trip:EU_SRC},macska:{trip:EU_SRC},nyul:{trip:['euPets']},teng
  kanari:{food:[...BIRD_SRC_F,'lafCanary'],care:['lafCanary','lafHome','vcaHaz','merckTox'],trip:BIRD_SRC_T},
  pinty:{food:[...BIRD_SRC_F,'lafFinch','lafFinch2'],care:['lafFinch','lafFinch2','lafHome','vcaHaz','merckTox'],trip:BIRD_SRC_T}};
 /* becsukható forráslista az útmutatók alján; a linkek új lapon nyílnak */
-const srcBox=(p,part)=>{const ids=(GSRC[p.species]||{})[part]||[];return ids.length?`<details class="acc" style="margin-top:18px"><summary>Források</summary><ul class="srcs">${ids.map(i=>`<li><a href="${esc(SRC[i][1])}" target="_blank" rel="noopener noreferrer">${esc(SRC[i][0])}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">Az útmutató tájékoztató jellegű, a számadatai ezekből a forrásokból származnak. A források többsége angol nyelvű, és új lapon nyílik meg.</p></details>`:''};
+const srcBox=(p,part)=>{const ids=(GSRC[gkey(p)]||{})[part]||[];return ids.length?`<details class="acc" style="margin-top:18px"><summary>Források</summary><ul class="srcs">${ids.map(i=>`<li><a href="${esc(SRC[i][1])}" target="_blank" rel="noopener noreferrer">${esc(SRC[i][0])}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">Az útmutató tájékoztató jellegű, a számadatai ezekből a forrásokból származnak. A források többsége angol nyelvű, és új lapon nyílik meg.</p></details>`:''};
 /* ---------- útmutatók, 2/a kör: gyíkok ----------
    Minden számadat forrásból van (lásd SRC és GSRC); ahol a források eltérnek, a szöveg a tartományt adja meg. */
 const LZ_GUT='Az eleségrovarokat etetés előtt 24–48 órával tápláld fel jó minőségű eleséggel, és közvetlenül etetés előtt szórd meg kalciumporral.';
@@ -1297,6 +1297,210 @@ const GECKO_PROD={tap:[['Arcadia EarthPro gekkótáp (gyümölcsös táppor)','p
 const CHAM_PROD={tap:T_SUP,alom:[],felsz:[['Zoo Med','hálós terrárium, csepegtető, UVB-fényforrás','p'],['Exo Terra','hálós terrárium, esőztető, UVB-fényforrás, hő- és páramérő','p'],['Arcadia','UVB-fénycső és -lámpa','p'],['JBL','UV- és melegítőlámpa','k']],jatek:[['Exo Terra','mászóág, műnövény','p']]};
 Object.assign(PROD,{vitorlasgekko:GECKO_PROD,nappaligekko:GECKO_PROD,sisakoskameleon:CHAM_PROD,parduckameleon:CHAM_PROD});
 const PNONE={sisakoskameleon:{alom:'A kaméleon ketrecébe nem kell aljzat: a laza aljzatot lenyelheti. Az alját hagyd üresen, vagy béleld papírral.'},parduckameleon:{alom:'A kaméleon ketrecébe nem kell aljzat: a laza aljzatot lenyelheti. Az alját hagyd üresen, vagy béleld papírral.'}};
+/* ---------- útmutatók, 2/b kör: teknősök ----------
+   Minden számadat forrásból van (lásd SRC és GSRC); ahol a források eltérnek, a szöveg a tartományt adja meg.
+   A díszteknős két változata (hieroglifás ékszerteknős, közönséges pézsmateknős) saját útmutatót kap: lásd GVAR és gkey. */
+const GVAR={'Hieroglifás ékszerteknős':'diszteknos:hiero','Közönséges pézsmateknős':'diszteknos:pezsma'},gkey=p=>(p.species==='diszteknos'&&GVAR[p.breed])||p.species;
+const TT_SALM=['Higiénia','A teknős szalmonellát hordozhat: ő maga nem beteg tőle, de az emberre, főleg kisgyerekre és legyengült immunrendszerű emberre átterjedhet. Fogás és takarítás után mindig moss kezet szappannal.'];
+const TT_VET=['Állatorvos','Évente vidd el hüllőkhöz értő állatorvoshoz: a bajt korán könnyebb kezelni.'];
+const TT_HANDLE=['Kézbevétel','A teknős nem szereti, ha felemelik. Ha muszáj, két kézzel, a páncélját a mellső és a hátsó lábai között fogva, alacsonyan tartsd: ha leesik, megrepedhet a páncélja.'];
+const TT_PLATE='Az ételt tálról vagy kőlapról add, ne az aljzatról: a lenyelt aljzat bélelzáródást okozhat.';
+const TT_NOCHEM='vegyszerrel (növényvédő szerrel, műtrágyával) kezelt növény';
+const TT_QMBD=['Puha a páncélja','UVB-fény vagy kalcium hiányában csontanyagcsere-betegség alakul ki. Sürgősen vidd hüllőkhöz értő állatorvoshoz.'];
+const TT_QNOSE=['Folyik az orra vagy a szeme','Légúti betegség jele lehet. Vidd hüllőkhöz értő állatorvoshoz.'];
+const TT_CITES=['Papírok','A faj a CITES hatálya alá tartozik: a származási igazolást őrizd meg, és külföldi út előtt kérdezd meg a természetvédelmi hatóságot, kell-e engedély.'];
+const TR_TORT=(cites,big)=>[['Állatorvoshoz',big?'A nagy teknőst erős, biztosan zárható, jól szellőző ládában vidd, törölközővel kibélelve; a felnőtt állat emeléséhez segítség kell.':'Jól szellőző, biztosan zárható dobozban vidd, papírtörlővel vagy törölközővel kibélelve.'],
+  ['Hőmérséklet','Tartsd melegen: hidegben hüllőknek való hőpárnát tehetsz mellé, de csak úgy, hogy ne melegedhessen túl. Az út legyen minél rövidebb, és soha ne hagyd az autóban.'],
+  ['Ha elutazol','Ne vidd magaddal: a legjobb, ha megbízható ismerős gondozza otthon. Hagyd meg neki írásban az etetés és a fürdetés rendjét, és ellenőrizd előre a lámpák időzítőjét és a termosztátot.'],
+  ...(cites?[TT_CITES]:[]),TR_NOPASS('Hüllőre')];
+const TR_WT=law=>[['Állatorvoshoz','Ne vízben szállítsd: jól szellőző, biztosan zárható dobozban vidd, nedves papírtörlővel kibélelve; rövid útra száraz törölköző is megfelel.'],
+  ['Hőmérséklet','Tartsd melegen: hidegben hüllőknek való hőpárnát tehetsz mellé, de csak úgy, hogy ne melegedhessen túl. Az út legyen minél rövidebb, és soha ne hagyd az autóban.'],
+  ['Ha elutazol','Ne vidd magaddal: a legjobb, ha megbízható ismerős gondozza otthon. Hagyd meg neki írásban az etetés rendjét, és ellenőrizd előre a szűrőt, a vízmelegítőt és a lámpák időzítőjét.'],
+  ...(law?[law]:[]),TR_NOPASS('Hüllőre')];
+
+/* --- mediterrán szárazföldi teknősök: görög, mór, szegélyes --- */
+const MED_FOOD={h:'Az étrend alapja',base:['Növényevő: az étrend több mint 70%-a vadon termő gyom legyen, pl. pitypang, útifű, csorbóka, tyúkhúr, lóhere, mályva.','Virágot és levelet is adhatsz: hibiszkuszt, sarkantyúkát, varjúhájat.','Csak vegyszermentes helyről szedj növényt, és mosd meg.','Ha nincs gyom, leveles zöldség és saláta pótolhatja.','Ha gyári teknőstápot is adsz, rostos, fűszéna alapút válassz.',TT_PLATE,'Mindig legyen friss víz olyan tálban, amelybe bele is tud ülni; naponta cseréld.'],
+  freq:{kolyok:'Naponta annyit adj, amennyit kb. egy óra alatt megeszik.',novendek:'Naponta annyit adj, amennyit kb. egy óra alatt megeszik.',felnott:'Hetente 3–4 alkalommal adj ételt; a többi napon legeljen a kifutóban.',idos:'Hetente 3–4 alkalommal adj ételt; a többi napon legeljen a kifutóban. Mérd rendszeresen a súlyát.'},
+  sw:false,bad:['gyümölcs (a sok cukor emésztési zavart okoz)','kutya- és macskatáp (a sok fehérje vesekárosodást és páncéltorzulást okoz)',TT_NOCHEM],
+  extra:'Az ételt felváltva szórd meg kalciumporral és vitamint, ásványi anyagot tartalmazó porral; az adagolásnál kövesd a gyártó útmutatóját.'};
+const TT_M_SHELL=['Páncél és növekedés','A fiatal teknősnek UVB-fény és kalcium kell az egészséges csont- és páncélfejlődéshez. Fiatalon valamivel magasabb páratartalom is kell, különben púposan nőhet a páncélja: mindig legyen párás búvóhelye.'];
+const TT_M_SOAK1=['Áztatás','A kis teknőst naponta áztasd 10–20 percig sekély, langyos vízben. Közben ne hagyd magára: megfulladhat.'];
+const TT_M_IN=['Bent és kint','A kerti kifutó a 10 cm-nél nagyobb páncélú teknősnek való; addig bent, nyitott tetejű teknősasztalon tartsd.'];
+const TT_M_HIBY=['Teleltetés','Teleltetni csak egészséges, megfelelő méretű teknőst szabad: az első tél előtt egyeztess hüllőkhöz értő állatorvossal. A sovány vagy beteg állatot bent, melegen kell áttelelteni.'];
+const TT_M_SOAK2=['Fürdetés','Hetente egyszer-kétszer fürdesd 10–20 percig sekély, langyos vízben; közben ne hagyd magára.'];
+const TT_M_OUT=m2=>['Kerti kifutó',`Nyáron a legjobb neki a napos, jó vízelvezetésű kerti kifutó árnyékkal és búvóhellyel, legalább ${m2} alapterülettel. Ás és mászik, ezért a kerítés legyen tömör és szökésbiztos.`];
+const TT_M_ALONE=['Társak','Társat nem igényel. Különböző fajú teknősöket ne tarts együtt, mert megfertőzhetik egymást. Ha többet tartasz, legyen több búvó-, sütkérező- és etetőhely; a hím zaklathatja a nőstényt.'];
+const TT_M_HIBTXT='Csak egészséges, jó kondíciójú állatot teleltess: ősszel előtte vidd el hüllőkhöz értő állatorvoshoz. Az előkészítés kb. 4 hét: abbahagyod az etetést (az első héten még melegben marad, hogy megemésszen), a hőmérsékletet hetente kb. 5 °C-kal csökkented, és legalább kétnaponta megfürdeted. Állandó, kb. 5 °C-on teleljen (2–9 °C között), fagymentes helyen, rágcsálóbiztos ládában vagy külön hűtőben; a kertben magára hagyva ne. Legfeljebb 3 hónapig tartson.';
+const TT_M_HIBW=['Telelés alatt és után','Telelés alatt 1–2 hetente mérd meg: havonta kb. 1%-ot fogyhat. Ha a súlya 8–10%-át elvesztette, vagy váladékozik az orra vagy a szeme, ébreszd fel, és vidd állatorvoshoz. Ébresztéskor tartsd néhány órát szobahőmérsékleten, majd naponta kétszer fürdesd legalább 30 percig langyos vízben. Ha 7 napon belül nem eszik vagy nem ürít vizeletet, vidd állatorvoshoz.'];
+const TT_M_OLD=['Idős korban','A mediterrán teknősök 50 évnél tovább is élhetnek. Idősen is mérd rendszeresen a súlyát, és teleltetés előtt minden ősszel vizsgáltasd meg.'];
+const MED_P=[['Púposan nő a páncélja','A púposodás a csontanyagcsere-betegséggel és a fiatalkori túl száraz tartással függ össze. Ellenőrizd az UVB-fényt, a kalciumpótlást és a párás búvóhelyet, és mutasd meg hüllőkhöz értő állatorvosnak.'],TT_QMBD,
+  ['Folyik az orra vagy a szeme','Légúti betegség jele lehet, ami a mediterrán teknősöknél gyakori. Vidd hüllőkhöz értő állatorvoshoz.'],
+  ['Hasmenése van','Gyakori oka a gyümölcs vagy a bélféreg. Hagyd el a gyümölcsöt, és vigyél friss ürülékmintát az állatorvoshoz.'],
+  ['Nem eszik','Ellenőrizd hőmérővel a hőmérsékletet. Ha telelés után 7 napon belül nem kezd enni, vagy fogy és levert, vidd hüllőkhöz értő állatorvoshoz.']];
+const MED_I=['Ültess a kifutóba ehető növényeket (pitypang, útifű, lóhere), hogy legelhessen.','Tegyél be rönköket, köveket és több búvóhelyet a meleg és a hűvös oldalra is.','A többféle zöldet keverd össze, hogy ne csak a kedvencét válogassa ki.','Nyáron minél több időt töltsön kint, természetes napfényen.'];
+const MED_CARE=(size,m2,hib)=>({g:{kolyok:[TT_M_SHELL,TT_M_SOAK1,TT_M_IN,TT_M_HIBY],novendek:[TT_M_SHELL,TT_M_SOAK2,TT_M_IN,['Teleltetés',hib+' '+TT_M_HIBTXT+' Fiatal, először telelő állatnál rövidebb, kb. 6 hetes telelés való.'],TT_M_HIBW,TT_HANDLE],
+  felnott:[['Méret',size],TT_M_OUT(m2),TT_M_SOAK2,TT_M_ALONE,['Teleltetés',hib+' '+TT_M_HIBTXT],TT_M_HIBW,TT_HANDLE,TT_SALM,TT_VET],idos:[TT_M_OLD,['Teleltetés',hib+' '+TT_M_HIBTXT],TT_M_HIBW,TT_M_SOAK2,TT_VET]},i:MED_I,p:MED_P});
+const MED_HOME=(dry,sub)=>[['Teknősasztal','Bent nyitott tetejű, jól szellőző, tömör oldalfalú teknősasztalon vagy padlókarámban tartsd, minél nagyobb helyen. Az üvegterrárium a rossz szellőzés miatt általában nem való neki, és az átlátszó falat is kerüld.'],
+  ['Hőmérséklet','A sütkérezőhelyen 30–35 °C, a hűvös végen 20–25 °C legyen; éjjel ne hűljön 18 °C alá. A sütkérezőlámpa nappal égjen, éjjel kapcsold le. '+LZ_THERMO,'Exo Terra, Zoo Med'],
+  ['UVB-fény','Naponta kb. 12 órát égjen erős (10–12%-os) UVB-fényforrás, a gyártó által megadott távolságban. '+LZ_UVB_CHG+' A legjobb a természetes napfény.','Arcadia, Zoo Med, Exo Terra'],
+  ['Páratartalom','Alacsony vagy közepes páratartalom kell; páramérővel ellenőrizd. Legyen párás búvóhelye: sötét doboz bejárattal, nedves mohával bélelve.'+dry],
+  ['Aljzat',sub+' Tiszta homok, macskaalom, kukoricacsutka- és dióhéj-granulátum ne kerüljön alá: lenyelve bélelzáródást okozhat.','Exo Terra, Zoo Med'],
+  ['Búvóhely','Legyen búvóhelye a meleg és a hűvös végen is.'],
+  ['Takarítás','Az ürüléket naponta szedd ki; hetente takaríts ki alaposan, hüllőknél használható fertőtlenítővel.']];
+const MED_SUB='Laza, ásható aljzat kell, amelyben vissza tud fordulni, ha a hátára esik: pl. földkeverék, nagy darabos kéreg vagy kender.';
+
+/* --- vízi teknősök közös kártyái --- */
+const TT_LAW_TS=['Jogi tudnivalók','A vörösfülű és a sárgafülű ékszerteknős (Trachemys scripta) 2016 óta szerepel az Európai Unió inváziós fajokról szóló jegyzékén. A kormányhivatali tájékoztató szerint a jegyzékbe vétel előtt, kedvtelésből tartott állat élete végéig megtartható, ha zártan tartod, és megakadályozod, hogy szaporodjon vagy kiszabaduljon; az ilyen állatot be kell jelenteni a vármegyei kormányhivatal természetvédelmi hatóságánál. Ez az útmutató csak a már meglévő állat gondozásáról szól. A rád vonatkozó hatályos szabályt a hatóságnál ellenőrizd.'];
+const TT_LAW_OTHER=n=>['Jogi tudnivalók',`${n} idegenhonos faj: szabadon engedni nem szabad, mert kárt tehet a hazai élővilágban. Hogy a tartására milyen szabály vonatkozik, azt a vármegyei kormányhivatal természetvédelmi hatóságánál ellenőrizd.`];
+const TT_LAW_EMYS=['Jogi tudnivalók','A mocsári teknős Magyarországon védett faj. A kormányhivatali tájékoztató szerint védett állat tartásához, befogásához, szaporításához, adásvételéhez és külföldre viteléhez a természetvédelmi hatóság (a vármegyei kormányhivatal) engedélye kell. Ez az útmutató csak a jogszerűen tartott, már meglévő állat gondozásáról szól. Vadon élő teknőst ne vigyél haza; ha sérült állatot találsz, értesítsd a természetvédelmi hatóságot.'];
+const TT_QWATER=['Zavaros vagy büdös a víz','A rossz vízminőség fő oka a túletetés és a vízben romló maradék. Hetente cseréld a víz 20%-át klórmentesített vízre, és mérd az ammóniát és a nitritet. Ha magas, naponta cseréld a víz felét, amíg le nem megy; ha ez sem segít, erősebb szűrő kell.'];
+const TT_QSHELL=['Sebes, foltos vagy hólyagos a páncélja','Páncél- vagy bőrfertőzés jele lehet. Gyakran a rossz vízminőség okozza, vagy az, hogy nem tud teljesen megszáradni. Vidd hüllőkhöz értő állatorvoshoz.'];
+const TT_QWMBD=['Puha vagy egyenetlen a páncélja','Csontanyagcsere-betegség jele, ami többnyire a kevés UVB-fény miatt alakul ki. További jele a száj vagy a szem körüli duzzanat. Sürgősen vidd hüllőkhöz értő állatorvoshoz.'];
+const TT_QEYE=['Bedagadt a szeme','A rossz vízminőség vagy az A-vitamin-hiány okozhatja. Ellenőrizd a vizet, és vidd hüllőkhöz értő állatorvoshoz.'];
+const TT_QWEAT=['Nem eszik','Ellenőrizd a víz és a sütkérezőhely hőmérsékletét. Az étvágytalanság belső élősködőkre is utalhat: ha tartós, vidd hüllőkhöz értő állatorvoshoz.'];
+const TT_QGIVE=['Nem tudom tovább tartani','Szabadon engedni tilos és káros: az elengedett ékszerteknősök a hazai mocsári teknőst veszélyeztetik. Kérj tanácsot a vármegyei kormányhivatal természetvédelmi hatóságától vagy hüllőkhöz értő állatorvostól.'];
+const TT_QGIVE2=['Nem tudom tovább tartani','Szabadon engedni nem szabad: az idegenhonos teknősök kárt tesznek a hazai élővilágban. Kérj tanácsot a vármegyei kormányhivatal természetvédelmi hatóságától vagy hüllőkhöz értő állatorvostól.'];
+const TT_W_ARR=['Megérkezés','A medencét két héttel korábban indítsd be, hogy kipróbáld a technikát, és a szűrő beérjen. Érkezéskor tedd a hordozót a napozóhelyre, és hagyd, hogy magától jöjjön ki; a lámpákat csak másnap kapcsold fel.'];
+const TT_W_SHED=['Vedlés','A páncél szarulemezei egyenként válnak le, a nyak és a lábak bőre darabokban: ez természetes. Fontos, hogy a napozóhelyen teljesen meg tudjon száradni. Seb, hólyag vagy folyamatos vedlés esetén vidd állatorvoshoz.'];
+const TT_W_HAND=['Kézbevétel','Ne simogasd, és csak akkor vedd kézbe, ha szükséges (pl. állatorvoshoz menet). Kétoldalt, a páncéljánál fogd, hogy hátranyúlva ne tudjon megharapni; előtte és utána moss kezet.'];
+const TT_W_WATER=['Szűrő és vízcsere','Erős, a vízmennyiség 2–3-szorosára méretezett külső szűrő kell. A szűrő mellett is cseréld a vizet: hetente a 20%-át vagy 1–2 hetente a 30%-át, klórmentesített vízre. Az ammóniát és a nitritet teszttel ellenőrizd; a szűrőszivacsot a kivett akváriumvízben öblítsd ki.','EHEIM, JBL, sera, Tetra'];
+const TT_W_UVB=['UVB-fény','UVB-fény nélkül nem tudja hasznosítani a kalciumot. A fényforrás a napozóhely fölött, a gyártó által megadott távolságban legyen, és időzítővel napi 12 órát égjen. '+LZ_UVB_CHG,'Arcadia, Exo Terra, Zoo Med'];
+const SL_STAGE=(law,sz,young,old)=>({kolyok:[law,TT_W_ARR,['Növekedés',sz+' A medencét a felnőtt mérethez tervezd, és a vízszintet a növekedésével emeld.'],['Etetés fiatalon',young],TT_W_HAND],
+  novendek:[law,['Növekedés',sz+' A medencét a felnőtt mérethez tervezd, és a vízszintet a növekedésével emeld.'],['Súly','Mérd rendszeresen a súlyát: a túletetéstől elhízik, és túl gyorsan nő.'],TT_W_SHED,TT_W_HAND,TT_SALM],
+  felnott:[law,['Egyedül','A legjobb egyedül tartani: közös medencében gyakori a marakodás a napozóhelyért és az ételért.'],['Kerti tó','A felnőtt teknős biztonságos, szökésbiztos kerti tóban is tartható, ha ott is megvan a szükséges meleg és fény.'],TT_W_SHED,TT_W_HAND,TT_SALM,TT_VET],
+  idos:[law,['Idős korban',old+' Idősen is mérd rendszeresen a súlyát, és évente vizsgáltasd meg.'],TT_W_SHED,TT_SALM,TT_VET]});
+const SL_I=['Tegyél a vízbe úszó növényeket és békalencsét: árnyékot és búvóhelyet adnak, és meg is eszi őket.','Rögzített kövek és gyökerek közt felfedezhet és elbújhat.','Az ételmaradékot etetés után hálóval szedd ki.','A víz és a napozóhely hőmérsékletét naponta ellenőrizd hőmérővel.'];
+const SL_HOME=(tank,extra)=>[['Medence',tank],['Vízmélység','A víz legyen olyan mély, hogy szabadon úszhasson, és ne érjen le folyton az aljára.'],
+  ['Napozóhely','Száraz, az egész testének elég nagy napozóhely kell, amelyre rámpán könnyen kimászik; a felülete 30–40 °C legyen. Legyen hűvösebb száraz kiülő is. A melegítőlámpa legyen védett, hogy ne égesse meg.','Exo Terra, Zoo Med, Trixie'],
+  ['Vízhőmérséklet','A víz 22–26 °C legyen (kis teknősnél kb. 25 °C), és éjjel se hűljön 20 °C alá. A vízmelegítő legyen strapabíró és védőráccsal burkolt; a hőmérsékletet naponta ellenőrizd.','EHEIM, AQUAEL'],
+  ['UVB-fény',TT_W_UVB[1]+' A források 5–12%-os fénycsövet ajánlanak.',TT_W_UVB[2]],TT_W_WATER,
+  ['Aljzat','Aljzat nem kötelező. Ha szeretnél, finom homokot tegyél vékony rétegben, vagy nagy folyami köveket; apró kavics ne legyen benne, mert lenyeli, és elzáródást okoz.'],
+  ['Szökésbiztos tartás','A medencét fedd le szellőző dróthálóval, és úgy helyezd el, hogy ne érje huzat, tűző nap vagy a fűtőtest melege.'],...(extra||[])];
+
+Object.assign(FOOD,{
+ gorogteknos:MED_FOOD,morteknos:MED_FOOD,szegelyesteknos:{...MED_FOOD,freq:null,freqAll:'A fiatal teknős naponta annyit kapjon, amennyit kb. egy óra alatt megeszik, mellé száraz levelet és aprított szénát. A felnőttnek hetente 3–4 alkalommal adj ételt; a többi napon legeljen a kifutóban.'},
+ sarkantyusteknos:{h:'Az étrend alapja',base:['Növényevő: füvet, szénát és leveles zöldet eszik, pl. réti füvet, lucernát, pitypangot, endíviát, római salátát, hibiszkuszt, fügekaktuszt.','Gyári teknőstáp csak alkalmi kiegészítő legyen; sütőtököt is csak alkalmanként adj.','Tányérról vagy tálcáról etesd, hogy ne nyeljen le aljzatot.','Mindig legyen friss víz legfeljebb térdig érő, az aljzatba süllyesztett tálban; naponta cseréld.'],
+  freq:{kolyok:'Naponta annyit adj, amennyit megeszik.',novendek:'Naponta annyit adj, amennyit megeszik.',felnott:'Naponta kb. a páncéljával megegyező méretű adagot adj.',idos:'Naponta kb. a páncéljával megegyező méretű adagot adj. Mérd rendszeresen a súlyát.'},
+  sw:false,bad:['gyümölcs (soha ne adj)',TT_NOCHEM],extra:'Szépiacsont mindig legyen bent: kalciumot ad, és a csőrét is koptatja. Vitaminport a gyártó útmutatója szerint szórj az ételre.'},
+ szenesteknos:{h:'Az étrend alapja',base:['Mindenevő, de főleg növényt eszik: az étrend kb. 90%-a növény, 10%-a állati eredetű.','A növényi rész nagyobb fele gyümölcs, virág és levél: pl. alma, bogyós gyümölcs, füge, mangó, dinnye, papaya, pitypang, hibiszkusz, római saláta.','A többi fű és zöldség: széna, paprika, sárgarépa, tök.','Állati eredetű táplálékot hetente legalább egyszer kapjon: gilisztát, csótányt, lisztkukacot, csigát vagy főtt tojást.','Tányérról vagy tálcáról etesd, hogy ne nyeljen le aljzatot.','Mindig legyen friss víz sekély tálban, amelybe könnyen be- és kimászik; naponta tisztítsd.'],
+  freq:{kolyok:'Naponta annyit adj, amennyit megeszik.',novendek:'Naponta annyit adj, amennyit megeszik.',felnott:'Kétnaponta etesd, hogy ne hízzon el.',idos:'Kétnaponta etesd, hogy ne hízzon el. Mérd rendszeresen a súlyát.'},
+  sw:false,bad:[TT_NOCHEM],extra:'Az ételt szórd meg kalciumban gazdag, foszforban szegény ásványianyag-porral, a gyártó útmutatója szerint. Szépiacsont is legyen bent, de ne az legyen a fő kalciumforrás.'},
+ mocsariteknos:{h:'Az étrend alapja',base:['Alkalmazkodó mindenevő: főleg vízi rovarokat, férgeket, csigákat, rákokat és halat eszik, nyáron több növényt is.','Fogságban jó minőségű teknőstáp, rovarlárva és giliszta adható.','Vízinövény (pl. békalencse) mindig legyen elérhető.','A vízben eszik: a maradékot szedd ki, hogy ne rontsa a vizet.'],
+  sw:false,bad:[],extra:'Nagyon érzékeny a kalcium és a D3-vitamin hiányára: napfény vagy UVB-fény és rágni való szépiacsont mindig legyen. Az etetés gyakoriságát egyeztesd hüllőkhöz értő állatorvossal.'},
+ diszteknos:{h:'Az étrend alapja',base:['Mindenevő: fiatalon több állati eredetű táplálékot eszik; ahogy nő, egyre több növényt adj.','A források eltérnek abban, mennyi legyen felnőttkorban a növény (az étrend negyedétől a háromnegyedéig): az arányt egyeztesd hüllőkhöz értő állatorvossal.','Állati eredetű: jó minőségű teknőstáp, giliszta, tücsök, szúnyoglárva, garnéla, felengedett édesvízi hal.','Növény: vízinövény, pitypang, endívia, római saláta, reszelt tök és sárgarépa.','Adag: állati eredetűből annyi, amennyit 5–10 perc alatt megeszik; teknőstápból kb. a fejével, zöldből kb. a páncéljával megegyező mennyiség.','A maradékot hálóval szedd ki: a vízben romló étel rontja a vízminőséget.'],
+  freq:{kolyok:'Naponta etesd.',novendek:'Kétnaponta etesd; zöldet naponta kínálhatsz.',felnott:'Két-három naponta etesd; zöldet naponta kínálhatsz.',idos:'Két-három naponta etesd; zöldet naponta kínálhatsz. Mérd rendszeresen a súlyát.'},
+  sw:false,bad:[],extra:'A vízben evő teknős ételére nem tudsz kalciumport szórni: tegyél a vízbe szépiacsontot (a kemény hátlapja nélkül), és 1–2 havonta cseréld.'}});
+FOOD['diszteknos:hiero']={...FOOD.diszteknos,base:['Fiatalon mindenevő, felnőttként főleg növényevő.','Fiatalon jó minőségű teknőstápot kapjon, mellé zöldet.','Felnőttként az étrend alapja növény: római saláta és más leveles zöldek, vízinövény (átokhínár, vallisneria).','A salátát a vízben hagyhatod; a többi ételt külön edényben add, hogy ne rontsa a vizet.'],freq:null,
+  extra:'Legyen a vízben szépiacsont: ez pótolja a kalciumot. Az etetés gyakoriságát egyeztesd hüllőkhöz értő állatorvossal.'};
+FOOD['diszteknos:pezsma']={h:'Az étrend alapja',base:['Főleg húsevő: a természetben csigát, rákot és vízi rovart eszik.','Adható: giliszta, tücsök, szúnyoglárva, felvágott hal és garnéla, valamint jó minőségű teknőstáp.','Néha növényt is eszik, pl. átokhínárt vagy békalencsét.','A fenéken keresgél, és többnyire ott is eszik.'],
+  sw:false,bad:['vadon gyűjtött csiga (betegséget terjeszthet)'],extra:'Az etetés gyakoriságát egyeztesd hüllőkhöz értő állatorvossal.'};
+
+Object.assign(CARE,{
+ gorogteknos:MED_CARE('Felnőttként 13–20 cm-es; a nőstény a nagyobb.','1,1 m²','A görög teknős a természetben is telel.'),
+ morteknos:MED_CARE('Felnőttként alfajtól függően 13–21 cm-es.','1,1 m²','A mór teknős egyes alfajai (a dél-törökországi és az észak-afrikai állatok) nem telelnek. Ha nem ismered biztosan a teknősöd származását, teleltetés előtt kérdezz hüllőkhöz értő állatorvost; a nem telelő állatot télen is a megszokott fűtés és világítás mellett tartsd. Ha teleltethető:'),
+ szegelyesteknos:{g:{all:[['Méret','Az egyik legnagyobb mediterrán teknős: felnőttként 25–40 cm-es és 2–3 kg-os.'],TT_M_SHELL,['Áztatás és fürdetés','A kis teknőst naponta áztasd 10–20 percig sekély, langyos vízben; a felnőttet hetente egyszer-kétszer fürdesd. Közben ne hagyd magára.'],TT_M_IN,
+   ['Kerti kifutó','Nyáron a legjobb neki a napos, jó vízelvezetésű kerti kifutó árnyékkal és búvóhellyel, legalább 2,2 m² alapterülettel. A kerítés legyen tömör, és legalább kétszer olyan magas, mint a teknős hossza.'],TT_M_ALONE,
+   ['Teleltetés','A szegélyes teknős is telel. '+TT_M_HIBTXT],TT_M_HIBW,TT_HANDLE,TT_SALM,TT_VET]},i:MED_I,p:MED_P},
+ sarkantyusteknos:{g:{kolyok:[['Páncél és pára','A fiatal sarkantyús teknősnek 80% fölötti páratartalom és mindig elérhető párás búvóhely kell: a tartós kiszáradástól púposan nő a páncélja.'],['Áztatás','A kis teknőst naponta áztasd 20–30 percig 29–35 °C-os, legfeljebb könyékig érő vízben.'],['Hely fiatalon','25 cm-es páncélhossz alatt bent tartható, legalább 2,1 × 1,1 méteres helyen.'],['Óriásira nő','Felnőttként 61–76 cm-es és 32–50 kg-os lesz, a nagy hímek ennél is nagyobbak. Kert és fűthető ház kell majd neki: tervezd meg előre.']],
+   novendek:[['Páncél és pára','Amíg nő, magas páratartalom és párás búvóhely kell neki: a tartós kiszáradástól púposan nő a páncélja.'],['Óriásira nő','Felnőttként 61–76 cm-es és 32–50 kg-os lesz, a nagy hímek ennél is nagyobbak. Kert és fűthető ház kell majd neki: tervezd meg előre.'],['Hely','Amíg 25 cm-nél kisebb, bent is tartható legalább 2,1 × 1,1 méteres helyen; a felnőtt állatnak kerti kifutó és fűthető ház kell.'],TT_HANDLE],
+   felnott:[['Kifutó','Felnőttként csak kertben tartható: legalább 6 × 3 méteres kifutó kell, 1,2 méter magas, kb. 30 cm mélyen a földbe süllyesztett fallal, mert ás.'],['Fűtött ház','Ha éjjel 10 °C alá hűl a levegő, 21–24 °C-ra fűtött ház kell neki, fényt nem adó fűtéssel. Ha télen nappal sem megy 21 °C fölé a hőmérséklet, fűtött benti helyre kell költöztetni.'],['Nem telel','A sarkantyús teknőst nem szabad teleltetni: télen is melegben, a megszokott világítás mellett tartsd.'],
+    ['Kézbevétel','Nem szereti, ha felemelik; a felnőtt állatot egyedül nem is tudod megemelni. Ha leesik, súlyosan megsérülhet.'],TT_SALM,TT_VET],
+   idos:[['Idős korban','A sarkantyús teknős 70 évnél tovább is élhet. Idősen is mérd rendszeresen a súlyát, és évente vizsgáltasd meg.'],['Nem telel','A sarkantyús teknőst nem szabad teleltetni: télen is melegben, a megszokott világítás mellett tartsd.'],TT_VET]},
+  i:['Mély, ásható aljzat kell neki: szeret üreget ásni.','Ültess a kifutóba füvet és ehető növényeket, hogy legelhessen.','A vizestálat süllyeszd az aljzatba, hogy könnyen belemásszon.'],
+  p:[['Púposan nő a páncélja','Fiatal korban a tartós kiszáradás torzítja a páncélt. Ellenőrizd a páratartalmat és a párás búvóhelyet, áztasd rendszeresen, és mutasd meg hüllőkhöz értő állatorvosnak.'],TT_QMBD,['Kiássa magát a kifutóból','Erősen ás: a kifutó falát süllyeszd kb. 30 cm mélyen a földbe.'],TT_QNOSE,['Nem eszik','Ellenőrizd hőmérővel a hőmérsékletet. Ha fogy vagy levert, vidd hüllőkhöz értő állatorvoshoz.']]},
+ szenesteknos:{g:{kolyok:[['Meleg és pára','Trópusi teknős: 70–90%-os páratartalom kell neki, és a fiatalt éjjel is melegebben kell tartani, mint a felnőttet.'],['Etetés fiatalon','Amíg nő, naponta annyit kap, amennyit megeszik.'],['Nem telel','A szenes teknős nem alszik téli álmot: egész évben melegben tartsd.']],
+   novendek:[['Meleg és pára','Trópusi teknős: 70–90%-os páratartalom kell neki; naponta 2–3 alkalommal permetezz.'],['Méret','Felnőttként 30–46 cm-es lesz: a helyét ehhez tervezd.'],['Nem telel','A szenes teknős nem alszik téli álmot: egész évben melegben tartsd.'],TT_HANDLE],
+   felnott:[['Pára','70–90%-os páratartalom kell neki: naponta 2–3 alkalommal permetezz (ne közvetlenül a teknősre), és páramérővel ellenőrizd.'],['Nem telel','A szenes teknős nem alszik téli álmot: egész évben melegben tartsd.'],
+    ['Nyáron kint','Meleg időben kint is tarthatod, legalább 61 cm magas, 30 cm mélyen a földbe süllyesztett fallal körülvett kifutóban. Ha éjjel 10 °C alá hűl a levegő, 21–24 °C-ra fűtött menedék kell; ha nappal is 18 °C alatt marad, vidd be.'],
+    ['Fürdetés','Hetente kétszer fürdesd sekély, langyos vízben.'],['Társak','A legjobb egyedül tartani.'],TT_HANDLE,TT_SALM,TT_VET],
+   idos:[['Idős korban','A szenes teknős 50 évnél tovább is élhet. Idősen is mérd rendszeresen a súlyát, és évente vizsgáltasd meg.'],['Nem telel','A szenes teknős nem alszik téli álmot: egész évben melegben tartsd.'],TT_VET]},
+  i:['Az aljzat tetejére szórj avart: természetes búvóhely.','A párás búvóhelyet béleld nedves mohával, és tedd a hűvös oldalra.','Kézből vagy csipeszről is elfogadja az ételt: így barátkozhatsz vele felemelés nélkül.'],
+  p:[['Száraz a levegő, nem tartja a párát','A nyitott tetejű teknősasztal nem tartja meg a párát: zártabb, de szellőző helyre van szüksége. Permetezz gyakrabban, és legyen párás búvóhelye.'],TT_QMBD,TT_QNOSE,['Nem eszik','Ellenőrizd hőmérővel a hőmérsékletet. Ha fogy vagy levert, vidd hüllőkhöz értő állatorvoshoz.']]},
+ mocsariteknos:{g:{kolyok:[TT_LAW_EMYS,['Fiatalon bent','A kikelt és a 3 évesnél fiatalabb teknős benti akvaterráriumban is tartható, főleg ősszel és télen. Bent UVB-fény kell neki.'],['Szűrő','A szivattyú szívónyílását védd ráccsal, és kerüld az erős áramlást: a fiatal teknős megfulladhat.']],
+   novendek:[TT_LAW_EMYS,['Kerti tó','A szabadtéri tó az ajánlott tartásmód; 3 éves kor alatt ősszel és télen benti akvaterráriumban is tartható.'],['Szökés','Ügyesen mászik, függőleges felületen is: a tó körül legyen biztos kerítés.'],TT_W_HAND],
+   felnott:[TT_LAW_EMYS,['Méret','A felnőtt nőstény kb. 15 cm-es, a hím kb. 12 cm-es.'],['Kerti tó','A felnőtt teknősnek a szabadtéri tó az ajánlott; benti akvaterrárium csak átmenetileg (pl. ápolás idejére) való.'],['Napozás','Nappal aktív, sokat napozik: kell neki szárazulat és napozóhely, ahol teljesen megszárad.'],
+    ['Telelés','A természetben novembertől márciusig telel, többnyire a víz alatt, az iszapban. A fogságban tartott állat teleltetését előre egyeztesd hüllőkhöz értő állatorvossal.'],['Szökés','Ügyesen mászik, függőleges felületen is: a tó körül legyen biztos kerítés.'],['Társak','A hímek a szaporodási időszakban verekedhetnek: figyeld őket, és szükség esetén válaszd szét.'],TT_SALM,TT_VET],
+   idos:[TT_LAW_EMYS,['Idős korban','Hosszú életű faj: évtizedekig élhet. Idősen is évente vizsgáltasd meg.'],['Telelés','A fogságban tartott állat teleltetését előre egyeztesd hüllőkhöz értő állatorvossal.'],TT_VET]},
+  i:['Úszó növények (pl. békalencse) takarást adnak, és meg is eszi őket.','Napozóhelynek jó a lapos kő, az úszó parafa vagy a rögzített ág.','Legyen laza talajú szárazulat is, ahol megszáradhat.'],
+  p:[TT_QSHELL,TT_QWMBD,['Talált vagy sérült mocsári teknős','Ne vidd haza: védett faj. Értesítsd a természetvédelmi hatóságot (a vármegyei kormányhivatalt).']]},
+ diszteknos:{g:SL_STAGE(TT_LAW_TS,'Gyorsan nő: felnőttként 20–30 cm-es lesz, a nőstény a nagyobb.','Fiatalon főleg állati eredetű táplálékot eszik, és naponta kap enni. Már most kínálj mellé zöldet, hogy megszokja.','Az ékszerteknősök 30–40 évig is élhetnek.'),i:SL_I,p:[TT_QWATER,TT_QSHELL,TT_QWMBD,TT_QEYE,TT_QWEAT,TT_QGIVE]}});
+CARE['diszteknos:hiero']={g:SL_STAGE(TT_LAW_OTHER('A hieroglifás ékszerteknős'),'Nagyra nő: a hím 23–25 cm-es, a nőstény akár 40 cm-es és 3,5–5 kg-os lesz.','Fiatalon mindenevő: teknőstápot és zöldet is kapjon. Ahogy nő, egyre több növényt adj.','Hosszú életű teknős.'),i:SL_I,p:[TT_QWATER,TT_QSHELL,TT_QWMBD,TT_QEYE,TT_QWEAT,TT_QGIVE2]};
+{const law=TT_LAW_OTHER('A közönséges pézsmateknős'),small=['Kicsi marad','Felnőttként is legfeljebb 10–11 cm-es, és akár 30 évig vagy tovább él.'],
+  swim=['Nem jó úszó','A fenéken jár, nem erős úszó: elfáradhat és megfulladhat, ha nincs hol megpihennie. Tegyél a vízbe ágakat és gyökereket, hogy a felszín közelében és félúton is megkapaszkodhasson. A sarkokat hagyd szabadon: ott szokott feljönni levegőért.'],
+  hand=['Kézbevétel','A páncélja hátsó részénél fogd: hosszú nyakával hátranyúlva megharaphat. Ijedtében bűzös váladékot bocsát ki; a megszokott állatnál ez ritkább.'],
+  mates=['Társak','Két hímet ne tarts együtt. Hím és nőstény mellett is figyelj: tavasszal a hím zaklathatja a nőstényt, ilyenkor válaszd szét őket.'];
+ CARE['diszteknos:pezsma']={g:{kolyok:[law,small,swim,hand],novendek:[law,small,swim,hand,TT_SALM],felnott:[law,small,swim,mates,hand,TT_SALM,TT_VET],idos:[law,small,swim,TT_SALM,TT_VET]},
+  i:['Élő eleséggel (pl. gilisztával) a félénk teknőst is evésre bírhatod.','Műnövény, gyökér és kő adjon takarást a vízben.','Az ételmaradékot etetés után szedd ki.'],p:[TT_QWATER,TT_QSHELL,TT_QWMBD,TT_QGIVE2]}}
+
+Object.assign(HOME,{
+ gorogteknos:MED_HOME(' A források 40–75%-os páratartalmat adnak meg.',MED_SUB),
+ morteknos:MED_HOME(' A mór teknős szárazabb környezetet igényel: a tartósan magas páratartalom légúti fertőzésre hajlamosít.',MED_SUB),
+ szegelyesteknos:MED_HOME(' Fiatal teknősnél kb. 40–50% az ajánlott.',MED_SUB+' A fiatal teknősnek 6–8 cm mély réteg kell.'),
+ sarkantyusteknos:[['Hely fiatalon','25 cm-es páncélhossz alatt legalább 2,1 × 1,1 méteres, 75 cm magas falú hely kell neki.'],
+  ['Kerti kifutó','A felnőtt teknősnek legalább 6 × 3 méteres kifutó kell, 1,2 méter magas, kb. 30 cm mélyen a földbe süllyesztett fallal. Felnőtt állatot lakásban tartani nem lehet.'],
+  ['Fűtött ház','Ha éjjel 10 °C alá hűl a levegő, 21–24 °C-ra fűtött ház kell neki, fényt nem adó fűtéssel.'],
+  ['Hőmérséklet','Fiatal teknősnél a sütkérezőhely felülete 38–41 °C, a levegő 27–32 °C legyen; éjjel legalább 21–24 °C. '+LZ_THERMO,'Exo Terra, Zoo Med'],
+  ['UVB-fény','Bent erős (10–14%-os) UVB-fénycső kell; nyáron napi 13, télen 11 órát égjen. Kint, természetes napfényen nem kell lámpa. '+LZ_UVB_CHG,'Arcadia, Zoo Med, Exo Terra'],
+  ['Páratartalom','A fiatal teknősnek 80% fölötti páratartalom kell, éjjel még több; a felnőtt jobban bírja a szárazságot. Párás búvóhely mindig legyen a hűvös oldalon, nedves aljzattal bélelve.'],
+  ['Aljzat','Fiatal teknősnek legalább 15 cm, felnőttnek 60 cm mély, ásható aljzat kell: termőföld és homok keveréke (60:40), kókuszrost vagy ciprusmulcs. Az ürüléket naponta szedd ki; bent 3–6 havonta cseréld a teljes aljzatot.','Exo Terra, Zoo Med']],
+ szenesteknos:[['Hely','Egy felnőttnek legalább 2,4 × 1,2 méteres, 60 cm magas falú hely kell. A nyitott tetejű teknősasztal nem tartja meg a párát: zártabb, de jól szellőző helyre van szüksége.'],
+  ['Hőmérséklet','A sütkérezőhelyen 32–35 °C, a levegőben 24–29 °C legyen. Éjjel se hűljön 20 °C alá; a fiatal teknőst tartsd melegebben. '+LZ_THERMO,'Exo Terra, Zoo Med'],
+  ['UVB-fény','UVB-fény kell neki, de esőerdei fajként gyengébb is elég, mint a többi szárazföldi teknősnek. Naponta kb. 12 órát égjen, a gyártó által megadott távolságban. '+LZ_UVB_CHG,'Arcadia, Zoo Med, Exo Terra'],
+  ['Páratartalom','70–90%-os páratartalom kell: naponta 2–3 alkalommal permetezz, és páramérővel ellenőrizd. A hűvös oldalon mindig legyen párás búvóhely nedves mohával vagy avarral.','Exo Terra'],
+  ['Aljzat','Bent legalább 10 cm mély aljzat kell: termőföld, kókuszrost és homok keveréke (40:40:20), a tetején avarral. Faforgácsot soha ne használj: lenyelve bélelzáródást okozhat.','Exo Terra, Zoo Med'],
+  ['Búvóhely','Legyen búvóhelye a meleg és a hűvös végen is.'],
+  ['Takarítás','Az ürüléket naponta szedd ki; hetente takaríts ki alaposan, hüllőknél használható fertőtlenítővel.']],
+ mocsariteknos:[['Kerti tó','A szabadtéri tó az ajánlott tartásmód. Benti akvaterrárium a 3 évesnél fiatalabb teknősnek és átmeneti időre való.'],
+  ['Szárazulat és napozóhely','Kell neki szárazulat, ahol napozhat és teljesen megszáradhat: lapos kő, úszó parafa vagy rögzített ág. Az úszó növények takarást adnak.'],
+  ['Szűrő','Bent olyan szűrő kell, amely óránként 1–3-szor átforgatja a vizet; a díszhalakhoz való kis szűrő kevés. A szívónyílást védd ráccsal, és kerüld az erős áramlást.','EHEIM, JBL'],
+  ['UVB-fény','Ha az évből legalább hat hónapot kint tölt, nem kell mesterséges UVB-fény. Bent UVB-fényforrás kell, úgy elhelyezve, hogy árnyékba is húzódhasson. '+LZ_UVB_CHG,'Arcadia, Exo Terra, Zoo Med'],
+  ['Kerítés','Ügyesen mászik, függőleges felületen is: a tavat vedd körül szökésbiztos kerítéssel.']],
+ diszteknos:SL_HOME('A víz mennyisége a páncélhossz minden 5 centiméterére kb. 75–80 liter legyen: egy felnőttnek 380–450 liter kell. Érdemes eleve a felnőtt mérethez való medencét venni.'),
+ 'diszteknos:hiero':SL_HOME('Nagyra nő: a felnőtt állatnak 1100 literes vagy nagyobb medence kell, 30–60 cm mély vagy mélyebb vízzel. A 8–10 cm-es fiatal még elfér egy 75–115 literes akváriumban.'),
+ 'diszteknos:pezsma':[['Akvárium','Egy felnőttnek legalább 76 literes, egy párnak 150 literes akvárium kell.'],
+  ['Vízmélység','Akkora legyen, hogy a hátsó lábával elérje a feneket, miközben a nyakát kinyújtva levegőt vesz. Egy felnőttnél ez kb. 20 cm.'],
+  ['Pihenőhelyek','Nem erős úszó: tegyél a vízbe ágakat és gyökereket, amelyeken a felszín közelében megpihenhet. Kerüld a szűk üregeket, ahová beszorulhat.'],
+  ['Vízhőmérséklet','A víz 22–26 °C legyen. A vízmelegítő legyen védőburokban, hogy ne égesse meg; a vizet és a levegőt is mérd hőmérővel.','EHEIM, AQUAEL'],
+  ['Napozóhely','Ritkán napozik, de kell neki száraz kiülő melegítőlámpával: a hőmérséklete kb. 29–32 °C legyen.','Exo Terra, Zoo Med, Trixie'],
+  TT_W_UVB,['Szűrő és vízcsere','A lassú áramlást szereti: állítható teljesítményű szűrőt válassz. A szűrő mellett is cseréld a vizet: hetente kb. a 20%-át, klórmentesített vízre; az ammóniát és a nitritet teszttel ellenőrizd.','EHEIM, JBL, sera, Tetra'],
+  ['Aljzat','Aljzat nem kötelező; ha szeretnél, 1,5–2,5 cm-es kavicsot tegyél.']]});
+
+Object.assign(TRIP,{gorogteknos:TR_TORT(1),morteknos:TR_TORT(1),szegelyesteknos:TR_TORT(1),sarkantyusteknos:TR_TORT(1,1),szenesteknos:TR_TORT(1),
+ mocsariteknos:TR_WT(['Papírok','Védett faj: külföldre viteléhez a természetvédelmi hatóság engedélye kell. A tartási engedélyt őrizd meg.']),
+ diszteknos:TR_WT(['Szabályok','Az ékszerteknőst mindig zárt, szökésbiztos dobozban szállítsd: uniós inváziós faj, szabadon engedni tilos.']),'diszteknos:hiero':TR_WT(),'diszteknos:pezsma':TR_WT()});
+Object.assign(TIPS,{'diszteknos:pezsma':{all:['Kis termetű vízi teknős: felnőttként is legfeljebb 10–11 cm-es.','Nem erős úszó: sekély víz és sok pihenőhely kell neki.','Főleg állati eredetű táplálékot eszik: gilisztát, rovart, garnélát, teknőstápot.','Szabadon engedni nem szabad: kárt tesz a hazai élővilágban.']},
+ 'diszteknos:hiero':{kolyok:['Fiatalon mindenevő; ahogy nő, egyre több növényt adj.'],all:['Nagyra nő: a nőstény akár 40 cm-es is lehet, a medencét ehhez méretezd.','Felnőttként főleg növényevő.','Nagy úszótér, erős szűrő és száraz napozóhely kell neki meleg- és UVB-lámpával.','Szabadon engedni nem szabad: kárt tesz a hazai élővilágban.']}});
+
+Object.assign(SRC,{
+ rvcMed:['Royal Veterinary College: Mediterranean Tortoise Care','https://rvc.ac.uk/Media/Default/Beaumont%20Sainsbury%20Animal%20Hospital/EXOTICS/Animal%20Care%20Factsheets/Mediterranean%20tortoise%20care%202024%20jh.pdf'],
+ rvcHib:['Royal Veterinary College: Tortoise Hibernation Guidelines','https://rvc.ac.uk/Media/Default/Beaumont%20Sainsbury%20Animal%20Hospital/EXOTICS/Animal%20Care%20Factsheets/Tortoise%20hibernation%20guidelines%202024%20jh.pdf'],
+ lafMed:['LafeberVet: Basic Information Sheet – Mediterranean Tortoises','https://lafeber.com/vet/?p=19674'],lafHerm:['LafeberVet: Basic Information Sheet – Hermann’s Tortoise','https://lafeber.com/vet/basic-information-sheet-hermanns-tortoise/'],
+ tcMarg:['The Tortoise Club: Marginated Tortoise Care Sheet','https://www.tortoiseclub.org/wp-content/uploads/2026/05/MARGINATED_TORTOISE_CARE_SHEET_spring2014.pdf'],
+ rfSulc:['ReptiFiles: Sulcata Tortoise Care Sheet','https://reptifiles.com/sulcata-tortoise-care-sheet/'],rfRedf:['ReptiFiles: Red-Footed Tortoise Care Sheet','https://reptifiles.com/red-footed-tortoise-care-sheet/'],
+ rvcRedf:['Royal Veterinary College: Red-foot Tortoise Care','https://www.rvc.ac.uk/Media/Default/small-animal/documents/Red-foot-tortoise-care-sheet%202016-1.pdf'],
+ rfRes:['ReptiFiles: Red-Eared Slider Care Sheet','https://reptifiles.com/wp-content/uploads/2020/12/Red-Eared-Slider-Care-Sheet-PDF.pdf'],rvcTerr:['Royal Veterinary College: Terrapin Care','https://www.rvc.ac.uk/Media/Default/small-animal/documents/Terrapin-care%20-%20UPDATED.pdf'],
+ rspcaTerr:['RSPCA: Terrapin Care','https://www.rspca.org.uk/adviceandwelfare/pets/other/terrapin'],rmCoot:['Reptiles Magazine: Cooter Turtles','https://reptilesmagazine.com/cooter-turtles/'],
+ rmMusk:['Reptiles Magazine: Common Musk Turtle Care and Information','https://reptilesmagazine.com/Common-Musk-Turtle-Care-And-Information/'],rmMusk2:['Reptiles Magazine: Common Musk Turtle Care Sheet','https://reptilesmagazine.com/common-musk-turtle-care-sheet/'],
+ eazaEmys:['EAZA: Best Practice Guidelines – European Pond Turtle','https://media.eaza.net/uploads/2021_Emys_orbicularis_European_pond_turtle_EAZA_Best_practice_guidelines_Approved_8e3aaf786a.pdf'],
+ ttEmys:['Tortoise Trust: Emys orbicularis','https://www.tortoisetrust.org/articles/orbicularis.htm'],adwEmys:['Animal Diversity Web: Emys orbicularis','https://animaldiversity.org/accounts/Emys_orbicularis/'],
+ tvEmys:['Természetvédelem.hu: a mocsári teknős adatlapja (2025)','https://termeszetvedelem.hu/wp-content/uploads/2026/05/Emys_orbicularis_adatlap_2025.pdf'],
+ khIas:['Veszprém Vármegyei Kormányhivatal: inváziós idegenhonos fajok bejelentőlapja','https://www.kormanyhivatalok.hu/system/files/dokumentum/veszprem/2023-02/vevkh-ias_bejelento_lap.pdf'],
+ khVed:['Kormányhivatalok: tájékoztatás a védett állatfajokkal kapcsolatos engedélyezési eljárásról','https://kormanyhivatalok.hu/sites/default/files/2024-08/tajekoztatas-a-vedett-allatfajokkal-kapcsolatos-tevekenysegek-engedelyezesi-eljarasarol.pdf']});
+Object.assign(GSRC,{
+ gorogteknos:{food:['rvcMed','lafMed','lafHerm','tcMarg'],care:['rvcMed','lafMed','lafHerm','rvcHib'],trip:['rspcaTerr']},
+ morteknos:{food:['rvcMed','lafMed','tcMarg'],care:['rvcMed','lafMed','rvcHib'],trip:['rspcaTerr']},
+ szegelyesteknos:{food:['tcMarg','rvcMed','lafMed'],care:['tcMarg','lafMed','rvcMed','rvcHib'],trip:['rspcaTerr']},
+ sarkantyusteknos:{food:['rfSulc','rvcMed'],care:['rfSulc','rvcHib','rvcMed'],trip:['rspcaTerr']},
+ szenesteknos:{food:['rfRedf','rvcRedf'],care:['rfRedf','rvcRedf','rvcHib'],trip:['rspcaTerr']},
+ mocsariteknos:{food:['eazaEmys','ttEmys','adwEmys'],care:['eazaEmys','ttEmys','adwEmys','khVed'],trip:['rspcaTerr','khVed']},
+ diszteknos:{food:['rfRes','rvcTerr','rspcaTerr'],care:['rspcaTerr','rfRes','rvcTerr','khIas','tvEmys'],trip:['rspcaTerr','khIas']},
+ 'diszteknos:hiero':{food:['rmCoot','rfRes'],care:['rmCoot','rspcaTerr','rfRes','rvcTerr'],trip:['rspcaTerr']},
+ 'diszteknos:pezsma':{food:['rmMusk','rmMusk2'],care:['rmMusk','rmMusk2','rspcaTerr'],trip:['rspcaTerr']}});
+/* szárazföldi teknősök saját terméklistája: a források szerint nem üvegterrárium és nem homok való nekik */
+{const sub=[['Exo Terra','terráriumi aljzat','p'],['Zoo Med','terráriumi aljzat','p'],['Trixie','terráriumi aljzat','k'],['JBL','terráriumi aljzat','k']],dec=[['Exo Terra','búvóhely, itató','p'],['Zoo Med','búvóhely, itató','p'],['Trixie','búvóhely','k']],
+  eq=et=>[['Arcadia','UVB-fénycső és -lámpa','p'],['Exo Terra',et,'p'],['Zoo Med','hőlámpa, UVB-fényforrás, termosztát','p'],['Trixie','hő- és páramérő','k'],['JBL','UV- és melegítőlámpa','k']],
+  T={tap:GPROD.teknos.tap,alom:sub,felsz:eq('hőlámpa, UVB-fényforrás, hőmérő'),jatek:dec};
+ Object.assign(PROD,{gorogteknos:T,morteknos:T,szegelyesteknos:T,sarkantyusteknos:T,szenesteknos:{...T,felsz:eq('hőlámpa, UVB-fényforrás, hő- és páramérő, párásító')}})}
 const CT={guide:'Útmutató',home:'Otthon',les:'Leckék',play:'Játék és mozgás',prob:'Problémák',trip:'Utazás'};
 const TOPIC={path:'az életút, a mérföldkövek és az oltások',health:'az egészség, a tünetek és a megelőzés',food:'a táplálkozás és a tápválasztás',care:'a tartás, az otthoni felszerelés, a tanítás, a játék és a mozgás',prod:'a termékek és a felszerelés',vets:'az állatorvosi vizsgálatok és az állatorvos-választás'};
 const TOPIC_HU={home:'Általános',hub:'Gondozás',path:'Életút',health:'Egészség',food:'Táplálkozás',care:'Tartás és nevelés',prod:'Termékek',vets:'Állatorvosok',more:'Általános'};
@@ -1561,7 +1765,7 @@ function vHealth(p){
   return`<h1>Egészség</h1><div class="seg2" role="group" aria-label="Az Egészség részei">${tabs.map(k=>[k,HT[k]]).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}<p class="note">${DISC}</p>`}
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
 function vFood(p){
-  const F=FOOD[p.species],st=stageOf(p),L=limitsFor(p);
+  const F=FOOD[gkey(p)],st=stageOf(p),L=limitsFor(p);
   if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div>${foods(p).length?`<h2>Ajánlott eleségek és kiegészítők</h2>${tierChips()}<div style="height:10px"></div>${prodList(p,foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>`:PEMPTY[kitOf(p)]?`<p class="sub" style="margin-top:14px">${PEMPTY[kitOf(p)]}</p>`:''}<p class="note">${DISC}</p>`;
   /* adatvezérelt adatlap: ami az adott fajnál hiányzik (táplista, szakasz szerinti gyakoriság), az a lapról is kimarad */
   const kc=kcalRange(p),k100=+p.kcal100||0,meals=F.meals&&st?F.meals[st]:0,fl=foods(p),freq=(F.freq&&st&&F.freq[st])||F.freqAll||'';let portion;
@@ -1579,8 +1783,8 @@ function vFood(p){
   ${F.sw===false?'':`<h2>Tápváltás</h2>${F.sw?`<p>${F.sw}</p>`:F.base?'<p>Kisemlősnél lassan, legalább 2 hét alatt válts, az új eleséget fokozatosan a régihez keverve.</p>'
     :`<p>Új tápra fokozatosan, 7–10 nap alatt válts, a régihez keverve.</p><div class="plan">${[['1–3. nap',25],['4–6. nap',50],['7–9. nap',75],['10. naptól',100]].map(([d,n])=>`<div><i style="--h:${n}%"></i><b>${n}%</b><span>${d}</span></div>`).join('')}</div>
     <p class="sub">Az oszlop az új táp arányát mutatja. Felnőtt tápra kb. ${L[1]} hónapos kor körül érdemes áttérni; a szenior tápról az állatorvossal egyeztess.</p>`}`}
-  <h2>Tilos vagy kerülendő ételek</h2><ul class="bad">${F.bad.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${F.extra?`<p class="sub" style="margin-top:10px">${F.extra}</p>`:''}
-  <p class="note warn">Ha mégis evett valamelyikből, vagy mérgezésre gyanakszol, azonnal fordulj állatorvoshoz.</p>${srcBox(p,'food')}<p class="note">${DISC}</p>`}
+  ${F.bad.length?`<h2>Tilos vagy kerülendő ételek</h2><ul class="bad">${F.bad.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}${F.extra?`<p class="sub" style="margin-top:10px">${F.extra}</p>`:''}
+  ${F.bad.length?'<p class="note warn">Ha mégis evett valamelyikből, vagy mérgezésre gyanakszol, azonnal fordulj állatorvoshoz.</p>':''}${srcBox(p,'food')}<p class="note">${DISC}</p>`}
 let tier='all',pCat='tap',careSt=null,aiRun=null,aiErr=null,symOpen='';
 const tierChips=()=>`<div class="seg2" role="group" aria-label="Árkategória">${[['all','Mind'],['k','Közép'],['p','Prémium']].map(([v,n])=>`<button data-act="tier" data-v="${v}" aria-pressed="${tier===v}">${n}</button>`).join('')}</div>`;
 /* egy ajánlás: konkrét terméknél az egész sor a termék oldalát nyitja; gyűjtősornál a márkanév és minden ellenőrzött tétel külön link */
@@ -1614,7 +1818,7 @@ async function runAi(key,task,store){
 const symAsk=e=>{symOpen=e.id;runAi('sym:'+e.id,`Feladat: a felhasználó ezt a tünetet rögzítette az állatnál: „${e.text}" (${e.date}, a saját megítélése szerint ${SEV[e.sev]||'nem besorolt'}). Sorold fel röviden a 3–5 leggyakoribb lehetséges okot ennél a fajnál és életkorban, a valószínűbbtől haladva. Mondd ki, hogy ezek lehetőségek, nem diagnózis. Írd le, mit érdemes otthon megfigyelni, és milyen jelek esetén kell azonnal vagy 24 órán belül állatorvoshoz fordulni. Gyógyszert és adagolást ne javasolj. Legfeljebb 170 szó.`,t=>{e.ai=t})};
 let cTab='guide',lesOpen='';
 function vCare(p){
-  const k=p.species,C=CARE[k],cur=stageOf(p);
+  const k=gkey(p),C=CARE[k],cur=stageOf(p);
   if(!C)return`${BACK}<h1>Tartás és nevelés</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített útmutató.</p><p class="sub">A tartásáról a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>${prodOf(p)?['felsz','alom','jatek'].filter(c=>(prodOf(p)[c]||[]).length).map(c=>`<h2>${pcat(p)[c]}</h2>${prodList(p,prodOf(p)[c],1)}`).join('')+`<p class="sub" style="margin-top:10px">${PNOTE}</p>`:''}`;
   const ask=(q,l='Kérdezd erről a Tanácsadót')=>`<button class="btn text" style="padding:0" data-act="askQ" data-q="${esc(q)}">${l}</button>`;
   const card=([t,d,br])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${br?`<p style="color:var(--ink)"><span class="tag" style="margin:0 6px 0 0">bevált márkák</span>${brs(br,p)}</p>`:''}</div>`;
