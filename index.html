@@ -170,6 +170,7 @@ a.btn{text-decoration:none}
 .chatsheet .composer{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 .aitext{white-space:pre-wrap;overflow-wrap:anywhere}
 .tag.prem{background:var(--ball);color:var(--ball-ink)}
+.srcs{margin:0 0 12px;padding-left:18px;font-size:14px}.srcs li{margin:6px 0}.srcs a{color:var(--info);word-break:break-word}
 .guide{margin-bottom:8px}.guide p{margin:4px 0 0;font-size:15px;color:var(--muted)}
 .acc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 14px;margin-bottom:8px}
 .acc summary{min-height:52px;display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer;list-style:none}
@@ -510,7 +511,7 @@ const BIRD_FOOD='A magkeverék mellé adj friss zöldeket és kalciumforrást (p
 const PREY='A zsákmányállat ne legyen vastagabb a kígyó legvastagabb pontjánál.';
 Object.assign(TIPS,{
  csincsilla:{kolyok:['Lassan szoktasd kézhez: ülj a ketrec mellé, és kínálj falatot a tenyeredből.'],
-  all:['Hűvös, száraz helyen tartsd: a meleget és a párát rosszul tűri.','Hetente többször kínálj homokfürdőt csincsillahomokkal; vízzel ne fürdesd.','Az étrend alapja a széna és a csincsillatáp; cukros, zsíros csemegét ne adj.'],
+  all:['Hűvös, száraz helyen tartsd: a meleget és a párát rosszul tűri.','Naponta kínálj homokfürdőt csincsillahomokkal, kb. 10–20 percre; vízzel ne fürdesd.','Az étrend alapja a széna és a csincsillatáp; cukros, zsíros csemegét ne adj.'],
   idos:['Mérd rendszeresen a súlyát, és figyeld a fogait: a fogyás vagy a nyáladzás fogproblémát jelezhet.']},
  goreny:{kolyok:['Kölyökkorban tanítsd meg következetesen, büntetés nélkül, hogy a kézbe harapás nem játék.','Alomtálcára szoktatható: tedd a tálcát abba a sarokba, amelyet magától választ.'],
   all:['Húsevő: magas fehérjetartalmú görénytápot kapjon; gyümölcs, zöldség és tejtermék nem való neki.','Naponta több óra felügyelt, ketrecen kívüli mozgásra és játékra van szüksége.','Társas állat: párban vagy csoportban érzi jól magát.'],
@@ -603,6 +604,10 @@ const EVCAT={vet:[ic('vet'),'Állatorvos'],vacc:[ic('vacc'),'Oltás'],care:[ic('
 const DISC='A PetVia nem helyettesíti az állatorvosi vizsgálatot.';
 const BALL='<span class="ballmark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#F2B33D" stroke="#14201C" stroke-width="2.5"/></svg></span>';
 
+const PARROT_FOOD=['Állatorvosi ajánlás szerint a kis papagájok étrendje kb. 40–50% granulált táp (pellet), 30–40% magkeverék, 10–15% zöldség és 5–10% gyümölcs.','A csak magból álló étrend hiányos: kevés benne a fehérje, a kalcium és az A-vitamin, és elhízáshoz vezet.','Friss, megmosott zöldség naponta (pl. sárgarépa, brokkoli, zöldborsó).','Gyümölcs kis mennyiségben; az alma magházát vedd ki.','Kalciumforrás (pl. szépiacsont) és friss víz mindig legyen.'];
+const BIRD_SW='Magról granulált tápra csak fokozatosan, napok–hetek alatt szoktasd át: kezdd kb. 75% régi és 25% új eleség keverékével. Közben mérd naponta a súlyát; ha a kiinduló súlyának több mint 10%-át elveszti, fordulj állatorvoshoz. Az új eleségre soha ne éheztesd rá.';
+const BIRD_BAD=['avokádó (erősen mérgező)','csokoládé','gyümölcsmag és csonthéjasok magja (alma, cseresznye, barack, szilva)','hagyma, fokhagyma','sós, zsíros emberi étel','xilit (nyírfacukor)'];
+const BIRD_EXTRA='A tejterméket a madár rosszul emészti. Ha mérgezésre gyanakszol, ne várd meg a tüneteket.';
 const FOOD={
  kutya:{freq:{kolyok:'Naponta 3–4 alkalommal, 4 hónapos kor után 3 alkalommal.',novendek:'Naponta 2–3 alkalommal.',felnott:'Naponta 2 alkalommal, nagyjából azonos időben.',idos:'Naponta 2 vagy több kisebb adagban.'},meals:{kolyok:3,novendek:2,felnott:2,idos:2},
   bad:['csokoládé, kakaó','szőlő, mazsola','hagyma, fokhagyma, póréhagyma','xilit (nyírfacukor)','makadámdió','alkohol','koffein (kávé, energiaital)','nyers kelt tészta','főtt csont']},
@@ -617,7 +622,24 @@ const FOOD={
   bad:['csokoládé','avokádó','hagyma, fokhagyma, póréhagyma','burgonya','rebarbara','tejtermék','hús','kenyér, keksz','cukros jutalomfalat']},
  horcsog:{base:['Jó minőségű hörcsögeleség, a csomagoláson megadott napi adagban.','Kevés friss zöldség hetente néhányszor.','Friss víz mindig.'],
   freqAll:'Naponta egyszer, este etesd, amikor felébred. Készletet gyűjt, ezért a romlandó maradékot rendszeresen szedd ki a fészkéből.',
-  bad:['csokoládé','citrusfélék','hagyma, fokhagyma','nyers bab','nyers burgonya','keserűmandula','sós vagy cukros emberi étel','ragadós étel (beragadhat a pofazacskóba)']}};
+  bad:['csokoládé','citrusfélék','hagyma, fokhagyma','nyers bab','nyers burgonya','keserűmandula','sós vagy cukros emberi étel','ragadós étel (beragadhat a pofazacskóba)']},
+ /* útmutatók 1. kör: h = a lista címe, sw = tápváltás szövege; a számok forrása a projekt forrásjegyzékében és az app Források listájában */
+ csincsilla:{h:'Az étrend alapja',base:['Alacsony kalciumtartalmú fűszéna (pl. réti széna) korlátlanul: ez az étrend alapja. Naponta cseréld, és szénatartóból kínáld.','Csincsillatáp (pellet): naponta kb. 1–2 evőkanál.','Friss, alacsony kalciumtartalmú zöld levél csak alkalmanként, kis mennyiségben.','Lucernaszéna csak ritkán és keveset: sok benne a kalcium.','Friss víz mindig, lehetőleg golyós itatóból; naponta cseréld.'],
+  freqAll:'A széna és a víz legyen mindig előtte. A tápot naponta egyszer, kimért adagban add. Szürkületkor és hajnalban a legaktívabb, ilyenkor eszik a legszívesebben.',
+  sw:'Új tápra lassan, több nap alatt térj át, az újat fokozatosan a régihez keverve.',
+  bad:['magvak és diófélék (pl. napraforgó, földimogyoró)','gabonafélék','aszalt gyümölcs és zöldség','cukros jutalomfalat','emberi étel'],
+  extra:'Jutalomnak egy vékony almaszelet vagy tiszta, szárított almafaág való: ez a fogai koptatásában is segít. Teljes értékű étrend mellett vitaminkiegészítő nem kell.'},
+ goreny:{h:'Az étrend alapja',base:['Húsevő: kifejezetten görénynek készült száraztáp legyen az alap, magas fehérje- (kb. 30–40%) és zsírtartalommal.','A rostot nem tudja megemészteni: a táp rosttartalma 4% alatt legyen.','Jutalomnak kevés főtt hús való; a jutalom a napi kalória 5%-ánál ne legyen több.','Friss víz mindig, golyós itatóból vagy nehéz tálból; naponta cseréld.'],
+  freqAll:'A száraztáp egész nap legyen előtte: naponta sokszor, keveset eszik. Ha hízásra hajlamos, mérd ki a napi adagot. Növendék, vemhes és idős görénynek külön összetételű táp is kapható.',
+  sw:'Új tápra fokozatosan térj át, az újat a régihez keverve.',
+  bad:['csokoládé (halálos lehet)','édesség, cukros étel','tejtermék','mazsola','gyümölcs és zöldség (nem tudja megemészteni)'],
+  extra:'Teljes értékű görénytáp mellett vitamin és más kiegészítő nem kell. Emberi ételt csak állatorvosi egyeztetés után adj.'},
+ hullamos:{h:'Az étrend alapja',base:PARROT_FOOD,freqAll:'Naponta adj friss eleséget és vizet; a romlandó maradékot még aznap vedd ki. A hullámos papagáj 12 óránál tovább ne maradjon eleség nélkül.',sw:BIRD_SW,bad:BIRD_BAD,extra:BIRD_EXTRA},
+ nimfa:{h:'Az étrend alapja',base:PARROT_FOOD,freqAll:'Naponta adj friss eleséget és vizet; a romlandó maradékot még aznap vedd ki. Madárhomok (grit) nem szükséges.',sw:BIRD_SW,bad:BIRD_BAD,extra:BIRD_EXTRA},
+ kanari:{h:'Az étrend alapja',base:['Magevő: jó minőségű kanárieleség vagy granulált táp (pellet) legyen az alap; a csak magból álló étrend hiányos.','Friss, megmosott zöldek naponta (pl. pitypang, tyúkhúr), mellé kevés zöldség és gyümölcs.','Fehérjeforrásnak tojásos lágyeleség.','Szépiacsont legyen mindig elérhető; madárhomok (grit) nem szükséges.','Friss víz mindig.'],
+  freqAll:'Naponta adj friss eleséget és vizet. A kanári a testsúlyához képest sokat eszik (naponta akár a testsúlya 30%-át), ezért ne maradjon eleség nélkül.',sw:BIRD_SW,bad:BIRD_BAD,extra:BIRD_EXTRA},
+ pinty:{h:'Az étrend alapja',base:['Granulált táp (pellet) vagy jó minőségű magkeverék az alap.','Mellé tojásos lágyeleség és friss, megmosott zöldek.','Madárhomokból (grit) csak keveset adj.','Kalciumforrás (pl. szépiacsont) és friss víz mindig legyen.'],
+  freqAll:'Naponta adj friss eleséget és vizet; a romlandó maradékot még aznap vedd ki.',sw:BIRD_SW,bad:BIRD_BAD,extra:BIRD_EXTRA}};
 /* becsült napi energiaigény: 70 × kg^0,75 (nyugalmi igény) × életszakasz-szorzó */
 function kcalRange(p){
   const kg=+p.weight,st=stageOf(p);if(!kg||!st||(p.species!=='kutya'&&p.species!=='macska'))return null;
@@ -771,7 +793,122 @@ const PLAY={
   games:['Alagút, híd, búvóhely','Szénakeresés papírgurigában','Zöldségfüzér','Új tereptárgyak a kifutóban'],engage:'A kézből etetés és a halk beszéd építi a bizalmat. Ölben, törölközőn simogatva is foglalkozhatsz vele.'},
  horcsog:{need:{all:'Éjszaka sokat fut, ezért a megfelelő méretű, zárt futófelületű kerék nélkülözhetetlen. Este, felügyelet mellett zárt kifutóban is mozoghat; hörcsöggömbbe ne tedd.'},
   games:['Szétszórt eleség keresése','Ásás vastag alomban','Alagút, papírguriga','Homokfürdő'],engage:'Este, amikor magától felébred, kínálj falatot a tenyeredből, és hagyd, hogy rád másszon.'}};
-const CT={guide:'Útmutató',home:'Otthon',les:'Leckék',play:'Játék és mozgás',prob:'Problémák'};
+/* útmutatók 1. kör */
+const BIRD_HAZ='A túlhevített tapadásmentes (teflon) edény gőze a kis madarakra percek alatt halálos lehet. Veszélyes még a dohányfüst, a légfrissítő és az illatgyertya, a nyitott vízfelület, a tükör és az ablaküveg, a mennyezeti ventilátor, a villanyvezeték, az ólmot vagy cinket tartalmazó tárgy, valamint a macska és a kutya.';
+const BIRD_ARR=['Megérkezés','Az első napokban hagyd megszokni az új helyét: ülj a kalitka mellé, és beszélj hozzá nyugodtan.'];
+const BIRD_FEAR=['A félelem jelei','Ha sziszeg, liheg, a falhoz hátrál vagy lesimítja a tollát, lassíts: a megijesztett madár csíphet.'];
+const BIRD_TAME=['Szelídítés','Kínálj kedvenc falatot (pl. fürtös kölest) előbb a tálkájába, később a kezedből. Kalitkán kívül csak akkor gyakorolj vele, amikor már megbízik benned.'];
+const BIRD_VET=['Ellenőrzés','Évente vidd madarakhoz értő állatorvoshoz; panasz esetén ne várj.'];
+const BIRD_ILL=['Betegség jelei',BIRD_SICK];
+const BIRD_BITE=['Csíp','Többnyire azért csíp, mert fél. Kerüld a hirtelen mozdulatot, és ne büntesd: maradj nyugodt, lépj ki pár percre a látóteréből, majd kezdd újra.'];
+const BIRD_FUME=['Hirtelen rosszul lett','A túlhevített tapadásmentes (teflon) edény gőze, a füst vagy a permet a kis madarakra percek alatt végzetes lehet. Vidd azonnal friss levegőre, és hívd az állatorvost.'];
+const BIRD_CATCH=['Meg kell fognom (pl. állatorvoshoz)','Sötétítsd el a szobát, és vedd ki az ülőrudakat: sötétben nyugodtabb, és könnyebb megfogni. Csak annyi ideig tartsd a kezedben, ameddig feltétlenül szükséges.'];
+const CHIN_Y=[['Megérkezés','Az első napokban hagyd megnyugodni, csendes helyen. Zsákmányállat: a zajtól és a hirtelen mozdulattól megijed, és a megszokott napirendet szereti.'],['Szoktatás','Ne kapd fel. Kínálj falatot mindig ugyanazzal a hanggal; kb. egy hét után simogasd meg a mellkasát vagy a vállát, majd csalogasd falattal a tenyeredre.'],['Társ','Társas állat: legalább kettőt tarts együtt. Vegyes ivarú párnál a hím ivartalanításáról egyeztess az állatorvossal.']];
+Object.assign(CARE,{
+ csincsilla:{g:{kolyok:CHIN_Y,novendek:CHIN_Y,
+  felnott:[['Napirend','Szürkületkor és hajnalban a legaktívabb: napközben hagyd pihenni, a ketrec álljon csendes helyen, kutyától és macskától távol.'],['Mozgás','Naponta legalább egyszer mozoghasson felügyelet mellett, csincsillabiztos szobában: a vezetéket megrágja. Műanyag futógömbbe ne tedd.'],['Homokfürdő','Naponta kínálj csincsillahomokot kb. 10–20 percre, utána vedd ki. Vízzel soha ne fürdesd.'],['Fogak','A fogai folyamatosan nőnek: széna, almafaág és fa rágójáték kell a koptatásukhoz.']],
+  idos:[['Ellenőrzés','Évente legalább egyszer vidd állatorvoshoz: súly, fogak, általános állapot.'],['Figyelmeztető jelek','Az étvágytalanság, a nyáladzás, a nedves áll vagy a könnyező szem fogproblémát jelezhet: mielőbb vizsgáltasd meg.'],['Hőmérséklet','Idős korban is fontos a hűvös, száraz hely: az ideális hőmérséklet 10–18 °C.']]},
+  i:['Polcok különböző magasságban, de 60 cm-nél nagyobb szabad esés nélkül.','Sima futófelületű, kb. 38 cm átmérőjű futókerék.','Állatonként egy búvóhely: fa házikó vagy gyakran cserélt kartondoboz.','Almafa, nyír vagy juhar rágónak; cédrust és cseresznyefát ne adj.'],
+  p:[['Kihullik a szőre, amikor megfogom','Ez védekezés: ha durván vagy szorosan fogják meg, szőrcsomót enged el. Ne szorítsd, és csak akkor emeld fel, ha muszáj.'],['Nem eszik, nyáladzik','Fogprobléma jele lehet, ami csincsillánál gyakori. Mielőbb vidd állatorvoshoz.'],['Hasmenése van','Hasmenés vagy nedves végbéltájék emésztőszervi fertőzést jelezhet. Vidd állatorvoshoz.'],['Rágja a saját szőrét','Stressz vagy unalom jele lehet. Adj több rágnivalót, búvóhelyet és mozgást, és nézd át, mi zavarhatja.'],['Meleg van a lakásban','A meleget rosszul tűri, hőgutát kaphat. Tartsd hűvös, száraz, huzatmentes helyen (ideálisan 10–18 °C), napos ablaktól távol. Ha rosszul van, azonnal hívd az állatorvost.']]},
+ goreny:{g:{
+  kolyok:[['Harapdálás','A fiatal görény játékból és figyelemért harap. Minden harapás után tedd vissza rövid időre a ketrecébe, következetesen.'],['Kézbevétel','Két kézzel, felülről vedd fel, a hátsó lábait megtámasztva. A durva fogás megijeszti, és harapást válthat ki.'],['Alomra szoktatás','Tedd a tálcát abba a sarokba, amelyet magától választ. Magas falú saroktálca való neki; naponta takarítsd.'],['Oltások','A szopornyica elleni oltás görénynél különösen fontos, mert a betegség többnyire halálos. Az oltási programot az állatorvos állítja össze.']],
+  novendek:[['Ivarérés','Kb. 9–12 hónapos korban ivarérett. A nőstény tartós tüzelése vérszegénységhez vezethet, és életveszélyes: az ivartalanítás vagy a hormonimplantátum lehetőségét beszéld meg az állatorvossal.'],['Mozgás','Naponta legalább 2–4 órát mozogjon a ketrecen kívül, felügyelet mellett vagy görénybiztos helyen.'],['Társ','Nagyon társas: a legtöbb görény fajtárssal érzi jól magát.'],['Hám és póráz','Kétrészes görényhámmal sétáltatható. Szoktasd fokozatosan, és vedd fel, ha kutya közeledik.']],
+  felnott:[['Napirend','Naponta akár 18 órát alszik, hajnalban és szürkületkor a legaktívabb. Ébren viszont sok játékot és foglalkozást igényel.'],['Görénybiztos lakás','A szivacsos, gumis és puha műanyag tárgyakat (radír, gumigyűrű, lufi) megrágja és lenyeli: ez életveszélyes bélelzáródást okozhat. Zárj el minden rést, amelyen befér.'],['Hőmérséklet','A meleget és a párát rosszul tűri, mert nem izzad: 18–23 °C között tartsd, napos ablaktól és huzattól távol.'],['Ellenőrzés','Évente vidd állatorvoshoz.']],
+  idos:[['Gyakoribb ellenőrzés','3–4 éves kor fölött félévente ajánlott állatorvosi vizsgálat.'],['Gyakori betegségek','Idősebb görénynél gyakori a mellékvese-betegség, az inzulinóma és a limfóma. Szőrhullás, fogyás, gyengeség vagy levertség esetén kérj vizsgálatot.'],['Kényelem','Legyen könnyen elérhető az alomtálca, a fekhely és az itató.']]},
+  i:['Alagutak, csövek, kartondobozok a bújkáláshoz.','Szórd szét a táp egy részét, hogy keresgélnie kelljen.','Függőágy vagy szövetkuckó az alváshoz.','Szabadon, felügyelet nélkül ne járkáljon a lakásban.'],
+  p:[['Harap','Játékból vagy figyelemért harap, főleg fiatalon. Minden harapás után tedd vissza rövid időre a ketrecébe, következetesen. Durván ne bánj vele: az csak több harapást vált ki.'],['A tálca mellé piszkít','Az alkalmi baleset természetes. Tegyél tálcát oda, ahol a dolgát végzi, és naponta takarítsd.'],['Lenyelt valamit','Ha gumit, szivacsot vagy műanyagot nyelt le, azonnal vidd állatorvoshoz: a bélelzáródás életveszélyes, és többnyire sürgős műtétet igényel.'],['Melegben rosszul van','Nem izzad, ezért hőgutát kaphat. Vidd hűvös helyre, és azonnal hívd az állatorvost.'],['Hullik a szőre','Görénynél a szőrhullás mellékvese-betegség jele lehet. Vizsgáltasd meg.']]},
+ hullamos:{g:{kolyok:[BIRD_ARR,BIRD_FEAR,BIRD_TAME],
+  novendek:[['Kézre lépés','Ebben a korban tanul a legkönnyebben: gyakorold vele naponta a kézre lépést (lásd a Leckéknél).'],['Ivar','A hím viaszhártyája kék, a tojóé rózsaszín vagy barna, a fiatal madáré gyöngyházfényű.'],['Társ','Társas madár: párban vagy csapatban érzi jól magát.'],['Utánzás','Ügyesen utánoz és fütyül; a beszédet sok ismétléssel lehet megtanítani.']],
+  felnott:[['Repülés','A repülés a természetes mozgása: naponta repülhessen biztonságos szobában.'],['Fürdés','Rendszeres fürdés vagy permetezés kell a tollazat karbantartásához.'],['Keresgélés','Rejts el eleséget játékba vagy a kalitka aljára tett papírra: a keresgélés leköti.'],BIRD_VET],
+  idos:[['Súly','Hajlamos az elhízásra és a zsírdaganatokra: figyeld a súlyát, és tartsd változatosan az étrendjét.'],BIRD_ILL,BIRD_VET]},
+  i:['Rágható játék papírból, kartonból, puha fából.','Több ülőrúd, hogy legyen helye a szárnyát csapkodni.','Eleség elrejtve a keresgéléshez.'],
+  p:[BIRD_BITE,['Nem akar visszamenni a kalitkába','Tanítsd etetéskor: tegyél különleges falatot az egyik tálkába, kocogtasd meg a rácsot, és mondd mindig ugyanazt a szót.'],['Felborzolt tollal gubbaszt',BIRD_SICK],BIRD_FUME]},
+ nimfa:{g:{kolyok:[BIRD_ARR,BIRD_FEAR,BIRD_TAME],
+  novendek:[['Kézre lépés','Ebben a korban tanul a legkönnyebben: gyakorold vele naponta a kézre lépést (lásd a Leckéknél).'],['Színeződés és ivarérés','A hím felnőtt színezete kb. 6 hónapos korra alakul ki; 6–12 hónapos kor között ivarérett.'],['Fütty és beszéd','Jól fütyül, és jelre is megtanítható; a hímek néhány szót is megtanulhatnak.'],['Társ','Társas madár: sok foglalkozást vagy madártársat igényel.']],
+  felnott:[['Repülés','A repülés a természetes mozgása: naponta repülhessen biztonságos szobában.'],['Fürdés és tollpor','Sok tollport termel: a gyakori fürdés vagy zuhany karbantartja a tollazatát, és csökkenti a port. Napi néhány tüsszentés természetes; a tartós tüsszögés vagy az orrfolyás nem.'],['Tojásrakás','A tojó hím nélkül is rakhat tojást; a tartós tojásrakás megterheli. Ha sokat tojik, kérj állatorvosi tanácsot. Segíthet, ha a nappali megvilágítást egy-két órával rövidíted.'],BIRD_VET],
+  idos:[BIRD_ILL,['Változatos étrend','A csak magból álló étrend zsírmájhoz vezethet: idős korban is kapjon granulált tápot és friss zöldséget.'],BIRD_VET]},
+  i:['Rágható játék papírból, kartonból, puha fából.','Keresgélés a kalitka alján: papírra szórt eleség vagy elrejtett kölesfürt.','Kalitka, amelyben a szárnyát kitárva is elfér.'],
+  p:[BIRD_BITE,['Éjjel megriad és csapkod','Nimfapapagájnál előfordul az éjszakai megriadás, közben megsérülhet. Ha gyakori, beszéld meg madarakhoz értő állatorvossal.'],['Sokat tojik','A tartós tojásrakás megterheli, és tojásvisszatartáshoz vezethet: kérj állatorvosi tanácsot.'],['Felborzolt tollal gubbaszt',BIRD_SICK],BIRD_FUME]},
+ kanari:{g:{kolyok:[BIRD_ARR,['Megfigyelni való madár','Megismeri a gazdáját, de a kézbevételt nem szereti: ne erőltesd.']],
+  novendek:[['Ének','A hímek énekelnek dallamosabban. Ősszel, télen és tavasszal énekel; a nyári vedlés idején gyakran elhallgat, ez természetes.'],['Ivarérés','Egyéves kora előtt ivarérett.']],
+  felnott:[['Repülés','A kalitkában repül: a kalitka hossza fontosabb a magasságánál.'],['Fürdés','Hetente legalább kétszer kínálj fürdővizet.'],['Hőmérséklet','Kb. 24 °C az ideális, de hűvösebbhez is hozzászokik. Huzattól, konyhai gőztől és füsttől védd.'],BIRD_VET],
+  idos:[BIRD_ILL,['Szem és toll','Idős kanárinál előfordul szürkehályog és tollciszta: változás esetén kérj vizsgálatot.'],BIRD_VET]},
+  i:['Friss zöld a rácsra tűzve.','Fürdőtál hetente többször.','Hinta és több, különböző vastagságú ülőrúd.'],
+  p:[['Nem énekel','Nyári vedléskor természetes, hogy elhallgat. Ha más tünet is van (gubbasztás, étvágytalanság), vidd állatorvoshoz.'],BIRD_CATCH,['Felborzolt tollal gubbaszt',BIRD_SICK],BIRD_FUME]},
+ pinty:{g:{kolyok:[BIRD_ARR,['Csapatmadár','Rajban él: legalább párban tartsd. Papagájjal ne tedd össze, mert megsebesítheti.']],
+  novendek:[['Színeződés','A fiatal díszpintyek néhány hónapos korukra színeződnek ki felnőtt tollazatba.'],['Fészek','Ha fészket és fészekanyagot kapnak, hamar költeni kezdenek: csak akkor adj, ha szaporítani szeretnéd őket.']],
+  felnott:[['Repülés','Sok mozgást igényel: hosszú, vízszintes kalitka vagy röpde kell neki, legalább két ülőrúddal. A szárnytollait ne vágd.'],['Hőmérséklet','A 21–27 °C-os szobahőmérséklet megfelelő.'],['Megfigyelni való madár','Kézhez ritkán szelídül; a kézbevétel megterheli.'],BIRD_VET],
+  idos:[BIRD_ILL,BIRD_VET]},
+  i:['Friss zöld és tojásos lágyeleség a változatosságért.','Fürdési lehetőség.','Annyi ülőrúd, hogy maradjon szabad röptér.'],
+  p:[['Tépik egymás tollát','Túlzsúfoltságot vagy agressziót jelez: adj több helyet, vagy válaszd szét őket.'],BIRD_CATCH,['Felborzolt tollal gubbaszt',BIRD_SICK],BIRD_FUME]}});
+const BIRD_HOME=(cage)=>[['Kalitka',cage],['Hely','Olyan szobába tedd, ahol a család tartózkodik, lehetőleg sarokba, a padlónál magasabbra. Huzatos helyre, közvetlenül ablak elé és a konyhába ne kerüljön.'],['Ülőrudak és játékok','Több, különböző ülőrúd, mellé rágható és keresgélős játék. A madár feje ne férjen ki a rácsok között.'],['Világítás és alvás','Ha nem éri természetes fény, teljes spektrumú lámpa kell. Az esti rutin legyen mindig ugyanaz; a letakarás nem kötelező.'],['Takarítás','Az aljpapírt naponta vagy kétnaponta cseréld, a tálkákat naponta mosd el, a rácsot hetente tisztítsd.'],['Veszélyek a lakásban',BIRD_HAZ]];
+Object.assign(HOME,{
+ csincsilla:[['Ketrec','Párnak vagy három állatnak legalább 90 × 60 × 120 cm-es (hossz × mélység × magasság), többszintes ketrec kell, polcokkal. A rácsos aljzat mellé legyen tömör pihenőfelület is.'],['Hely és hőmérséklet','Beltéri, jól szellőző, száraz, huzatmentes hely, 10–18 °C között. Napos ablak elé és párás helyiségbe ne tedd.'],['Alom','A papíralapú alom a legjobb. Kezeletlen fenyőforgácsot és vegyszerrel kezelt fát ne használj.'],['Homokfürdő','Sekély tál csincsillahomokkal, kb. 5–10 cm mélyen, naponta 10–20 percre. A homokot legalább hetente cseréld.'],['Kerék és búvóhely','Sima futófelületű, kb. 38 cm átmérőjű kerék, és állatonként egy búvóhely vagy doboz.'],['Takarítás','A ketrecet legalább hetente ürítsd ki, és mosd ki.']],
+ goreny:[['Ketrec','Biztonságosan zárható legyen, mert ügyesen megszökik. Legalább 60 × 60 × 45 cm, de minél nagyobb, annál jobb: az ajánlott méret kb. 90 × 90 × 60 cm, több szinttel.'],['Aljzat','Tömör vagy kipárnázott aljzat kell: a csupasz rács megsérti a talppárnáit.'],['Alvóhely','Függőágy vagy szövetkuckó, tiszta törölközővel vagy kis takaróval. Újságpapírt és faforgácsot ne használj; a cédrus mérgező lehet.'],['Alomtálca','Magas falú saroktálca, az alvó- és etetőhelytől távol. Csomósodó almot ne használj.'],['Hőmérséklet','18–23 °C, napos ablaktól és huzattól távol.'],['Itató és tál','Golyós itató vagy nehéz tál, naponta tisztítva.']],
+ hullamos:BIRD_HOME('Minél nagyobb, annál jobb; a hossza fontosabb a magasságánál. A legkisebb elfogadható alapterület 46 × 46 cm, az ajánlott méret legalább kb. 90 × 60 × 60 cm. A rácstávolság kb. 1 cm legyen.'),
+ nimfa:BIRD_HOME('Legalább 50–60 cm hosszú és széles kalitka kell, de minél nagyobb, annál jobb: férjen el benne kitárt szárnnyal is. A rácstávolság 1,3–1,9 cm legyen.'),
+ kanari:BIRD_HOME('Legalább 46 cm hosszú és széles kalitka kell, kb. 1 cm rácstávolsággal; az ajánlott méret legalább kb. 90 × 60 × 60 cm. A hossza fontosabb a magasságánál, mert a kalitkában repül.'),
+ pinty:BIRD_HOME('Egy párnak legalább 35 × 35 cm alapterület kell, de a hosszú, vízszintes röpkalitka vagy röpde a jó. A rácstávolság legfeljebb 1,3 cm legyen.')});
+const L_CARRIER={k:'hord',t:'Hordozóba szoktatás',s:['Tedd ki a nyitott hordozót, benne egy kedvenc falattal.','Hagyd, hogy magától menjen be, és jutalmazd, amikor bent van.','Naponta két-három rövid alkalommal gyakorolj, több napon át.','Csak akkor csukd rá az ajtót, ha már nyugodtan bent marad.'],tip:'Így az állatorvosi út és az utazás kevésbé viseli meg.'};
+const PARROT_LES=[{k:'szelid',t:'Szelídítés',st:['kolyok','novendek'],s:['Ülj a kalitka mellé, és beszélj hozzá nyugodtan.','Tegyél kedvenc falatot (pl. fürtös kölest) a tálkájába, amikor ott vagy.','Később kínáld a falatot a kezedből, a rácson át, majd a nyitott ajtón át.','Kalitkán kívül csak akkor gyakorolj, amikor már megbízik benned.'],tip:'Ha sziszeg, liheg vagy elhátrál, lassíts: a megijedt madár csíp.'},
+ {k:'kezre',t:'Kézre lépés',s:['Nyomd az ujjad finoman a mellkasához, közvetlenül a lába fölé.','Amikor rálép, mondd mindig ugyanazt, például: „Lépj fel!”','Ismételd, minden alkalommal kicsit magasabbra emelve.','Jutalmul adj falatot, vagy tedd vissza egy magas, biztonságos helyre.','Ha fél az ujjadtól, pálcával vagy ülőrúddal kezdd.'],tip:'Kezdetben öt perc elég, később fokozatosan növeld. Azonnal jutalmazz, a próbálkozást is.'},
+ {k:'gyere',t:'Behívás',s:['Kezdd néhány centiről: tartsd elé az ujjad és egy falatot.','Mozgasd meg az ujjad, és mondd: „Gyere ide!”','Ha odajön, azonnal jutalmazd.','Fokozatosan növeld a távolságot.'],tip:'Játékos, nyugodt alkalmakkal gyakorolj; kerüld a gyors kézmozdulatot.'},
+ {k:'kalitka',t:'Vissza a kalitkába',s:['Etetéskor gyakorold.','Tegyél különleges falatot az egyik tálkába.','Kocogtasd meg a rácsot, és mondd mindig ugyanazt a szót.','Amikor bemegy, hagyd nyugodtan enni.'],tip:'A kalitkába tétel ne legyen büntetés: akkor nem megy be szívesen.'},L_CARRIER];
+Object.assign(LESSONS,{
+ csincsilla:[{k:'kez',t:'Kézhez szoktatás',st:['kolyok','novendek'],s:['Az első napokban csak ülj a ketrec mellé, és beszélj hozzá halkan.','Kínálj falatot mindig ugyanazzal a hanggal, hogy összekösse a hangot a jutalommal.','Kb. egy hét után simogasd meg óvatosan a mellkasát vagy a vállát.','Csalogasd falattal a tenyeredre, és hagyd, hogy magától lépjen rá.'],tip:'Csak akkor emeld fel, ha muszáj, és ne szorítsd: szőrt enged el.'},L_CARRIER],
+ goreny:[{k:'alom',t:'Alomra szoktatás',st:['kolyok','novendek'],s:['Figyeld meg, melyik sarkot választja, és oda tedd a magas falú tálcát.','A kifutóban is legyen tálca abban a sarokban, ahová jár.','Ha a tálcát használta, azonnal dicsérd meg, és adj egy falatot.','A tálcát naponta takarítsd.'],tip:'Az alkalmi baleset természetes.'},
+  {k:'harap',t:'Harapás leszoktatása',st:['kolyok','novendek'],s:['Ha játék közben megharap, azonnal hagyd abba a játékot.','Tedd vissza rövid időre a ketrecébe.','Minden alkalommal ugyanígy tégy: a következetesség a lényeg.'],tip:'Durván ne bánj vele: az megijeszti, és több harapást vált ki.'},
+  {k:'ham',t:'Hám és póráz',s:['Kétrészes görényhámot használj.','Előbb a lakásban add rá rövid időre, jutalommal.','Ha megszokta, csatold rá a pórázt, és kövesd, amerre megy.','Kint csendes helyen kezdj; ha kutya közeledik, vedd fel.'],tip:'Forgalmas helyet kerülj, amíg nem szokta meg az embereket.'},L_CARRIER],
+ hullamos:PARROT_LES,nimfa:PARROT_LES});
+const PARROT_PLAY={need:{all:'A repülés a természetes mozgása: naponta repülhessen biztonságos szobában (zárt ablak, kikapcsolt tűzhely, letakart tükör, felügyelet).'},games:['Rágható játék papírból, kartonból, puha fából','Keresgélés: elrejtett eleség játékban vagy papíron','Hinta és létra','Fürdőtál vagy permetezés'],engage:'A tanítás is játék: rövid, nyugodt, játékos alkalmakkal gyakorolj, jutalommal. Büntetést ne alkalmazz, és ne hordd a válladon.'};
+Object.assign(PLAY,{
+ csincsilla:{need:{all:'Nagyon mozgékony, ugró-mászó állat: sok vízszintes és függőleges hely kell neki. Naponta legalább egyszer mozoghasson felügyelet mellett, csincsillabiztos helyen.'},games:['Ugrálás polcról polcra','Kartondoboz és cső alagútnak','Almafaág és fa rágójáték','Elrejtett széna, hogy keresgélnie kelljen'],engage:'Este foglalkozz vele, amikor magától aktív. Napközben hagyd aludni, a ketrec álljon csendes helyen.'},
+ goreny:{need:{kolyok:'Rövid, gyakori játék sok alvással. Csak felügyelet mellett engedd ki: mindent megrág, és mindenhová bebújik.',all:'Naponta legalább 2–4 óra ketrecen kívüli mozgás kell neki, felügyelet mellett vagy görénybiztos helyen.',idos:'Kevesebbet mozog és többet alszik, de naponta mozogjon a saját tempójában.'},walk:'Hámmal és pórázzal sétáltatható, fokozatos szoktatás után.',games:['Alagút és cső','Kartondoboz, papírzacskó','Bújócska és kergetőzés','Szétszórt táp keresése'],engage:'Naponta többször, rövidebb alkalmakkal játssz vele, amikor ébren van. Szivacsos, gumis vagy puha műanyag játékot ne adj neki, mert lenyeli.'},
+ hullamos:PARROT_PLAY,nimfa:PARROT_PLAY,
+ kanari:{need:{all:'A kalitkában repül: hosszú kalitka kell, amelyben van szabad röptere.'},games:['Fürdőtál hetente legalább kétszer','Hinta','Friss zöld a rácsra tűzve'],engage:'Megfigyelni való madár: beszélj hozzá, de ne erőltesd a kézbevételt.'},
+ pinty:{need:{all:'Sok mozgást igényel: hosszú, vízszintes kalitkában vagy röpdében tartsd, és a szárnytollait ne vágd.'},games:['Fürdési lehetőség','Friss zöld és tojásos lágyeleség','Több ülőrúd, szabad röptérrel'],engage:'Megfigyelni való madár: a társaságot a fajtársai adják, a kézbevétel megterheli.'}});
+/* ---------- utazás és szállítás ---------- */
+const TR_HEAT=['Meleg','A meleget rosszul tűri: nyáron hűtött autóban, a legmelegebb órákat kerülve szállítsd, és soha ne hagyd az autóban.'];
+const TR_HOME=['Ha elutazol','A megszokott helyét és napirendjét szereti: a legjobb, ha megbízható ismerős gondozza otthon.'];
+const TR_NOPASS=n=>['Külföldre',`${n} nem adnak ki uniós kisállatútlevelet: a célország saját szabályai érvényesek. Indulás előtt kérdezd meg a célország hatóságát vagy a Nébihet.`];
+const TR_EU=n=>[['Külföldre az EU-n belül',`${n} mikrochip, érvényes veszettség elleni oltás és kisállatútlevél kell. Az oltás legkorábban 12 hetes korban adható, és az alapoltás után 21 nappal válik érvényessé, így az állat legkorábban 15 hetes korában utazhat. Az útlevelet szolgáltató állatorvos állítja ki.`],['Mire figyelj még','Egy gazda legfeljebb öt állatot vihet nem kereskedelmi céllal. EU-n kívüli országnál további feltételek (pl. vérvizsgálat és várakozási idő) lehetnek.']];
+const TR_SMALL=n=>[['Állatorvoshoz','Zárt, jól szellőző hordozóban vidd, szénával és búvóhellyel.'],TR_HEAT,TR_HOME,TR_NOPASS(n)];
+const TR_BIRD=[['Hordozó','Madaranként egy hordozó kell: hosszú útra kemény falú, rövid útra puha falú is megfelel. Friss víz mindig legyen benne.'],['Szoktatás','Előre szoktasd a hordozóhoz, naponta két-három rövid alkalommal, több napon át.'],['Ha elutazol','Rövidebb időre a legjobb, ha megbízható ismerős gondozza otthon, a megszokott helyén.'],
+ ['Külföldre az EU-n belül','Madárra nem adnak ki kisállatútlevelet. A Nébih tájékoztatója szerint a gazdájával utazó, nem eladásra szánt madárhoz (legfeljebb 5 madárig) tagállamok között nem kell állategészségügyi bizonyítvány, de kell egyedi jelölés (pl. lábgyűrű vagy mikrochip) és a tulajdont igazoló okmány (pl. számla vagy adásvételi szerződés).'],['EU-n kívüli ország','Harmadik országnál hatósági állatorvosi bizonyítvány és karantén is szükséges lehet: kérdezd a Nébihet.']];
+const TRIP={
+ kutya:[['Autóban','Szállítóboxban, rögzített hordozóban vagy biztonsági hámmal utazzon. Hosszabb úton tarts szünetet, és legyen nála víz.'],['Meleg','Soha ne hagyd az álló autóban: a zárt autó percek alatt felforrósodik.'],...TR_EU('Kutyához'),['Galandféreg elleni kezelés','Finnországba, Írországba, Máltára, Norvégiába és Észak-Írországba utazó kutyának az érkezés előtt 24–120 órával állatorvos által adott galandféreg elleni kezelés is kell.']],
+ macska:[['Hordozó','Zárt, stabil hordozóban szállítsd, benne ismerős szagú takaróval. Autóban rögzítsd a hordozót.'],['Meleg','Soha ne hagyd az álló autóban: a zárt autó percek alatt felforrósodik.'],...TR_EU('Macskához')],
+ goreny:[['Hordozó','Zárt, szellőző hordozóban szállítsd, puha takaróval. Állatorvoshoz is ebben vidd.'],['Meleg','Nem izzad, a meleget rosszul tűri: nyáron hűtött autóban szállítsd, és soha ne hagyd az autóban.'],...TR_EU('Vadászgörényhez, ahogy a kutyához és a macskához is,')],
+ nyul:TR_SMALL('Nyúlra'),tengerimalac:TR_SMALL('Rágcsálóra'),horcsog:TR_SMALL('Rágcsálóra'),
+ csincsilla:[['Állatorvoshoz','Zárt, jól szellőző hordozóban vidd, szénával és búvóhellyel. Előre szoktasd a hordozóhoz.'],['Meleg','A meleget rosszul tűri, hőgutát kaphat: nyáron hűtött autóban, a legmelegebb órákat kerülve szállítsd, és soha ne hagyd az autóban.'],TR_HOME,TR_NOPASS('Rágcsálóra')],
+ hullamos:TR_BIRD,nimfa:TR_BIRD,kanari:TR_BIRD,pinty:TR_BIRD};
+/* ---------- források: az útmutatók számadatai innen származnak ---------- */
+const SRC={
+ vcaChinF:['VCA Animal Hospitals: Chinchillas – Feeding','https://vcahospitals.com/know-your-pet/chinchillas---feeding'],vcaChinO:['VCA Animal Hospitals: Chinchillas – Owning','https://vcahospitals.com/know-your-pet/chinchillas-owning'],
+ rspcaChin:['RSPCA: Creating a Good Home for Chinchillas','https://www.rspca.org.uk/adviceandwelfare/pets/rodents/chinchillas/environment'],merckChin:['Merck Veterinary Manual: Providing a Home for a Chinchilla','https://www.merckvetmanual.com/all-other-pets/chinchillas/providing-a-home-for-a-chinchilla'],
+ bcChin:['Blue Cross: Chinchilla Care Guide','https://www.bluecross.org.uk/advice/chinchilla/chinchilla-care'],
+ vcaFerF:['VCA Animal Hospitals: Feeding Ferrets','https://vcahospitals.com/know-your-pet/feeding-ferrets'],vcaFerH:['VCA Animal Hospitals: Ferrets – Housing','https://vcahospitals.com/know-your-pet/ferrets---housing'],
+ merckFer:['Merck Veterinary Manual: Providing a Home for a Ferret','https://www.merckvetmanual.com/all-other-pets/ferrets/providing-a-home-for-a-ferret'],merckFer2:['Merck Veterinary Manual: Special Considerations for Ferrets','https://www.merckvetmanual.com/all-other-pets/ferrets/special-considerations-for-ferrets'],
+ lafFer:['LafeberVet: Basic Information Sheet – Ferret','https://lafeber.com/vet/basic-information-for-ferrets/'],bcFer:['Blue Cross: Caring for Your Ferret','https://www.bluecross.org.uk/advice/ferret/caring-for-your-ferret'],
+ merckBird:['Merck Veterinary Manual: Management of Pet Birds','https://www.merckvetmanual.com/exotic-and-laboratory-animals/pet-birds/management-of-pet-birds'],merckTox:['Merck Veterinary Manual: Toxicoses of Pet Birds','https://www.merckvetmanual.com/exotic-and-laboratory-animals/pet-birds/toxicoses-of-pet-birds'],
+ rspcaBirdF:['RSPCA: What to Feed Your Pet Bird','https://www.rspca.org.uk/adviceandwelfare/pets/birds/diet'],rspcaBirdT:['RSPCA: How to Train Your Pet Bird','https://www.rspca.org.uk/adviceandwelfare/pets/birds/training'],
+ petmdBird:['PetMD: Foods That Are Toxic to Birds','https://www.petmd.com/bird/foods-are-toxic-birds'],vcaHaz:['VCA Animal Hospitals: Household Hazards and Dangers to Birds','https://vcahospitals.com/know-your-pet/household-hazards-and-dangers-to-birds'],
+ lafBudgie:['LafeberVet: Basic Information Sheet – Parakeet','https://lafeber.com/vet/basic-information-sheet-for-the-parakeet/'],lafTiel:['LafeberVet: Basic Information Sheet – Cockatiel','https://lafeber.com/vet/basic-information-sheet-for-the-cockatiel/'],lafTiel2:['Lafeber: Cockatiel – Personality, Food & Care','https://lafeber.com/pet-birds/species/cockatiel/'],
+ lafCanary:['LafeberVet: Basic Information Sheet – Canary','https://lafeber.com/vet/basic-information-sheet-for-the-canary/'],lafFinch:['LafeberVet: Basic Information Sheet – Finch','https://lafeber.com/vet/basic-information-sheet-for-the-finch/'],lafFinch2:['Lafeber: Finch – Personality, Food & Care','https://lafeber.com/pet-birds/species/finch/'],
+ lafHome:['Lafeber: Your Bird’s Home','https://lafeber.com/pet-birds/your-birds-home/'],lafTrain:['Lafeber: Small Bird Taming and Training Basics','https://lafeber.com/pet-birds/small-bird-taming-training-basics/'],lafSwitch:['Lafeber: Switching from Seeds to Pellets','https://lafeber.com/pet-birds/switching-from-seeds-to-pellets-or-to-nutri-berries/'],
+ euPets:['Your Europe: utazás kedvtelésből tartott állattal az EU-ban','https://europa.eu/youreurope/citizens/travel/carry/pets-and-other-animals/index_en.htm'],nebihPets:['Nébih: Kedvtelésből tartott állatok utaztatása','https://portal.nebih.gov.hu/-/kedvtelesbol-tartott-allatok-utaztatasara-vonatkozo-tajekoztato'],
+ nebihBirds:['Nébih: Fogságban tartott madarak szállításának feltételei','https://portal.nebih.gov.hu/-/fogsagban-tartott-madarak-szallitasanak-utaztatasanak-mozgatasanak-feltetelei']};
+const BIRD_SRC_F=['merckBird','rspcaBirdF','lafSwitch','petmdBird'],BIRD_SRC_T=['lafHome','rspcaBirdT','nebihBirds','euPets'],EU_SRC=['euPets','nebihPets'];
+const GSRC={kutya:{trip:EU_SRC},macska:{trip:EU_SRC},nyul:{trip:['euPets']},tengerimalac:{trip:['euPets']},horcsog:{trip:['euPets']},
+ csincsilla:{food:['vcaChinF','bcChin'],care:['rspcaChin','merckChin','bcChin','vcaChinO'],trip:['rspcaChin','bcChin','euPets']},
+ goreny:{food:['vcaFerF','merckFer','lafFer'],care:['merckFer','merckFer2','vcaFerH','lafFer','bcFer'],trip:EU_SRC},
+ hullamos:{food:BIRD_SRC_F,care:['lafBudgie','lafHome','lafTrain','rspcaBirdT','vcaHaz','merckTox'],trip:BIRD_SRC_T},
+ nimfa:{food:BIRD_SRC_F,care:['lafTiel','lafTiel2','lafHome','lafTrain','rspcaBirdT','vcaHaz','merckTox'],trip:BIRD_SRC_T},
+ kanari:{food:[...BIRD_SRC_F,'lafCanary'],care:['lafCanary','lafHome','vcaHaz','merckTox'],trip:BIRD_SRC_T},
+ pinty:{food:[...BIRD_SRC_F,'lafFinch','lafFinch2'],care:['lafFinch','lafFinch2','lafHome','vcaHaz','merckTox'],trip:BIRD_SRC_T}};
+/* becsukható forráslista az útmutatók alján; a linkek új lapon nyílnak */
+const srcBox=(p,part)=>{const ids=(GSRC[p.species]||{})[part]||[];return ids.length?`<details class="acc" style="margin-top:18px"><summary>Források</summary><ul class="srcs">${ids.map(i=>`<li><a href="${esc(SRC[i][1])}" target="_blank" rel="noopener noreferrer">${esc(SRC[i][0])}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">Az útmutató tájékoztató jellegű, a számadatai ezekből a forrásokból származnak. A források többsége angol nyelvű, és új lapon nyílik meg.</p></details>`:''};
+const CT={guide:'Útmutató',home:'Otthon',les:'Leckék',play:'Játék és mozgás',prob:'Problémák',trip:'Utazás'};
 const TOPIC={path:'az életút, a mérföldkövek és az oltások',health:'az egészség, a tünetek és a megelőzés',food:'a táplálkozás és a tápválasztás',care:'a tartás, az otthoni felszerelés, a tanítás, a játék és a mozgás',prod:'a termékek és a felszerelés',vets:'az állatorvosi vizsgálatok és az állatorvos-választás'};
 const TOPIC_HU={home:'Általános',hub:'Gondozás',path:'Életút',health:'Egészség',food:'Táplálkozás',care:'Tartás és nevelés',prod:'Termékek',vets:'Állatorvosok',more:'Általános'};
 const TOPIC_Q={path:['Milyen oltások és vizsgálatok várhatók a következő évben?','Mire készüljek a következő életszakaszban?'],health:['Milyen jelekre figyeljek ebben a korban?','Milyen vitamin vagy kiegészítő jöhet szóba?'],food:['Milyen tápot válasszak neki?','Hányszor és mennyit etessem?'],care:['Mivel foglaljam le napközben?','Mit tanítsak neki most?'],prod:['Milyen felszerelés kell neki most?','Milyen játékot ajánlasz?'],vets:['Milyen gyakran vigyem állatorvoshoz?','Mit kérdezzek az első vizsgálaton?']};
@@ -1037,7 +1174,8 @@ const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gond
 function vFood(p){
   const F=FOOD[p.species],st=stageOf(p),L=limitsFor(p);
   if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div><p class="note">${DISC}</p>`;
-  const kc=kcalRange(p),k100=+p.kcal100||0,meals=F.meals?F.meals[st]:0;let portion;
+  /* adatvezérelt adatlap: ami az adott fajnál hiányzik (táplista, szakasz szerinti gyakoriság), az a lapról is kimarad */
+  const kc=kcalRange(p),k100=+p.kcal100||0,meals=F.meals&&st?F.meals[st]:0,fl=foods(p),freq=(F.freq&&st&&F.freq[st])||F.freqAll||'';let portion;
   if(F.base)portion=`<ul class="tips" style="margin-bottom:-12px">${F.base.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
   else if(!kc)portion=`<p class="sub">Add meg ${esc(petName(p))} súlyát, és megbecsülöm a napi energiaigényét.</p><button class="btn small" data-act="wNew">Súly rögzítése</button>`;
   else{const g=k100?kc.map(v=>Math.round(v/k100*100/5)*5):null;
@@ -1046,14 +1184,14 @@ function vFood(p){
     ${g?`<p><b>Ez kb. ${g[0]}–${g[1]} g naponta</b> ebből a tápból${meals?`, ${meals} étkezésre osztva alkalmanként kb. ${Math.round(g[0]/meals)}–${Math.round(g[1]/meals)} g`:''}. A jutalomfalatot is számold bele.</p>`:'<p class="sub">Írd be az értéket, és grammra váltom.</p>'}
     <p class="sub" style="margin:0">Tájékoztató becslés a testsúlyból, az életszakaszból és az ivartalanításból. Az egyéni igény eltérhet: a táp etetési táblázata és az állatorvos az irányadó.${st==='kolyok'||st==='novendek'?' Növésben a súly gyorsan változik, mérd és frissítsd gyakran.':''}</p>`}
   return`${BACK}<h1>Táplálkozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p>
-  <h2>Napi adag</h2><div class="card">${portion}</div>
-  <h2>Ajánlott tápok ${stHU(p,st).toLowerCase()} korra</h2>${tierChips()}<div style="height:10px"></div>${prodList(foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>${aiBox(p,'food','Személyre szabott tápajánlás kérése')}
-  <h2>Etetési gyakoriság</h2><p>${F.freq?F.freq[st]:F.freqAll}</p>
-  <h2>Tápváltás</h2>${F.base?'<p>Kisemlősnél lassan, legalább 2 hét alatt válts, az új eleséget fokozatosan a régihez keverve.</p>'
+  <h2>${F.h||'Napi adag'}</h2><div class="card">${portion}</div>
+  ${fl.length?`<h2>Ajánlott tápok ${stHU(p,st).toLowerCase()} korra</h2>${tierChips()}<div style="height:10px"></div>${prodList(fl)}<p class="sub" style="margin-top:10px">${PNOTE}</p>${aiBox(p,'food','Személyre szabott tápajánlás kérése')}`:''}
+  ${freq?`<h2>Etetési gyakoriság</h2><p>${freq}</p>`:''}
+  <h2>Tápváltás</h2>${F.sw?`<p>${F.sw}</p>`:F.base?'<p>Kisemlősnél lassan, legalább 2 hét alatt válts, az új eleséget fokozatosan a régihez keverve.</p>'
     :`<p>Új tápra fokozatosan, 7–10 nap alatt válts, a régihez keverve.</p><div class="plan">${[['1–3. nap',25],['4–6. nap',50],['7–9. nap',75],['10. naptól',100]].map(([d,n])=>`<div><i style="--h:${n}%"></i><b>${n}%</b><span>${d}</span></div>`).join('')}</div>
     <p class="sub">Az oszlop az új táp arányát mutatja. Felnőtt tápra kb. ${L[1]} hónapos kor körül érdemes áttérni; a szenior tápról az állatorvossal egyeztess.</p>`}
   <h2>Tilos vagy kerülendő ételek</h2><ul class="bad">${F.bad.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${F.extra?`<p class="sub" style="margin-top:10px">${F.extra}</p>`:''}
-  <p class="note warn">Ha mégis evett valamelyikből, vagy mérgezésre gyanakszol, azonnal fordulj állatorvoshoz.</p><p class="note">${DISC}</p>`}
+  <p class="note warn">Ha mégis evett valamelyikből, vagy mérgezésre gyanakszol, azonnal fordulj állatorvoshoz.</p>${srcBox(p,'food')}<p class="note">${DISC}</p>`}
 let tier='all',pCat='tap',careSt=null,aiRun=null,aiErr=null,symOpen='';
 const tierChips=()=>`<div class="seg2" role="group" aria-label="Árkategória">${[['all','Mind'],['k','Közép'],['p','Prémium']].map(([v,n])=>`<button data-act="tier" data-v="${v}" aria-pressed="${tier===v}">${n}</button>`).join('')}</div>`;
 function prodList(l){const f=l.filter(x=>tier==='all'||x[x.length-1]===tier);
@@ -1068,8 +1206,8 @@ function aiTask(p,key){
   if(key==='vit')return`Feladat: ajánlj ennek az állatnak vitaminokat és táplálékkiegészítőket. Írd le, mely típusok lehetnek hasznosak a faja, fajtája, mérete, életszakasza és a naplózott adatai alapján, és melyek fölöslegesek. Adagolást ne írj. Jelezd, hogy teljes értékű táp mellett egészséges állatnak többnyire nincs szüksége külön vitaminra, a túladagolás ártalmas lehet, és a kiegészítőt az állatorvossal kell egyeztetni. Márkát csak ezek közül említs: ${SUPP.join(', ')}. Árat ne írj. Legfeljebb 150 szó.`;
   if(key==='food')return`Feladat: ajánlj ennek az állatnak 3 konkrét tápot az alábbi listából, és egy-egy mondatban indokold, miért illik a korához, méretéhez és adataihoz. Ha a naplóban van ide tartozó tünet vagy súlyváltozás, vedd figyelembe. Lista: ${foods(p).map(x=>x[0]).join('; ')}. Árat ne írj. Legfeljebb 130 szó.`;
   const pl=c=>((PROD[p.species]||{})[c]||[]).map(x=>`${x[0]} (${x[1]})`).join('; ');
-  if(key==='home')return`Feladat: írd le konkrétan, mire van szüksége otthon ennek az állatnak a faja, fajtája, mérete és életszakasza alapján: alom, fekhely, ház, ketrec vagy terrárium, tálak, hordozó – ami ennél a fajnál értelmezhető. Adj méretre és típusra vonatkozó gyakorlati tanácsot (ha a súlya vagy a mérete ismert, ahhoz igazítva), és mindegyikhez nevezz meg egy márkát ebből a listából: ${pl('alom')}; ${pl('felsz')}. Árat ne írj. Legfeljebb 170 szó.`;
-  if(key==='play')return`Feladat: állíts össze rövid napi mozgás- és foglalkozási tervet ennek az állatnak a faja, fajtája, mérete, életszakasza és súlya alapján: mennyi és milyen mozgás kell neki (kutyánál a séták száma és hossza), milyen játékok valók neki, és hogyan foglalkozzon vele a gazdája. Jelezd, mire kell vigyázni ebben a korban. Játékmárkát csak ebből a listából említs: ${pl('jatek')}. Árat ne írj. Legfeljebb 170 szó.`;
+  if(key==='home')return`Feladat: írd le konkrétan, mire van szüksége otthon ennek az állatnak a faja, fajtája, mérete és életszakasza alapján: alom, fekhely, ház, ketrec vagy terrárium, tálak, hordozó – ami ennél a fajnál értelmezhető. Adj méretre és típusra vonatkozó gyakorlati tanácsot (ha a súlya vagy a mérete ismert, ahhoz igazítva), ${pl('alom')||pl('felsz')?`és mindegyikhez nevezz meg egy márkát ebből a listából: ${pl('alom')}; ${pl('felsz')}`:'márkát ne említs'}. Árat ne írj. Legfeljebb 170 szó.`;
+  if(key==='play')return`Feladat: állíts össze rövid napi mozgás- és foglalkozási tervet ennek az állatnak a faja, fajtája, mérete, életszakasza és súlya alapján: mennyi és milyen mozgás kell neki (kutyánál a séták száma és hossza), milyen játékok valók neki, és hogyan foglalkozzon vele a gazdája. Jelezd, mire kell vigyázni ebben a korban. ${pl('jatek')?`Játékmárkát csak ebből a listából említs: ${pl('jatek')}.`:'Márkát ne említs.'} Árat ne írj. Legfeljebb 170 szó.`;
   const c=key.slice(5),l=c==='tap'?foods(p):(PROD[p.species]||{})[c]||[];
   return`Feladat: a(z) „${PCAT[c]}" kategóriából ajánlj ennek az állatnak 3 terméket vagy terméktípust márkával, a faja, mérete és életszakasza alapján. Röviden indokold, és írd meg, mire figyeljen a választásnál. Csak ebből a listából válassz: ${l.map(x=>x.slice(0,-1).join(' – ')+(x[x.length-1]==='p'?' (prémium)':' (közép)')).join('; ')}.${tier==='all'?'':` Csak a ${tier==='p'?'prémium':'közép'} kategóriából ajánlj.`} Árat ne írj. Legfeljebb 130 szó.`}
 async function runAi(key,task,store){
@@ -1082,27 +1220,32 @@ async function runAi(key,task,store){
 const symAsk=e=>{symOpen=e.id;runAi('sym:'+e.id,`Feladat: a felhasználó ezt a tünetet rögzítette az állatnál: „${e.text}" (${e.date}, a saját megítélése szerint ${SEV[e.sev]||'nem besorolt'}). Sorold fel röviden a 3–5 leggyakoribb lehetséges okot ennél a fajnál és életkorban, a valószínűbbtől haladva. Mondd ki, hogy ezek lehetőségek, nem diagnózis. Írd le, mit érdemes otthon megfigyelni, és milyen jelek esetén kell azonnal vagy 24 órán belül állatorvoshoz fordulni. Gyógyszert és adagolást ne javasolj. Legfeljebb 170 szó.`,t=>{e.ai=t})};
 let cTab='guide',lesOpen='';
 function vCare(p){
-  const C=CARE[p.species],cur=stageOf(p);
+  const k=p.species,C=CARE[k],cur=stageOf(p);
   if(!C)return`${BACK}<h1>Tartás és nevelés</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített útmutató.</p><p class="sub">A tartásáról a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>`;
   const ask=(q,l='Kérdezd erről a Tanácsadót')=>`<button class="btn text" style="padding:0" data-act="askQ" data-q="${esc(q)}">${l}</button>`;
+  const card=([t,d,br])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${br?`<p style="color:var(--ink)"><span class="tag" style="margin:0 6px 0 0">bevált márkák</span>${br}</p>`:''}</div>`;
+  /* adatvezérelt adatlap: csak azok a fülek látszanak, amelyekhez az adott fajnál van tartalom */
+  const has={guide:C.g,home:HOME[k],les:(LESSONS[k]||[]).length,play:PLAY[k],prob:C.p,trip:TRIP[k]},tabs=Object.keys(CT).filter(x=>has[x]),ct=tabs.includes(cTab)?cTab:tabs[0];
   let b='';
-  if(cTab==='guide'){const st=careSt&&C.g[careSt]?careSt:cur;
-    b=`<div class="seg2" role="group" aria-label="Életszakasz">${STAGES.map(x=>`<button data-act="careSt" data-v="${x}" aria-pressed="${x===st}">${stHU(p,x)}${x===cur?' (most)':''}</button>`).join('')}</div>
-    <h2>Útmutató ${stHU(p,st).toLowerCase()} korra</h2>${C.g[st].map(([t,d])=>`<div class="card guide"><b>${t}</b><p>${d}</p></div>`).join('')}
-    <h2>Ötletek a mindennapokra</h2><ul class="tips">${C.i.map(x=>`<li>${x}</li>`).join('')}</ul>`}
-  if(cTab==='home')b=`<h2>Mire van szüksége otthon?</h2>${HOME[p.species].map(([t,d,br])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${br?`<p style="color:var(--ink)"><span class="tag" style="margin:0 6px 0 0">bevált márkák</span>${br}</p>`:''}</div>`).join('')}
-    <p class="sub" style="margin-top:10px">${PNOTE}</p><h2>Személyre szabott ajánlás</h2>${aiBox(p,'home','Mi kell neki pontosan? Ajánlás kérése')}`;
-  if(cTab==='les'){const done=p.lessons||{};
-    b=`<p class="sub" style="margin-top:14px">Rövid, napi gyakorlásra szánt leckék. Jutalmazással taníts, büntetés nélkül; egy alkalom néhány perc legyen.</p>${LESSONS[p.species].map(x=>{const ok=done[x.k],now=!ok&&(!x.st||x.st.includes(cur));
+  if(ct==='guide'){const st=cur?(careSt&&C.g[careSt]?careSt:cur):null,list=(st&&C.g[st])||C.g.all||[];
+    b=`${st?`<div class="seg2" role="group" aria-label="Életszakasz">${STAGES.filter(x=>C.g[x]).map(x=>`<button data-act="careSt" data-v="${x}" aria-pressed="${x===st}">${stHU(p,x)}${x===cur?' (most)':''}</button>`).join('')}</div>
+    <h2>Útmutató ${stHU(p,st).toLowerCase()} korra</h2>`:'<h2>Útmutató</h2>'}${list.map(card).join('')}
+    ${C.i?`<h2>Ötletek a mindennapokra</h2><ul class="tips">${C.i.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}`}
+  if(ct==='home')b=`<h2>Mire van szüksége otthon?</h2>${HOME[k].map(card).join('')}
+    ${PROD[k]?`<p class="sub" style="margin-top:10px">${PNOTE}</p>`:''}<h2>Személyre szabott ajánlás</h2>${aiBox(p,'home','Mi kell neki pontosan? Ajánlás kérése')}`;
+  if(ct==='les'){const done=p.lessons||{};
+    b=`<p class="sub" style="margin-top:14px">Rövid, napi gyakorlásra szánt leckék. Jutalmazással taníts, büntetés nélkül; egy alkalom néhány perc legyen.</p>${LESSONS[k].map(x=>{const ok=done[x.k],now=!ok&&(!x.st||x.st.includes(cur));
       return`<details class="acc"${lesOpen===x.k?' open':''}><summary>${ok?'<span class="ok">✓</span>':''}${x.t}${now?'<span class="tag" style="margin:0">most időszerű</span>':''}</summary><ol class="steps2">${x.s.map(t=>`<li>${t}</li>`).join('')}</ol>${x.tip?`<p class="sub">${x.tip}</p>`:''}
       <p><button class="btn small${ok?' ghost':''}" data-act="lesDone" data-k="${x.k}">${ok?'Még gyakoroljuk':'Megtanulta'}</button></p><p>${ask(x.t+': hogyan tanítsam meg neki lépésről lépésre, és mit tegyek, ha elakadunk?','Elakadtatok? Kérdezd a Tanácsadót')}</p></details>`}).join('')}`}
-  if(cTab==='play'){const P=PLAY[p.species];
-    b=`<h2>Mozgásigény ${stHU(p,cur).toLowerCase()} korban</h2><p>${P.need[cur]||P.need.all}</p>${P.walk?`<h2>Séta</h2><p>${P.walk}</p>`:''}
-    <h2>Játékok</h2><ul class="tips">${P.games.map(x=>`<li>${x}</li>`).join('')}</ul><p class="sub">Bevált játékmárkák: ${PROD[p.species].jatek.map(x=>`${x[0]} (${x[1]})`).join('; ')}.</p>
+  if(ct==='play'){const P=PLAY[k],J=(PROD[k]||{}).jatek;
+    b=`<h2>Mozgásigény${cur?` ${stHU(p,cur).toLowerCase()} korban`:''}</h2><p>${(cur&&P.need[cur])||P.need.all}</p>${P.walk?`<h2>Séta</h2><p>${P.walk}</p>`:''}
+    ${P.games?`<h2>Játékok</h2><ul class="tips">${P.games.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${J?`<p class="sub">Bevált játékmárkák: ${J.map(x=>`${x[0]} (${x[1]})`).join('; ')}.</p>`:''}
     <h2>Így foglalkozz vele</h2><p>${P.engage}</p><h2>Személyre szabott terv</h2>${aiBox(p,'play','Napi mozgás- és játékterv kérése')}`}
-  if(cTab==='prob')b=`<h2>Gyakori problémák</h2>${C.p.map(([q,a])=>`<details class="acc"><summary>${q}</summary><p>${a}</p><p>${ask(q+': mit tegyek?')}</p></details>`).join('')}`;
-  return`${BACK}<h1>Tartás és nevelés</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}, ${stHU(p,cur).toLowerCase()}</p>
-  <div class="seg2" role="group" aria-label="A Tartás és nevelés részei">${Object.entries(CT).map(([k,n])=>`<button data-act="cTab" data-v="${k}" aria-pressed="${cTab===k}">${n}</button>`).join('')}</div>${b}`}
+  if(ct==='prob')b=`<h2>Gyakori problémák</h2>${C.p.map(([q,a])=>`<details class="acc"><summary>${q}</summary><p>${a}</p><p>${ask(q+': mit tegyek?')}</p></details>`).join('')}<p class="note">${DISC}</p>`;
+  if(ct==='trip')b=`<h2>Utazás és szállítás</h2>${TRIP[k].map(card).join('')}
+    <p class="sub" style="margin-top:10px">Tájékoztató összefoglaló. A szabályok változhatnak: külföldi út előtt mindig ellenőrizd a hatályos feltételeket a Nébihnél és a célország hatóságánál.</p><p>${ask('Mire figyeljek, ha utazom vele, vagy szállítanom kell?')}</p>`;
+  return`${BACK}<h1>Tartás és nevelés</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${cur?', '+stHU(p,cur).toLowerCase():''}</p>
+  <div class="seg2" role="group" aria-label="A Tartás és nevelés részei">${tabs.map(x=>`<button data-act="cTab" data-v="${x}" aria-pressed="${ct===x}">${CT[x]}</button>`).join('')}</div>${b}${srcBox(p,ct==='trip'?'trip':'care')}`}
 function vProd(p){
   const P=PROD[p.species],st=stageOf(p);
   if(!P)return`${BACK}<h1>Ajánlott termékek</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített terméklista.</p><p class="sub">Felszerelésről a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>`;
@@ -1119,7 +1262,7 @@ function vVets(){
 function vHub(p){
   const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
   return`<h1>Gondozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}</p>
-  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}</div>`}
+  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék, utazás')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}</div>`}
 /* chat */
 let chatBusy=null,chatCtl=null,streamText='',chatNote='',sampleP=null,chatSheet=false,chatTopic='';
 const chatLog=p=>S.chat[p.id]||[];
@@ -1206,6 +1349,8 @@ function render(opt={}){
   else if(tab==='prod')v.innerHTML=vProd(p);
   else if(tab==='ai'){v.className='chatmode';v.innerHTML=vChat(p);if(!opt.clearDraft)$('#chatIn').value=draft;scrollChat()}
   if(opt.top)v.scrollTop=0;
+  /* a vízszintesen görgethető fülsorokban a kiválasztott fül legyen látható */
+  v.querySelectorAll('.seg2 [aria-pressed="true"]').forEach(b=>{const s=b.parentElement;s.scrollLeft+=b.getBoundingClientRect().left-s.getBoundingClientRect().left-(s.clientWidth-b.offsetWidth)/2});
   if(tab==='path'&&opt.toToday){const el=$('#tlToday');if(el)v.scrollTop=el.getBoundingClientRect().top-v.getBoundingClientRect().top-v.clientHeight/3}
 }
 const scrollChat=()=>{const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight};
@@ -1328,7 +1473,7 @@ function chatContext(p,task){
     size?`- Méret: ${SIZE_HU[size]}`:null,`- Életkor: ${fmtAge(p)} (születési dátum: ${p.birth}${p.est?', becsült':''})`,`- Életszakasz: ${st?stHU(p,st):'ennél a fajnál nincs meghatározva'}`,
     `- Ivar: ${{him:'hím',nosteny:'nőstény'}[p.sex]||'nincs megadva'}`,grp(p)==='emlos'||grp(p)==='egyeb'?`- Ivartalanított: ${p.neutered||'nincs megadva'}`:null,grp(p)==='hal'?`- Állomány: ${p.count||'?'} db, ${p.tankL?fmtKg(p.tankL):'?'} literes akvárium`:noWeight(p)?null:`- Súly: ${p.weight?wTxt(p,p.weight):'nincs megadva'}`,'',
     'Előzmények az életútból:',...(hist.length?hist:['- nincs rögzített esemény']),'','Esedékes teendők:',...(due.length?due:['- nincs']),'','Súlymérések:',...or(w),'','Tünetnapló:',...or(sy),'','Parazita elleni kezelések:',...or(pa),'',
-    `Ha márkát vagy terméket említesz, csak ezek közül válassz: ${brandList(p)}.`,'','Sima szöveggel válaszolj, markdown formázás nélkül.',task||'A felhasználó üzenetei következnek.'].filter(x=>x!==null).join('\n');
+    foods(p).length||PROD[p.species]?`Ha márkát vagy terméket említesz, csak ezek közül válassz: ${brandList(p)}.`:'Konkrét márkát vagy terméknevet ne említs.','','Sima szöveggel válaszolj, markdown formázás nélkül.',task||'A felhasználó üzenetei következnek.'].filter(x=>x!==null).join('\n');
 }
 /* ---------- Tanácsadó: hívás a szerveroldali függvényen át ----------
    A kérés a belépett felhasználó nevében megy; a rendszerprompt és az AI-kulcs a szerveren van.
