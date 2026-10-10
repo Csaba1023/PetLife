@@ -681,7 +681,7 @@ function foods(p){
     tengerimalac:[['Versele-Laga Cavia Complete','p'],['Beaphar Care+ tengerimalactáp','p'],['Bunny tengerimalactáp','p'],['Vitakraft Menu Vital tengerimalactáp','k'],['JR Farm tengerimalactáp','k'],hay],
     horcsog:[['Versele-Laga Hamster Complete','p'],['Beaphar Care+ hörcsögtáp','p'],['Bunny hörcsögtáp','p'],['Vitakraft Menu Vital hörcsögeleség','k'],['JR Farm hörcsögeleség','k']]})[p.species]||[]}
 const PCAT={tap:'Táp',alom:'Alom és higiénia',felsz:'Felszerelés',jatek:'Játék'};
-const SMALL_EQ=[['Trixie','házikó, alagút, itató, szénatartó','k'],['Kerbl','kifutó, ketrec','k'],['Ferplast','nagy alapterületű ketrec, kifutó','p'],['Savic','ketrec, alomtálca','p']],SMALL_BED=[['Chipsi','faforgács, pellet alom','k'],["Cat's Best",'Universal növényi alom kisállatoknak','p']];
+const SMALL_EQ=[['Trixie','házikó, alagút, itató, szénatartó','k'],['Kerbl','kifutó, ketrec','k'],['Ferplast','nagy alapterületű ketrec, kifutó','p'],['Savic','ketrec, alomtálca','p']],SMALL_BED=[['Chipsi','faforgács, fagranulátum alom','k'],["Cat's Best",'Universal növényi alom kisállatoknak','p']];
 const PROD={
  kutya:{alom:[['Trixie','kutyapelenka, ürülékgyűjtő zacskó','k'],['Savic','Puppy Trainer pelenkatartó kölyköknek','p']],
   felsz:[['Trixie','póráz, tál, fekhely, hordozó','k'],['Ferplast','hordozó, hám, fekhely','k'],['Flexi','automata póráz','k'],['Julius-K9','hám, póráz, magyar márka','p'],['Hunter','nyakörv, póráz, fekhely','p'],['Ruffwear','túrahám, kutyakabát','p'],['FURminator','vedlés elleni kefe','p']],
@@ -696,15 +696,15 @@ const BIRD_ALOM=[['Vitakraft','madárhomok','k'],['Versele-Laga','kagylóhomok',
 const birdProd=(a,b,c)=>({tap:[[`Versele-Laga Prestige ${a}`,'k'],['Versele-Laga NutriBird granulált táp','p'],[`Beaphar XtraVital ${b}`,'p'],[`Vitakraft Menü ${c||a}`,'k'],['Vitakraft Kräcker rúd','k']],alom:BIRD_ALOM,felsz:BIRD_EQ,jatek:BIRD_TOY});
 Object.assign(PROD,{
  csincsilla:{tap:[['Versele-Laga csincsillatáp (Nature vagy Complete)','p'],['Beaphar Care+ csincsillatáp','p'],['Bunny csincsillatáp','p'],['JR Farm csincsilla pellet','k'],['Vitakraft csincsillaeleség','k'],['Széna: JR Farm, Vitakraft Vita Verde vagy Bunny','k']],
-  alom:[["Cat's Best",'Universal növényi alom kisállatoknak','p'],['JR Farm','csincsillahomok a homokfürdőhöz','k'],['Trixie','csincsillahomok','k'],['Versele-Laga','fürdőhomok csincsillának','k']],
-  felsz:[['Ferplast','többszintes ketrec','p'],['Savic','ketrec','p'],['Trixie','házikó, homokfürdő-tál, futókerék, itató','k'],['Kerbl','ketrec, kifutó','k']],jatek:[['Trixie','fa rágójáték, alagút','k'],['JR Farm','rágnivaló','k']]},
- goreny:{tap:[['Versele-Laga Ferret Complete','p'],['Beaphar görénytáp','p'],['Brit Animals Ferret','k'],['Vitakraft görényeledel','k']],
-  alom:[["Cat's Best",'Universal nem csomósodó növényi alom','p'],['Chipsi','fa pellet alom','k']],
+  alom:[["Cat's Best",'Universal növényi alom kisállatoknak','p'],['JR Farm','csincsillahomok a homokfürdőhöz','k'],['Versele-Laga','fürdőhomok csincsillának','k']],
+  felsz:[['Ferplast','többszintes ketrec','p'],['Savic','ketrec','p'],['Trixie','házikó, futókerék, itató','k'],['Kerbl','ketrec, kifutó','k']],jatek:[['Trixie','fa rágójáték, alagút','k'],['JR Farm','rágnivaló','k']]},
+ goreny:{tap:[['Versele-Laga Ferret Complete','p'],['Brit Animals Ferret','k'],['Vitakraft görényeledel','k']],
+  alom:[["Cat's Best",'Universal nem csomósodó növényi alom','p'],['Chipsi','kukoricapellet alom','k']],
   felsz:[['Ferplast','görényketrec, hordozó','p'],['Savic','ketrec, saroktálca','p'],['Trixie','függőágy, hám és póráz, hordozó','k'],['Kerbl','ketrec','k']],jatek:[['Trixie','játszóalagút, függőágy','k']]},
  hullamos:birdProd('hullámospapagáj-eleség','hullámospapagáj-eleség'),nimfa:birdProd('nimfapapagáj-eleség','nagypapagáj-eleség','nimfapapagáj-eleség'),
  kanari:birdProd('kanárieleség','kanárieleség'),pinty:birdProd('díszpintyeleség','egzótaeleség','egzótaeleség')});
 /* csoportszintű készletek azoknak a fajoknak, amelyeknek nincs saját terméklistájuk: márka + terméktípus */
-const T_SUP=[['Exo Terra','kalcium- és multivitaminpor','p'],['Zoo Med','kalcium- és vitaminpor','p'],['JBL','kalcium- és vitaminkészítmény terráriumi állatoknak','k'],['Trixie','kalciumpor, szépiahéj','k']],
+const T_SUP=[['Exo Terra','kalcium- és multivitaminpor','p'],['Zoo Med','kalcium- és vitaminpor','p'],['JBL','kalcium- és vitaminkészítmény terráriumi állatoknak','k'],['Trixie','kalciumpor','k']],
  T_SUB=[['Exo Terra','terráriumi aljzat (homok, kókuszrost, kéreg)','p'],['Zoo Med','terráriumi aljzat','p'],['Trixie','terráriumi aljzat','k'],['JBL','terráriumi aljzat','k']],
  T_EQ=[['Exo Terra','terrárium, hőlámpa, UVB-fényforrás, hőmérő','p'],['Arcadia','UVB-fénycső és -lámpa','p'],['Zoo Med','hőlámpa, UVB-fényforrás, termosztát','p'],['Trixie','terrárium, fűtőlap, hő- és páramérő','k'],['JBL','UV- és melegítőlámpa','k'],['sera','terráriumtechnika','k']],
  T_DEC=[['Exo Terra','búvóhely, mászóág, műnövény, itató','p'],['Zoo Med','búvóhely, itató','p'],['Trixie','búvóhely, műszikla, műnövény','k']],
@@ -714,7 +714,7 @@ const T_SUP=[['Exo Terra','kalcium- és multivitaminpor','p'],['Zoo Med','kalciu
 const GPROD={
  gyik:{tap:T_SUP,alom:T_SUB,felsz:T_EQ,jatek:T_DEC},
  kigyo:{tap:[],alom:T_SUB,felsz:[['Exo Terra','terrárium, hőlámpa, hőmérő','p'],['Zoo Med','fűtőlap, termosztát','p'],['Trixie','terrárium, fűtőlap, hő- és páramérő','k']],jatek:T_DEC},
- teknos:{tap:[['Zoo Med','teknőstáp','p'],['JBL','PROTERRA eleség szárazföldi teknősöknek','k'],['sera','teknőseleség','k'],['Trixie','szépiahéj kalciumforrásnak','k']],alom:T_SUB,felsz:T_EQ,jatek:T_DEC},
+ teknos:{tap:[['Zoo Med','teknőstáp','p'],['JBL','PROTERRA eleség szárazföldi teknősöknek','k'],['sera','teknőseleség','k'],['Trixie','kalciumpor','k']],alom:T_SUB,felsz:T_EQ,jatek:T_DEC},
  viziteknos:{tap:[['Zoo Med','vízi teknőstáp','p'],['Tetra','ReptoMin teknőseleség','k'],['sera','teknőseleség','k'],['JBL','teknőseleség','k']],alom:[['sera','reptil aquatan vízelőkészítő','k'],['JBL','vízteszt, vízelőkészítő','k'],['Tetra','vízelőkészítő','k']],
   felsz:[['EHEIM','külső és belső szűrő','p'],['Exo Terra','UVB- és melegítőlámpa','p'],['Arcadia','UVB-fényforrás','p'],['JUWEL','akvárium','p'],['AQUAEL','szűrő, fűtő','k']],jatek:[['Exo Terra','napozósziget, búvóhely','p'],['Zoo Med','úszó napozóstég','p'],['Trixie','teknőssziget','k']]},
  keteltu:{tap:T_SUP,alom:T_SUB,felsz:[['Exo Terra','terrárium, párásító, hő- és páramérő','p'],['Zoo Med','hő- és páramérő, világítás','p'],['Trixie','terrárium, permetező, fűtőlap','k']],jatek:T_DEC},
@@ -742,14 +742,14 @@ const BRAND={'Royal Canin':'https://www.royalcanin.com/hu',"Hill's":'https://www
  'Exo Terra':'https://exo-terra.com/','Zoo Med':'https://zoomed.com/','Arcadia':'https://arcadiareptile.com/','JBL':'https://www.jbl.de/','sera':'https://www.sera.de/','Tetra':'https://www.tetra.net/hu-hu','EHEIM':'https://eheim.com/','JUWEL':'https://www.juwel-aquarium.de/en','AQUAEL':'https://www.aquael.com/','Tropic Marin':'https://www.tropic-marin.com/','Red Sea':'https://redseafish.com/'};
 /* ---------- terméklinkek ----------
    Egy ajánlás tételére koppintva a márka saját oldalán a termék vagy a termékkategória oldala nyílik meg (ellenőrizve: 2026-10-10).
-   PL[márka] = [alapcím, {kulcs: végződés}]. Kulcs: 'tétel', 'tétel@faj' vagy 'tétel@csoport'; '@faj' / '@csoport' a márka adott állathoz tartozó oldala.
+   PL[márka] = [alapcím, {kulcs: végződés}] (a https-sel kezdődő végződés teljes cím). Kulcs: 'tétel', 'tétel@faj' vagy 'tétel@csoport'; '@faj' / '@csoport' a márka adott állathoz tartozó oldala.
    Amihez nincs itt cím, az sima szöveg marad, a márkanév pedig a márka főoldalát nyitja (BRAND). Hirdetési vagy partnerlink ide kerülhet. */
 const PL={
  'Trixie':['https://trixie.shop/collections/',{'@kutya':'hund','@macska':'katze','@kisemlos':'kleintier','@madar':'vogel','@terra':'terraristik','@viziteknos':'terraristik',
   'ürülékgyűjtő zacskó':'hundekotbeutel','póráz':'hundeleinen','tál':'hundenaepfe','fekhely':'hundebetten','hordozó@kutya':'transportboxen-hund','hordozó@macska':'transportboxen-katze','hordozó@kisemlos':'transportboxen-kleintier','hordozó@madar':'transport-vogel',
   'labda@kutya':'hundespielzeug','labda@macska':'spielmauese-tiere-baelle-katze','kötél':'zerrspielzeug-hund','logikai játék':'intelligenzspielzeug-hund','kaparófa':'kratzbaeume','alomtálca':'katzentoiletten','horgászbot-játék':'katzenangeln','alagút@macska':'katzentunnel',
   'alagút@kisemlos':'kleintierspielzeug','játszóalagút':'kleintierspielzeug','fűalagút':'kleintierspielzeug','fűlabda':'kleintierspielzeug','fa játszótér':'kleintierspielzeug','házikó':'kleintierhaeuser','fűház':'kleintierhaeuser','itató@kisemlos':'naepfe-traenken-raufen-kleintier','szénatartó':'naepfe-traenken-raufen-kleintier',
-  'fa rágójáték':'nagerspielzeug','futókerék':'laufteller-laufraeder-kleintier','hám és póráz':'kleintiergeschirre',
+  'fa rágójáték':'nagerspielzeug','futókerék':'laufteller-laufraeder-kleintier','homokfürdő':'https://trixie.shop/products/sandbad-1','hám és póráz':'kleintiergeschirre',
   'fürdőház':'badehaeuser-vogel','ülőrúd':'sitzstangen-taue-vogel','etető':'naepfe-tranken-vogel','itató@madar':'naepfe-tranken-vogel','hinta':'vogelschaukeln','létra':'vogelleitern','rágójáték':'vogelspielzeug',
   'kalciumpor':'futter-mineralstoffe-reptilien','terráriumi aljzat':'substrate-terrarium','fűtőlap':'klima-terrarium','hő- és páramérő':'klima-terrarium','permetező':'klima-terrarium','búvóhely':'dekoration-hoehlen-terrarium','műszikla':'dekoration-hoehlen-terrarium'}],
  'Savic':['https://www.savic.be/products/',{'@kutya':'dogs','@kisemlos':'small-animals','@madar':'birds','Puppy Trainer pelenkatartó kölyköknek':'dogs','ketrec':'small-animals','alomtálca':'small-animals','saroktálca':'small-animals','kalitka':'birds'}],
@@ -765,9 +765,9 @@ const PL={
  "Cat's Best":['https://www.catsbest.de/produkt/',{'csomósodó alom':'cats-best-original/','Universal növényi alom kisállatoknak':'cats-best-universal/','Universal nem csomósodó növényi alom':'cats-best-universal/'}],
  'Catit':['https://www.catit.com/products/',{'itatókút':'drinking-fountains/','etetőrendszer':'feeders-dishes/','játékpálya':'toys/senses-circuits/','etetőlabirintus':'toys/senses-food-tree/'}],
  'Petkit':['https://www.petkit.com/collections/',{'okos itatókút':'pet-water-fountain','okos alomtálca':'automatic-cat-litter-box'}],
- 'Chipsi':['https://www.chipsi.de/produkte/',{'faforgács':'chipsi-classic/'}],
+ 'Chipsi':['https://www.chipsi.de/produkte/',{'faforgács':'chipsi-classic/','fagranulátum alom':'chipsi-ultra/','kukoricapellet alom':'chipsi-family/'}],
  'JR Farm':['https://www.jr-farm.de/kleintier/',{'rágnivaló és jutalomfalat':'snacks','rágnivaló':'snacks','csincsillahomok a homokfürdőhöz':'einstreu'}],
- 'Versele-Laga':['https://www.versele.com/hu/hu/',{'@kisemlos':'az-%C3%B6n-%C3%A1llat%C3%A1nak/kiseml%C5%91s%C3%B6k','@madar':'az-%C3%B6n-%C3%A1llat%C3%A1nak/ketrecben-%C3%A9s-mad%C3%A1rh%C3%A1zban-tartott-madarak'}],
+ 'Versele-Laga':['https://www.versele.com/hu/hu/',{'@kisemlos':'az-%C3%B6n-%C3%A1llat%C3%A1nak/kiseml%C5%91s%C3%B6k','@madar':'az-%C3%B6n-%C3%A1llat%C3%A1nak/ketrecben-%C3%A9s-mad%C3%A1rh%C3%A1zban-tartott-madarak','fürdőhomok csincsillának':'https://www.versele.com/en/de/verselelaga/products/verselelaga-chinchillabathingsand'}],
  'Vitakraft':['https://www.vitakraft.com/hu/hu/',{'@kisemlos':'termekek?minden-allat=ragcsalo','@madar':'termekek?minden-allat=madarak'}],
  'Exo Terra':['https://exo-terra.com/products/',{'kalcium- és multivitaminpor':'nutrition/supplements/','terráriumi aljzat':'substrates/','terrárium':'terrariums/','kis terrárium':'terrariums/','faunárium':'terrariums/','hőlámpa':'heating/','UVB-fényforrás':'lighting/','UVB- és melegítőlámpa':'lighting/',
   'hőmérő':'heating/thermo-hygrometers/','hő- és páramérő':'heating/thermo-hygrometers/','búvóhely':'decoration/hides/','mászóág':'decoration/vines/','műnövény':'decoration/plants/','itató':'hydration/water-dishes/','párásító':'hydration/humidity/','napozósziget':'decoration/hides/turtle-bank-medium/'}],
@@ -791,7 +791,7 @@ const ROWL={'Versele-Laga Cuni Junior Complete':VL+'complete/term%C3%A9kek/compl
  'Versele-Laga csincsillatáp (Nature vagy Complete)':VL+'complete/term%C3%A9kek/complete-chinchilladegu','Versele-Laga Ferret Complete':VL+'complete/term%C3%A9kek/complete-ferret',
  'Versele-Laga Prestige hullámospapagáj-eleség':VL+'prestige/term%C3%A9kek/prestige-budgies','Versele-Laga Prestige nimfapapagáj-eleség':VL+'prestige/term%C3%A9kek','Versele-Laga Prestige kanárieleség':VL+'prestige/term%C3%A9kek/prestige-canaries','Versele-Laga Prestige díszpintyeleség':VL+'prestige/term%C3%A9kek/prestige-tropicalfinches',
  'Versele-Laga NutriBird granulált táp':VL+'nutribird/term%C3%A9kek',
- 'Beaphar Care+ nyúltáp':BP+'care-plus','Beaphar Care+ tengerimalactáp':BP+'care-plus','Beaphar Care+ hörcsögtáp':BP+'care-plus','Beaphar Care+ csincsillatáp':BP+'care-plus','Beaphar görénytáp':'https://www.beaphar.com/small-animals/food-and-snacks',
+ 'Beaphar Care+ nyúltáp':BP+'care-plus','Beaphar Care+ tengerimalactáp':BP+'care-plus','Beaphar Care+ hörcsögtáp':BP+'care-plus','Beaphar Care+ csincsillatáp':BP+'care-plus',
  'Beaphar XtraVital hullámospapagáj-eleség':BP+'xtravital-all-in-one-bird-food-blends','Beaphar XtraVital nagypapagáj-eleség':BP+'xtravital-all-in-one-bird-food-blends','Beaphar XtraVital kanárieleség':BP+'xtravital-all-in-one-bird-food-blends','Beaphar XtraVital egzótaeleség':BP+'xtravital-all-in-one-bird-food-blends',
  'Bunny nyúltáp':BN,'Bunny tengerimalactáp':BN,'Bunny hörcsögtáp':BN,'Bunny csincsillatáp':BN,
  'Vitakraft Menu Vital nyúltáp':VKR,'Vitakraft Menu Vital tengerimalactáp':VKR,'Vitakraft Menu Vital hörcsögeleség':VKR,'Vitakraft csincsillaeleség':VKR,'Vitakraft görényeledel':VKR,
@@ -818,7 +818,7 @@ const CLS={gyik:'terra',kigyo:'terra',teknos:'terra',keteltu:'terra',gerinctelen
 /* az állat kulcsai a linkkereséshez, a legszűkebbtől: faj, készlet, csoport */
 const pctx=p=>{const k=kitOf(p),g=grp(p);return[p.species,k,k?CLS[k]:g==='madar'?'madar':g==='emlos'&&p.species!=='kutya'&&p.species!=='macska'?'kisemlos':null].filter(Boolean)};
 /* tétel címe a márkánál; üres tétellel a márka adott állathoz tartozó oldala */
-const plGet=(p,b,part)=>{const e=PL[b];if(!e)return null;for(const c of pctx(p)){const v=e[1][part+'@'+c];if(v!=null)return e[0]+v}return part&&e[1][part]!=null?e[0]+e[1][part]:null};
+const plGet=(p,b,part)=>{const e=PL[b];if(!e)return null;const U=v=>/^https:/.test(v)?v:e[0]+v;for(const c of pctx(p)){const v=e[1][part+'@'+c];if(v!=null)return U(v)}return part&&e[1][part]!=null?U(e[1][part]):null};
 const brandHome=(p,b)=>plGet(p,brandOf(b)||b,'')||brandUrl(b);
 const rowUrl=x=>x.u||ROWL[x[0]]||brandUrl(x[0]);
 /* vesszővel tagolt tételek; a zárójelen belüli vessző nem választ el */
