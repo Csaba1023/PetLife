@@ -269,6 +269,9 @@ const clean=(s,n=40)=>String(s??'').normalize('NFC').replace(/[^\p{L}\p{N} .,'()
 
 /* ---------- ikonok: egységes, vonalas készlet ---------- */
 const IC={
+ snake:'<path d="M4.5 18.5c2.6 1.6 6.2 1 6.9-1.6.8-2.9-3.6-4-2.6-7.2C9.6 7 13 5.8 15.6 6.6c2.2.7 3.3 2.6 2.6 4.6"/><path d="M15.6 6.6c1.1-1.7 3.2-1.9 4.4-.7"/>',
+ turtle:'<path d="M5 15c0-4.4 3.1-8 7-8s7 3.6 7 8z"/><path d="M7.5 15v3M16.5 15v3M19 13.2c1.3-.4 2.3.1 2.6 1.1-.6.8-1.6 1-2.6.8M5 15l-2 1"/>',
+ spider:'<circle cx="12" cy="13" r="3"/><circle cx="12" cy="8.4" r="1.6"/><path d="M9.3 11.6L5 9M9 13.2H4M9.4 14.8L5 18M10.6 15.8L8.2 20M14.7 11.6L19 9M15 13.2h5M14.6 14.8L19 18M13.4 15.8l2.4 4.2"/>',
  paw:'<circle cx="7" cy="9" r="1.8"/><circle cx="12" cy="6.5" r="1.8"/><circle cx="17" cy="9" r="1.8"/><path d="M12 12c-3 0-5 2.5-5 4.5 0 1.5 1.2 2.5 2.8 2.5 1 0 1.4-.5 2.2-.5s1.2.5 2.2.5c1.6 0 2.8-1 2.8-2.5 0-2-2-4.5-5-4.5z"/>',
  feather:'<path d="M20 4c-7 0-12 4-12 10v2h2c6 0 10-5 10-12z"/><path d="M4 20l8-8"/>',
  scale:'<path d="M12 3l4 4-4 4-4-4zM6 11l4 4-4 4-4-4zM18 11l4 4-4 4-4-4z"/>',
@@ -289,15 +292,27 @@ const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</sv
 
 /* ---------- törzsadatok (tájékoztató jellegű) ---------- */
 /* fajcsoportok: n = név, i = ikon, c = akcentszín (a hős kártya színe) */
-const GROUPS={emlos:{n:'Emlős',i:'paw',c:'#B84E28'},madar:{n:'Madár',i:'feather',c:'#2A78B8'},hullo:{n:'Hüllő',i:'scale',c:'#5C7A1F'},keteltu:{n:'Kétéltű',i:'drop',c:'#0F7F78'},hal:{n:'Hal',i:'fish',c:'#4A55B5'},egyeb:{n:'Egyéb',i:'paw',c:'#1F5A4C'}};
+const GROUPS={emlos:{n:'Emlős',i:'paw',c:'#B84E28'},madar:{n:'Madár',i:'feather',c:'#2A78B8'},hullo:{n:'Hüllő',i:'scale',c:'#5C7A1F'},keteltu:{n:'Kétéltű',i:'drop',c:'#0F7F78'},hal:{n:'Hal',i:'fish',c:'#4A55B5'},gerinctelen:{n:'Gerinctelen',i:'spider',c:'#7A4694'},egyeb:{n:'Egyéb',i:'paw',c:'#1F5A4C'}};
+/* a felvétel csempéi: a hüllők három csempén (gyík, kígyó, teknős) jelennek meg, a fajcsoportjuk közös (hullo); a fajnál t = csempe */
+const TILES={emlos:0,madar:0,gyik:{n:'Gyík',i:'scale'},kigyo:{n:'Kígyó',i:'snake'},teknos:{n:'Teknős',i:'turtle'},keteltu:0,hal:0,gerinctelen:0,egyeb:0};
+const tileInfo=k=>({...GROUPS[TILES[k]?'hullo':k],...(TILES[k]||{})});
 const SPECIES={kutya:{n:'Kutya',g:'emlos'},macska:{n:'Macska',g:'emlos'},nyul:{n:'Nyúl',g:'emlos'},tengerimalac:{n:'Tengerimalac',g:'emlos'},horcsog:{n:'Hörcsög',g:'emlos'},csincsilla:{n:'Csincsilla',g:'emlos'},goreny:{n:'Vadászgörény',g:'emlos'},
   hullamos:{n:'Hullámos papagáj',g:'madar'},nimfa:{n:'Nimfapapagáj',g:'madar'},kanari:{n:'Kanári',g:'madar'},pinty:{n:'Díszpinty',g:'madar'},
-  leopardgekko:{n:'Leopárdgekkó',g:'hullo'},agama:{n:'Szakállas agáma',g:'hullo'},kiralypiton:{n:'Királypiton',g:'hullo'},kukoricasiklo:{n:'Kukoricasikló',g:'hullo'},gorogteknos:{n:'Görög teknős',g:'hullo'},mocsariteknos:{n:'Mocsári teknős',g:'hullo'},diszteknos:{n:'Díszteknős',g:'hullo'},
-  axolotl:{n:'Axolotl',g:'keteltu'},levelibeka:{n:'Levelibéka',g:'keteltu'},unka:{n:'Unka',g:'keteltu'},
-  edesvizi:{n:'Édesvízi díszhal',g:'hal'},harcoshal:{n:'Harcoshal',g:'hal'},
+  leopardgekko:{n:'Leopárdgekkó',g:'hullo',t:'gyik'},agama:{n:'Szakállas agáma',g:'hullo',t:'gyik'},vitorlasgekko:{n:'Vitorlásgekkó (koronás gekkó)',g:'hullo',t:'gyik'},zsirfarkugekko:{n:'Zsírfarkú gekkó',g:'hullo',t:'gyik'},nappaligekko:{n:'Nappaligekkó',g:'hullo',t:'gyik'},
+  sisakoskameleon:{n:'Sisakos kaméleon',g:'hullo',t:'gyik'},parduckameleon:{n:'Párduckaméleon',g:'hullo',t:'gyik'},keknyelvuszkink:{n:'Kéknyelvű szkink',g:'hullo',t:'gyik'},zoldleguan:{n:'Zöld leguán',g:'hullo',t:'gyik'},viziagama:{n:'Víziagáma',g:'hullo',t:'gyik'},
+  kiralypiton:{n:'Királypiton',g:'hullo',t:'kigyo'},kukoricasiklo:{n:'Kukoricasikló',g:'hullo',t:'kigyo'},kiralyboa:{n:'Királyboa',g:'hullo',t:'kigyo'},szivarvanyosboa:{n:'Szivárványos boa',g:'hullo',t:'kigyo'},homokiboa:{n:'Homoki boa',g:'hullo',t:'kigyo'},tejsiklo:{n:'Tejsikló',g:'hullo',t:'kigyo'},
+  patkanysiklo:{n:'Patkánysikló',g:'hullo',t:'kigyo'},szalagossiklo:{n:'Szalagos sikló (harisnyakötő sikló)',g:'hullo',t:'kigyo'},hazikigyo:{n:'Afrikai házikígyó',g:'hullo',t:'kigyo'},torpepiton:{n:'Törpepiton (Children-piton)',g:'hullo',t:'kigyo'},zoldfapiton:{n:'Zöld fapiton',g:'hullo',t:'kigyo'},
+  gorogteknos:{n:'Görög teknős',g:'hullo',t:'teknos'},mocsariteknos:{n:'Mocsári teknős',g:'hullo',t:'teknos'},diszteknos:{n:'Díszteknős',g:'hullo',t:'teknos'},morteknos:{n:'Mór teknős',g:'hullo',t:'teknos'},szegelyesteknos:{n:'Szegélyes teknős',g:'hullo',t:'teknos'},sarkantyusteknos:{n:'Sarkantyús teknős',g:'hullo',t:'teknos'},szenesteknos:{n:'Szenes teknős',g:'hullo',t:'teknos'},
+  axolotl:{n:'Axolotl',g:'keteltu'},levelibeka:{n:'Levelibéka',g:'keteltu'},unka:{n:'Unka',g:'keteltu'},nyilmeregbeka:{n:'Nyílméregbéka',g:'keteltu'},szarvasbeka:{n:'Szarvasbéka',g:'keteltu'},torpekarmosbeka:{n:'Törpe karmosbéka',g:'keteltu'},
+  tigrisszalamandra:{n:'Tigrisszalamandra',g:'keteltu'},bordasgote:{n:'Bordás gőte',g:'keteltu'},tuzhasugote:{n:'Tűzhasú gőte',g:'keteltu'},
+  edesvizi:{n:'Édesvízi díszhal',g:'hal'},tengeri:{n:'Tengeri díszhal',g:'hal'},harcoshal:{n:'Harcoshal',g:'hal'},
+  madarpok:{n:'Madárpók',g:'gerinctelen',vt:'Faj'},ugropok:{n:'Ugrópók',g:'gerinctelen'},csaszarskorpio:{n:'Császárskorpió',g:'gerinctelen'},botsaska:{n:'Botsáska',g:'gerinctelen',vt:'Faj'},imadkozosaska:{n:'Imádkozó sáska',g:'gerinctelen'},achatcsiga:{n:'Óriás achátcsiga',g:'gerinctelen'},
   egyeb:{n:'Egyéb',g:'egyeb'}};
 const sp=p=>SPECIES[p.species]||SPECIES.egyeb;
 const grp=p=>sp(p).g;
+const tileOf=p=>sp(p).t||sp(p).g;
+/* akváriumi állomány: a „változat” maga a halfaj, vegyes állománynál nincs életszakasz */
+const stock=p=>p.species==='edesvizi'||p.species==='tengeri';
 /* védett vagy korlátozás alá eső fajok: csak a biztosan ismert tényt írjuk le, konkrét jogszabály megnevezése nélkül */
 const FLAG_GEN='A tartás, a beszerzés vagy a szaporítás jogszabályi korlátozás alá eshet: a hatályos szabályt a természetvédelmi hatóságnál ellenőrizd.';
 const CITES='a veszélyeztetett fajok kereskedelméről szóló egyezmény (CITES) hatálya alá tartozik';
@@ -308,6 +323,14 @@ const FLAG={mocsariteknos:'A mocsári teknős Magyarországon védett faj.',
   axolotl:`Az axolotl ${CITES}: vásárláskor kérj származási igazolást.`,
   levelibeka:'A hazai zöld levelibéka védett faj, a természetből befogni tilos. Hobbiállatként trópusi levelibékákat tartanak.',
   unka:'A vöröshasú unka Magyarországon őshonos, védett faj, a természetből befogni tilos. Hobbiállatként jellemzően a kínai tűzhasú unkát tartják.'};
+const citesFlag=n=>`${n} ${CITES}: vásárláskor kérj származási igazolást.`;
+Object.assign(FLAG,{nappaligekko:citesFlag('A nappaligekkók'),sisakoskameleon:citesFlag('A sisakos kaméleon'),parduckameleon:citesFlag('A párduckaméleon'),zoldleguan:citesFlag('A zöld leguán'),viziagama:citesFlag('A víziagáma'),
+  kiralyboa:citesFlag('A királyboa'),szivarvanyosboa:citesFlag('A szivárványos boa'),homokiboa:citesFlag('A homoki boa'),torpepiton:citesFlag('A törpepiton'),zoldfapiton:citesFlag('A zöld fapiton'),
+  morteknos:`A mór teknős ${CITES}: származási igazolás kell hozzá.`,szegelyesteknos:`A szegélyes teknős ${CITES}: származási igazolás kell hozzá.`,sarkantyusteknos:citesFlag('A sarkantyús teknős'),szenesteknos:citesFlag('A szenes teknős'),
+  nyilmeregbeka:citesFlag('A nyílméregbékák'),csaszarskorpio:citesFlag('A császárskorpió'),
+  madarpok:'A Brachypelma és a Tliltocatl nembe tartozó madárpókok (pl. a mexikói vöröstérdű és a göndörszőrű madárpók) a veszélyeztetett fajok kereskedelméről szóló egyezmény (CITES) hatálya alá tartoznak: vásárláskor kérj származási igazolást.',
+  imadkozosaska:'A hazai imádkozó sáskát ne gyűjtsd be a természetből: hobbiállatként tenyésztett trópusi fajokat tartanak.',
+  achatcsiga:'Az óriás achátcsiga a világ sok táján inváziós faj: szabadon engedni tilos és káros.'});
 const flagHtml=k=>FLAG[k]?`<p class="note">${FLAG[k]} ${FLAG_GEN}</p>`:'';
 const SIZES={s:'kicsi',m:'kozepes',l:'nagy',g:'orias'};
 const SIZE_HU={kicsi:'kistestű',kozepes:'közepes testű',nagy:'nagytestű',orias:'óriás testű'};
@@ -337,7 +360,10 @@ const BREEDS={
   axolotl:['Vad színezetű','Leucisztikus (rózsaszín)','Albínó','Arany albínó','Melanoid'],
   levelibeka:['Korallujjú levelibéka','Vörösszemű levelibéka'],
   unka:['Kínai tűzhasú unka','Vöröshasú unka'],
-  edesvizi:['Guppi','Neonhal','Aranyhal','Páncélosharcsa','Díszsügér','Szivárványhal'],
+  edesvizi:['Guppi','Neonhal','Aranyhal','Páncélosharcsa','Díszsügér','Szivárványhal','Platti','Molli','Xifó (kardfarkú hal)','Vörös neonhal','Zebradánió','Szumátrai díszmárna','Vitorláshal','Diszkoszhal','Gurámi','Algaevő harcsa (ancistrus)','Razbóra','Törpesügér','Malawi-sügér','Koi'],
+  tengeri:['Bohóchal','Palettás doktorhal','Sárga doktorhal','Mandarinhal','Királygramma','Zöld korallsügér'],
+  madarpok:['Chilei rózsaszín madárpók','Mexikói vöröstérdű madárpók','Göndörszőrű madárpók','Fehértérdű madárpók','Brazil fekete madárpók'],
+  botsaska:['Indiai botsáska','Ausztrál óriás botsáska'],
   harcoshal:['Fátyolfarkú','Félhold (halfmoon)','Koronafarkú','Plakat','Delta']};
 for(const k in BREEDS)BREEDS[k].sort((a,b)=>a.localeCompare(b,'hu'));
 
@@ -352,23 +378,38 @@ const LIMITS={'kutya:kicsi':[6,12,120],'kutya:kozepes':[6,12,96],'kutya:nagy':[6
   hullamos:[3,9,72],nimfa:[4,12,144],kanari:[2,9,84],pinty:[1.5,4,60],
   leopardgekko:[2,12,144],agama:[4,18,84],kiralypiton:[6,36,240],kukoricasiklo:[6,30,180],gorogteknos:[24,120,480],mocsariteknos:[24,96,480],diszteknos:[12,60,300],
   axolotl:[3,12,120],levelibeka:[3,18,120],unka:[3,18,120],
-  harcoshal:[1.5,5,30],'hal:Guppi':[1,3,24],'hal:Neonhal':[2,8,48],'hal:Aranyhal':[3,18,120],'hal:Páncélosharcsa':[2,10,60],'hal:Díszsügér':[2,10,72],'hal:Szivárványhal':[2,9,60]};
+  harcoshal:[1.5,5,30],'hal:Guppi':[1,3,24],'hal:Neonhal':[2,8,48],'hal:Aranyhal':[3,18,120],'hal:Páncélosharcsa':[2,10,60],'hal:Díszsügér':[2,10,72],'hal:Szivárványhal':[2,9,60],
+  /* fajbővítés: a felnőttkor kezdete a forrásban megadott ivarérési kor, az idős koré a jellemző fogságbeli élettartam alsó értékének kb. 80%-a,
+     az első határ a felnőttkorig tartó idő kb. negyede. Ahol nem volt megbízható adat, nincs szakasz (csak életkor). Források: a projekt forrásjegyzékében. */
+  vitorlasgekko:[4,18,144],zsirfarkugekko:[3,12,96],nappaligekko:[4,14,72],sisakoskameleon:[2,8,36],parduckameleon:[2,9,30],keknyelvuszkink:[4,18,144],zoldleguan:[9,36,96],viziagama:[9,36,114],
+  kiralyboa:[9,36,192],szivarvanyosboa:[10,42,192],homokiboa:[8,30,192],tejsiklo:[10,42,204],patkanysiklo:[15,60,156],szalagossiklo:[6,24,60],hazikigyo:[6,24,144],torpepiton:[8,30,240],zoldfapiton:[9,36,192],
+  morteknos:[30,120,480],sarkantyusteknos:[36,150,516],szenesteknos:[15,60,288],
+  nyilmeregbeka:[3,12,96],szarvasbeka:[3,12,48],torpekarmosbeka:[3,10,48],tigrisszalamandra:[12,48,96],bordasgote:[3,10,96],tuzhasugote:[6,24,96],
+  achatcsiga:[2,6,30],
+  'hal:Xifó (kardfarkú hal)':[1,3,36],'hal:Vörös neonhal':[2,9,48],'hal:Zebradánió':[1,3,18],'hal:Szumátrai díszmárna':[0.5,1.5,66],'hal:Vitorláshal':[2,8,72],'hal:Algaevő harcsa (ancistrus)':[2,6,48],'hal:Törpesügér':[2,6,30],'hal:Koi':[10,42,288]};
 /* az első szakasz neve fajcsoportonként más */
-const STAGE1={madar:'Fióka',hullo:'Juvenilis',keteltu:'Juvenilis',hal:'Ivadék'};
+const STAGE1={madar:'Fióka',hullo:'Juvenilis',keteltu:'Juvenilis',hal:'Ivadék',gerinctelen:'Fiatal'};
 const stHU=(p,s)=>(s==='kolyok'&&STAGE1[grp(p)])||STAGE_HU[s];
 const sizeOf=p=>p.species!=='kutya'?null:(p.breed&&p.breed!=='mix'&&DOGSIZE[p.breed])||p.size||'kozepes';
-const limitsFor=p=>p.species==='kutya'?LIMITS['kutya:'+sizeOf(p)]:p.species==='edesvizi'?LIMITS['hal:'+p.breed]||null:LIMITS[p.species]||null;
+const limitsFor=p=>p.species==='kutya'?LIMITS['kutya:'+sizeOf(p)]:stock(p)?LIMITS['hal:'+p.breed]||null:LIMITS[p.species]||null;
 function stageAt(p,at){const L=limitsFor(p);if(!L)return null;const m=ageMAt(p,at);return m<L[0]?'kolyok':m<L[1]?'novendek':m<L[2]?'felnott':'idos'}
 const stageOf=p=>stageAt(p,today());
 const speciesLabel=p=>sp(p)===SPECIES.egyeb?(p.speciesName||'Egyéb állat'):sp(p).n;
-const breedLabel=p=>{const b=p.breed&&p.breed!=='mix'?p.breed:'';return p.species==='egyeb'?b:b||(p.species==='edesvizi'?'vegyes állomány':grp(p)==='emlos'?'keverék vagy ismeretlen fajta':'')};
+const breedLabel=p=>{const b=p.breed&&p.breed!=='mix'?p.breed:'';return p.species==='egyeb'?b:b||(stock(p)?'vegyes állomány':grp(p)==='emlos'?'keverék vagy ismeretlen fajta':'')};
 /* súly: a kis testű fajoknál grammban kérjük és írjuk ki, a tárolás mindig kg */
 const GRAM=new Set(['horcsog','csincsilla']);
-const gramSp=p=>GRAM.has(p.species)||['madar','hullo','keteltu'].includes(grp(p));
+/* a nagyra növő hüllőknél kg */
+const KG=new Set(['zoldleguan','kiralyboa','sarkantyusteknos','szenesteknos']);
+const gramSp=p=>!KG.has(p.species)&&(GRAM.has(p.species)||['madar','hullo','keteltu'].includes(grp(p)));
+/* gerincteleneknél nincs súlymérés */
+const noWeight=p=>grp(p)==='gerinctelen';
 const wU=p=>gramSp(p)?'g':'kg';
 const wNum=(p,kg)=>gramSp(p)?String(Math.round(kg*1000)):fmtKg(kg);
 const wTxt=(p,kg)=>`${wNum(p,kg)} ${wU(p)}`;
 const petName=p=>p.name||speciesLabel(p);
+/* tojásból kel ki (az elevenszülő hüllők és a skorpió nem) */
+const LIVE=new Set(['kiralyboa','szivarvanyosboa','homokiboa','szalagossiklo','keknyelvuszkink','csaszarskorpio']);
+const hatch=p=>['madar','hullo','gerinctelen'].includes(grp(p))&&!LIVE.has(p.species);
 const ageAtAdd=p=>ageMAt(p,D(p.createdAt));
 const seniorM=p=>(limitsFor(p)||[])[2];
 
@@ -433,7 +474,13 @@ Object.assign(MS,{
  leopardgekko:[EXVET,EXCHECK],agama:[EXVET,UVB,EXCHECK],kiralypiton:[EXVET,EXCHECK],kukoricasiklo:[EXVET,EXCHECK],
  gorogteknos:[EXVET,UVB,EXCHECK],mocsariteknos:[EXVET,UVB,EXCHECK],diszteknos:[EXVET,UVB,EXCHECK],
  axolotl:[CYCLE,EXVET],levelibeka:[EXVET,EXCHECK],unka:[EXVET,EXCHECK],
- edesvizi:[CYCLE],harcoshal:[CYCLE]});
+ edesvizi:[CYCLE],harcoshal:[CYCLE],tengeri:[CYCLE],
+ vitorlasgekko:[EXVET,EXCHECK],zsirfarkugekko:[EXVET,EXCHECK],nappaligekko:[EXVET,UVB,EXCHECK],sisakoskameleon:[EXVET,UVB,EXCHECK],parduckameleon:[EXVET,UVB,EXCHECK],keknyelvuszkink:[EXVET,UVB,EXCHECK],zoldleguan:[EXVET,UVB,EXCHECK],viziagama:[EXVET,UVB,EXCHECK],
+ kiralyboa:[EXVET,EXCHECK],szivarvanyosboa:[EXVET,EXCHECK],homokiboa:[EXVET,EXCHECK],tejsiklo:[EXVET,EXCHECK],patkanysiklo:[EXVET,EXCHECK],szalagossiklo:[EXVET,EXCHECK],hazikigyo:[EXVET,EXCHECK],torpepiton:[EXVET,EXCHECK],zoldfapiton:[EXVET,EXCHECK],
+ morteknos:[EXVET,UVB,EXCHECK],szegelyesteknos:[EXVET,UVB,EXCHECK],sarkantyusteknos:[EXVET,UVB,EXCHECK],szenesteknos:[EXVET,UVB,EXCHECK],
+ nyilmeregbeka:[EXVET,EXCHECK],szarvasbeka:[EXVET,EXCHECK],tigrisszalamandra:[EXVET,EXCHECK],torpekarmosbeka:[CYCLE,EXVET],bordasgote:[CYCLE,EXVET],tuzhasugote:[CYCLE,EXVET],
+ /* gerincteleneknél nincs rutinszerű állatorvosi teendő */
+ madarpok:[],ugropok:[],csaszarskorpio:[],botsaska:[],imadkozosaska:[],achatcsiga:[]});
 const msFor=p=>MS[p.species]||MS.egyeb;
 
 const TIPS={
@@ -494,11 +541,63 @@ Object.assign(TIPS,{
  unka:{all:['Félig vízi, félig szárazföldi terrárium kell neki, sekély vízzel és kimászóval.','A bőrváladéka irritáló: fogás után moss kezet, és ne nyúlj a szemedhez.','Rovarevő: az eleségrovarokat kalcium- és vitaminporral szórd be.','Klórmentesített vizet használj, és tartsd tisztán a vízrészt.']},
  edesvizi:{all:['Halat csak beüzemelt (ciklusolt) akváriumba telepíts: a nitrit már kis mennyiségben is mérgező.','Hetente cserélj részlegesen vizet, klórmentesített, hasonló hőmérsékletű vízzel.','Annyit etess, amennyit pár perc alatt megesznek: a túletetés rontja a vízminőséget.','A szűrőanyagot akváriumvízben öblítsd, ne csapvízben: így megmaradnak a hasznos baktériumok.']},
  harcoshal:{all:['A hímeket külön tartsd: egymással verekednek.','Fűtött, szűrt, lefedett akvárium kell neki; a pohár és a gömbakvárium nem megfelelő.','Gyenge áramlást, növényeket és a felszín közelében pihenőhelyet igényel.','Naponta kis adagot etess; hetente cserélj részlegesen vizet, klórmentesített vízzel.']}});
+/* fajbővítés: közös, általános tudnivalók csoportonként, mellettük a forrásokban szereplő, fajra jellemző tények */
+const T_GRAD='Meleg és hűvös oldal is kell a terráriumban, hogy maga szabályozhassa a testhőjét. Hőmérővel ellenőrizd.',
+ T_CALC='Az eleségrovarokat kalciumporral szórd be; a vitaminozás rendjét egzotikus állatorvossal egyeztesd.',
+ T_UVB='UVB-fényre van szüksége a kalcium hasznosításához; a hőmérsékletet hőmérővel ellenőrizd.',
+ S_LOCK='Biztonságosan zárható terráriumban tartsd: a kígyók kis résen is kiférnek.',S_HIDE='Meleg és hűvös oldal kell neki, mindkettőn búvóhellyel.',
+ S_FOOD='Előre leölt (fagyasztott, felengedett) zsákmányt adj. Etetés után 1–2 napig ne vedd kézbe.',S_SHED='Vedlés előtt a szeme elkékül; ha a bőr darabokban jön le, kevés a pára.',
+ K_HERB='Növényevő: vadon termő zöldek (pl. pitypang, útifű) és levelek legyenek az étrend alapja; gyümölcsöt csak ritkán, húst ne adj.',K_SUN='Napfény vagy UVB-lámpa nélkül nem tudja hasznosítani a kalciumot.',
+ K_OUT='Nyáron a legjobb neki a szökésbiztos kerti kifutó, árnyékkal és búvóhellyel.',K_HIB='A téli pihenő (hibernáció) előkészítését előre egyeztesd egzotikus állatorvossal: beteg vagy sovány teknőst teleltetni veszélyes.',
+ K_YOUNG='A fiatal teknős páncélja még puha: UVB-fény és kalciumban gazdag étrend kell az egészséges növekedéséhez.',
+ CHAM=['Fán élő, magányos állat: egyedül, jól szellőző, magas terráriumban tartsd, ágakkal és növényekkel.','Állóvízből többnyire nem iszik: permetezés vagy csepegtető kell, hogy a levelekről ihasson.',T_UVB,T_CALC,'A kézbevétel megterheli: csak akkor fogd meg, ha muszáj.'];
+Object.assign(TIPS,{
+ vitorlasgekko:{all:['Fán élő gekkó: magas terrárium kell neki mászóágakkal és növényekkel.','Gyümölcsalapú gekkótápot és kalciumporral beszórt rovarokat eszik.','A farkát ne fogd meg: ledobhatja, és ennél a fajnál nem nő vissza.','UVB-fény nélkül is tartható, de a források szerint jót tesz neki.']},
+ zsirfarkugekko:{all:[T_GRAD,'Párás búvóhely kell neki a vedléshez.',T_CALC,'A farkában zsírt raktároz: a farok vékonyodása fogyást jelez.']},
+ nappaligekko:{all:['Nappal aktív, fán élő gekkó: magas terrárium kell neki mászóágakkal.',T_UVB,'A bőre nagyon sérülékeny: kézbe ne vedd, megfigyelni való állat.','Rovarokat és gyümölcsalapú gekkótápot eszik; a rovarokat kalciumporral szórd be.']},
+ sisakoskameleon:{all:CHAM,felnott:['A nőstény hím nélkül is rakhat tojást: legyen a terráriumban tojásrakásra alkalmas, nedves aljzatú hely.']},
+ parduckameleon:{all:CHAM},
+ keknyelvuszkink:{all:['Talajlakó gyík: nagy alapterületű terrárium kell neki búvóhellyel.','Mindenevő: növényi és állati eredetű táplálékot is eszik.',T_UVB,'Egyedül tartsd: a fajtársak megsebesíthetik egymást.']},
+ zoldleguan:{all:['Növényevő: leveles zöldek legyenek az étrend alapja; állati eredetű táplálék nem való neki.','UVB-fény nélkül nem tudja hasznosítani a kalciumot.','Felnőttként 1–1,8 méteresre nő: szobányi, magas, fűtött helyet igényel.','Az ivarérett hím agresszívvé válhat; a farkával és a karmaival sérülést okozhat.']},
+ viziagama:{all:['Nagy, magas, párás terrárium kell neki mászóágakkal és akkora vízrésszel, amelyben el tud merülni.',T_UVB,T_CALC,'Az üvegnek ugorva megsértheti az orrát: adj neki elég helyet, és takard el a terrárium alsó részét.']},
+ kiralyboa:{kolyok:[PREY],all:['Felnőttként kb. 1,8–2,4 méteresre nő, és 20 évnél tovább él: a terráriumot ehhez méretezd.',S_LOCK,S_HIDE,S_FOOD]},
+ szivarvanyosboa:{kolyok:[PREY],all:['Magas páratartalmat igényel: párás búvóhely és rendszeres permetezés kell neki.',S_LOCK,S_HIDE,S_FOOD]},
+ homokiboa:{kolyok:[PREY],all:['Ásó életmódú: vastag, laza aljzat kell neki, amelybe be tudja ásni magát.','A nőstény kb. 80 cm-re nő, a hím jóval kisebb marad.',S_LOCK,S_FOOD]},
+ tejsiklo:{kolyok:[PREY],all:['Egyedül tartsd: a tejsiklók és a királysiklók más kígyót is megesznek.',S_LOCK,S_HIDE,S_FOOD]},
+ patkanysiklo:{kolyok:[PREY],all:['Jól mászik: magas terrárium kell neki erős ágakkal.',S_LOCK,S_HIDE,S_FOOD]},
+ szalagossiklo:{all:['Mozgékony, nappal aktív sikló: tágas terrárium kell neki nagy vizestállal.','A természetben főleg gilisztát, kétéltűeket és kisebb halakat eszik; az étrendjét a fajhoz értő állatorvossal vagy tenyésztővel egyeztesd.',S_LOCK,'Meleg és hűvös oldal kell neki, búvóhellyel.']},
+ hazikigyo:{kolyok:[PREY],all:[S_LOCK,S_HIDE,S_FOOD,S_SHED]},
+ torpepiton:{kolyok:[PREY],all:['Kis termetű piton: felnőttként kb. 90–120 cm.',S_LOCK,S_HIDE,S_FOOD]},
+ zoldfapiton:{kolyok:['A fiatal állat sárga vagy vörösesbarna, a zöld színét később kapja meg.',PREY],all:['Fán élő piton: vízszintes ágak kellenek neki, amelyeken összetekeredve pihen.','Magas páratartalmat igényel, jó szellőzés mellett.',S_LOCK,S_FOOD,'Megfigyelni való kígyó: a kézbevételt rosszul tűri.']},
+ morteknos:{kolyok:[K_YOUNG],all:[K_HERB,K_SUN,K_OUT,K_HIB]},
+ szegelyesteknos:{all:[K_HERB,K_SUN,K_OUT,K_HIB,'Felnőttként 25–35 cm-re nő: a kifutót ehhez méretezd.']},
+ sarkantyusteknos:{kolyok:[K_YOUNG],all:['Óriásira nő: a kifejlett állat 35–50 kg vagy több, ezért kerti tartást és fűthető házat igényel.','Fű, széna és rostos növények legyenek az étrend alapja; gyümölcsöt ne adj rendszeresen.',K_SUN,'Nem alszik téli álmot: télen is melegben kell tartani.','Erős ásó: a kifutót mélyen megalapozott kerítéssel védd.']},
+ szenesteknos:{kolyok:[K_YOUNG],all:['Trópusi teknős: meleg, párás környezetet igényel, és nem alszik téli álmot.','Vegyes étrendű: leveles zöldek és gyümölcs mellett kevés állati eredetű táplálékot is eszik.',K_SUN,'Felnőttként 30–35 cm-re nő: tágas, fűtött helyet tervezz neki.']},
+ nyilmeregbeka:{all:['A fogságban tenyésztett állat nem mérgező: a méreganyagot a vadon élők a táplálékukból szerzik.','Párás, beültetett terrárium kell neki, sok búvóhellyel.','Apró élő eleséget eszik (pl. röpképtelen muslica, ugróvillás), kalcium- és vitaminporral beszórva.','A bőre érzékeny: kézbe ne vedd.']},
+ szarvasbeka:{all:['Egyedül tartsd: a fajtársát is megeszi.','Lesből vadászik, keveset mozog: nedves aljzat kell neki, amelybe beáshatja magát.','Nagy a szája, és harap: etetőcsipesszel etesd.','Klórmentesített vizet használj az itatótálba és a permetezéshez.']},
+ torpekarmosbeka:{all:['Teljesen vízi béka: beüzemelt (ciklusolt), szűrt, lefedett akvárium kell neki.','Társas: 2–3 vagy több példányt tarts együtt.','Süllyedő eleséget adj, és figyeld, hogy a halak mellett jut-e neki.','Ne téveszd össze a nagyra növő afrikai karmosbékával, amely szerepel az Európai Unió inváziós fajokról szóló jegyzékén.','Klórmentesített vizet használj.']},
+ tigrisszalamandra:{all:['Szárazföldi, ásó életmódú: nedves, laza aljzat és búvóhely kell neki.','Hűvös helyen tartsd: a tartós meleget rosszul tűri.','Gilisztát és rovarokat eszik; túletetve könnyen elhízik.','A bőre érzékeny: csak ritkán, tiszta, nedves kézzel fogd meg.']},
+ bordasgote:{all:['Felnőttként vízben él: beüzemelt (ciklusolt), szűrt akvárium kell neki.','Hűvös vizet igényel, kb. 19–23 °C-ot: nyáron figyeld a hőmérsékletet.','Gilisztát, szúnyoglárvát és süllyedő eleséget eszik.','Kézbe ne vedd: a bőre érzékeny.']},
+ tuzhasugote:{all:['Főleg vízben él: növényes, szűrt akvárium kell neki kimászóval.','Hűvös vizet igényel, kb. 14–20 °C-ot; a 23 °C fölötti víz megbetegítheti.','A bőrváladéka mérgező: fogás után moss kezet, és ne nyúlj a szemedhez.','Fedd le az akváriumot: kimászik.']},
+ tengeri:{all:['Tengeri halat csak beérett, stabil vízértékű akváriumba telepíts; a sótartalmat sűrűségmérővel ellenőrizd.','Rendszeresen cserélj részlegesen vizet, előre bekevert, azonos sótartalmú és hőmérsékletű sós vízzel.','Az elpárolgott vizet édesvízzel pótold, ne sós vízzel: a só nem párolog el.','Annyit etess, amennyit pár perc alatt megesznek: a túletetés rontja a vízminőséget.']},
+ madarpok:{all:['Egyedül tartsd: a madárpókok megeszik egymást.','Kézbe ne vedd: az esés a pók halálát okozhatja, a csalánszőrei pedig irritálják a bőrt és a szemet.','Vedlés előtt nem eszik, és a hátára fordul: ilyenkor ne zavard, és ne hagyj bent eleségállatot.','A nőstények sokkal tovább élnek, mint a hímek: a kifejlett hím csak hónapokig él.','Legyen mindig friss vize egy sekély tálban.']},
+ ugropok:{all:['Egyedül tartsd: a fajtársát megeszi.','Nappal aktív, jól lát: világos helyre tedd, de ne tűző napra.','Apró élő rovarokat eszik (pl. muslica, kis légy).','Rövid életű: a források szerint 1–3 évig él, a nőstény tovább.','Permetezz finoman a terrárium falára: a cseppekből iszik.']},
+ csaszarskorpio:{all:['Meleg, párás terrárium kell neki vastag, nedves aljzattal és búvóhellyel.','A szúrása a források szerint általában enyhe, de allergiás reakciót okozhat: kézbe ne vedd.','Élő rovarokat eszik; a meg nem evett eleséget vedd ki.','Vedléskor sérülékeny: ne zavard.']},
+ botsaska:{all:['Friss szederlevelet eszik, emellett például tölgyet, galagonyát, rózsát vagy borostyánt.','Magas terrárium kell neki: vedléskor fejjel lefelé lóg.','Több példány is tartható együtt, ha elég nagy a hely.','Rövid életű: a teljes élettartama kb. egy év.','Óvatosan vedd kézbe: a lába könnyen leszakad.']},
+ imadkozosaska:{all:['Egyedül tartsd: a fajtársát megeszi.','Élő rovarokat eszik: fiatalon muslicát, később nagyobb legyet, tücsköt.','Magas, szellős terrárium kell neki, mert vedléskor fejjel lefelé lóg.','Rövid életű: a források szerint 12–18 hónapig él.']},
+ achatcsiga:{all:['Nedves, laza aljzat kell neki, amelybe beáshatja magát; permetezz rendszeresen.','Zöldségfélét eszik; a házához kalciumforrás (pl. szépiacsont) legyen mindig elérhető.','Fogás után moss kezet.','Szabadon engedni tilos és káros.']}});
 /* halfajonként egy-egy kiemelt tudnivaló */
 const VTIP={Aranyhal:'Az aranyhal nagyra nő, és sok szennyezést termel: tágas akvárium és erős szűrő kell neki; fűtést általában nem igényel.',Neonhal:'Rajhal: legalább 6–10 példányt tarts együtt.',Guppi:'Elevenszülő és szapora: tervezd meg, mi lesz az ivadékokkal.',
   'Páncélosharcsa':'Csapatban él, és a talajon keresgél: finom, lekerekített aljzat és legalább 5–6 társ kell neki.','Díszsügér':'Sok díszsügér territoriális: búvóhelyekkel tagolt akvárium és gondosan választott társak kellenek.','Szivárványhal':'Mozgékony rajhal: hosszú akvárium és legalább 6 társ kell neki.'};
+Object.assign(VTIP,{Platti:'Elevenszülő: 3–6 hallal kezdj, és egy hímre két nőstény jusson.',Molli:'Csapathal: legalább négy példányt tarts együtt.','Xifó (kardfarkú hal)':'Egy hímhez 3–4 nőstényt tarts, és fedd le az akváriumot: kiugorhat.',
+  'Vörös neonhal':'Rajhal: legalább 10 példányt tarts együtt.','Zebradánió':'Mozgékony rajhal: legalább 6 példányt tarts együtt.','Szumátrai díszmárna':'Legalább 6 fős csapatban tartsd: kisebb csapatban agresszív, és megcsipkedi más halak úszóit.',
+  'Vitorláshal':'Nagyra növő hal: 4–6 példánynak kb. 300 literes akvárium kell.','Diszkoszhal':'Meleg vizet igényel (kb. 28–30 °C), és legalább 5 fős csapatban érzi jól magát.','Gurámi':'A felszínről is vesz levegőt: úszónövény ne zárja el előle a vízfelszínt.',
+  'Algaevő harcsa (ancistrus)':'Főleg algát és növényi eleséget eszik: adj neki süllyedő növényi tablettát is.','Razbóra':'Rajhal: legalább 6 példányt tarts együtt.','Törpesügér':'A vízminőségre különösen érzékeny: csak stabil, beüzemelt akváriumba való.',
+  'Malawi-sügér':'Kemény, lúgos vizet igényel (pH 7,7–8,6); a sziklalakó fajokat az agresszió csökkentésére sűrűn telepítik.','Koi':'Kerti tóba való: 80 cm-nél is nagyobbra nőhet, és 30 évnél tovább élhet.',
+  'Bohóchal':'Párban él; a pár nagyobb, domináns tagja a nőstény.','Palettás doktorhal':'25–30 cm-re megnő: nagy akvárium kell neki. Algát és planktont is eszik.','Sárga doktorhal':'Főleg algát legel: növényi eleség legyen az étrend alapja. Kb. 20 cm-re megnő.',
+  'Mandarinhal':'Az élő kőről apró rákokat eszik, a száraz eleséget többnyire nem fogadja el: csak nagy, beérett, élőköves akváriumba való.','Királygramma':'Sziklaépítmény és búvóhely kell neki; ugrik, ezért fedd le az akváriumot.','Zöld korallsügér':'Rajhal: legalább 6 példányt tarts együtt.'});
 function tipsFor(p,st){const T=TIPS[p.species];if(!T)return TIPS_OTHER;
-  const a=[...(p.species==='edesvizi'&&VTIP[p.breed]?[VTIP[p.breed]]:[]),...((st&&T[st])||[]),...(T.all||[])];return a.length?a.slice(0,5):TIPS_OTHER}
+  const a=[...(stock(p)&&VTIP[p.breed]?[VTIP[p.breed]]:[]),...((st&&T[st])||[]),...(T.all||[])];return a.length?a.slice(0,5):TIPS_OTHER}
 const TIPS_OTHER=['Keress olyan állatorvost, aki ért ehhez a fajhoz.','A faj igényeiről (hely, hőmérséklet, étrend) kérdezd a Tanácsadót.'];
 const EVCAT={vet:[ic('vet'),'Állatorvos'],vacc:[ic('vacc'),'Oltás'],care:[ic('care'),'Ápolás'],shed:[ic('shed'),'Vedlés'],memo:[ic('memo'),'Emlék'],other:[ic('other'),'Egyéb']};
 const DISC='A PetVia nem helyettesíti az állatorvosi vizsgálatot.';
@@ -577,7 +676,7 @@ const VITG={madar:'Változatos étrend mellett az egészséges díszmadárnak á
  keteltu:'A rovarevő kétéltűek eleségét kalcium- és vitaminporral szokás beszórni; az axolotlnál a változatos, teljes értékű eleség az alap. A készítményt és a gyakoriságot a fajhoz értő állatorvossal egyeztesd.'};
 const vitFor=p=>VIT[p.species]||VITG[grp(p)]||VIT.egyeb;
 /* az Egészség lap részei fajcsoportonként: halnál nincs oltás, parazitakezelés és súlymérés; madárnál, hüllőnél és kétéltűnél nincs rutinoltás és rutin parazitakezelés */
-const htFor=p=>{const g=grp(p);return Object.keys(HT).filter(k=>g==='hal'?k==='sym'||k==='vet':!['madar','hullo','keteltu'].includes(g)||(k!=='vacc'&&k!=='par'))};
+const htFor=p=>{const g=grp(p);return Object.keys(HT).filter(k=>g==='hal'||g==='gerinctelen'?k==='sym'||k==='vet':!['madar','hullo','keteltu'].includes(g)||(k!=='vacc'&&k!=='par'))};
 const SMALL_YOUNG_GP=[['Megérkezés','Az első napokban hagyd megnyugodni, búvóhellyel. Kézből adott zölddel barátkozz vele.'],['Hely','Nagy, sík alapterület kell neki, nem emeletek. A rácsos aljzat nem való a lábának.']];
 const SMALL_YOUNG_H=[['Megérkezés','Az első napokban ne vedd kézbe, csak etesd és beszélj hozzá. Utána tenyérből kínálj falatot.'],['Hely','Nagy alapterületű ketrec vagy terrárium kell, vastag alommal az ásáshoz és zárt futófelületű kerékkel.']];
 const CARE={
@@ -835,7 +934,7 @@ function whenText(i){
 const tags=m=>`<span class="tag">tájékoztató</span>${m.mand?'<span class="tag must">jogszabály írja elő</span>':''}`;
 
 /* ---------- nézetek ---------- */
-const ava=(p,big)=>p.photo?`<img class="ava${big?' big':''}" src="${p.photo}" alt="">`:`<span class="ava${big?' big':''}" aria-hidden="true">${ic(GROUPS[grp(p)].i)}</span>`;
+const ava=(p,big)=>p.photo?`<img class="ava${big?' big':''}" src="${p.photo}" alt="">`:`<span class="ava${big?' big':''}" aria-hidden="true">${ic(tileInfo(tileOf(p)).i)}</span>`;
 function trail(p){
   const L=limitsFor(p);if(!L)return'<p class="next">Ennél a fajnál nem számolunk életszakaszt, csak az életkort követjük. A fajra szabott tanácsokat a Tanácsadó adja.</p>';
   const st=stageOf(p),i=STAGES.indexOf(st),m=ageM(p),lo=[0,...L][i],hi=i<3?L[i]:L[2]*1.5,f=Math.min(.9,Math.max(.08,(m-lo)/(hi-lo)));
@@ -873,7 +972,7 @@ function vPath(p){
   const ord=x=>x.birth?0:x.stage?1:x.now?3:x.pending?4:2;
   arr.sort((a,c)=>a.date-c.date||ord(a)-ord(c));
   const row=x=>{
-    if(x.birth)return`<li class="stage">${['madar','hullo'].includes(grp(p))?(p.est?'Becsült kelés':'Kelés'):p.est?'Becsült születés':'Születés'}<small>${fmtDate(x.date)}</small></li>`;
+    if(x.birth)return`<li class="stage">${hatch(p)?(p.est?'Becsült kelés':'Kelés'):p.est?'Becsült születés':'Születés'}<small>${fmtDate(x.date)}</small></li>`;
     if(x.stage)return`<li class="stage">${STAGE_START[x.stage]}<small>${x.date>today()?'várhatóan ':''}${fmtDate(x.date)}</small></li>`;
     if(x.now)return`<li class="today" id="tlToday">${BALL}Ma</li>`;
     if(x.own){const e=x.own,c=EVCAT[e.cat||'other'];return`<li class="it own"><div class="card"><b>${c[0]} ${esc(e.title)}</b><span class="when">${fmtDate(x.date)}, ${c[1].toLowerCase()}</span>${e.note?`<p>${esc(e.note)}</p>`:''}<div class="acts"><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></div></div></li>`}
@@ -1012,7 +1111,7 @@ function vProd(p){
   ${prodList(pCat==='tap'?foods(p):P[pCat]||[])}<p class="sub" style="margin-top:10px">${PNOTE}</p>
   <h2>Személyre szabott ajánlás</h2>${aiBox(p,'prod_'+pCat,'AI-ajánlás kérése ebben a kategóriában')}`}
 function vVets(){
-  const p=pet(),ex=!!p&&['hullo','keteltu','hal','madar'].includes(grp(p)),c=S.settings.city||'',a=(q,l,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${l}</a>`;
+  const p=pet(),ex=!!p&&['hullo','keteltu','hal','madar','gerinctelen'].includes(grp(p)),c=S.settings.city||'',a=(q,l,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${l}</a>`;
   return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A PetVia nem ajánl és nem tárol állatorvosokat.${ex?' Ennél a fajnál egzotikus állatokhoz értő állatorvost keresünk.':''}</p>
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
   <div id="mapBtns">${a(ex?'egzotikus állatorvos':'állatorvos',ex?'Egzotikus állatorvos keresése a térképen':'Állatorvos keresése a térképen','')}<div style="height:10px"></div>${a('állatorvosi ügyelet','Ügyelet keresése a térképen','ghost')}</div>
@@ -1027,7 +1126,7 @@ const chatLog=p=>S.chat[p.id]||[];
 function chatLogHtml(p){
   const log=chatLog(p),st=stageOf(p);
   if(!log.length&&chatBusy!==p.id){
-    const q=chatSheet&&TOPIC_Q[chatTopic]?[...TOPIC_Q[chatTopic]]:[`Mire figyeljek most${st?' '+stHU(p,st).toLowerCase()+' korban':''}?`,...({hal:['Milyen vízértékekre figyeljek?','Mivel és milyen gyakran etessem?'],hullo:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?'],keteltu:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?']}[grp(p)]||['Mit ne adjak neki enni?','Mennyi mozgásra és játékra van szüksége?'])];
+    const q=chatSheet&&TOPIC_Q[chatTopic]?[...TOPIC_Q[chatTopic]]:[`Mire figyeljek most${st?' '+stHU(p,st).toLowerCase()+' korban':''}?`,...({hal:['Milyen vízértékekre figyeljek?','Mivel és milyen gyakran etessem?'],hullo:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?'],keteltu:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?'],gerinctelen:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?']}[grp(p)]||['Mit ne adjak neki enni?','Mennyi mozgásra és játékra van szüksége?'])];
     if(p.species==='kutya'&&st==='kolyok')q.push('Hogyan szoktassam szobatisztaságra?');
     if(aiGate())return`<p class="sub">A Tanácsadó ${esc(petName(p))} profilja alapján válaszol a kérdéseidre. A használatához lépj be a fiókodba.</p><p><button class="btn" data-act="auOpen" data-m="in">Belépés</button></p><p><button class="btn ghost" data-act="auOpen" data-m="up">Regisztráció</button></p><small class="disc">${DISC}</small>`;
     return`<p class="sub">Kérdezz bármit ${esc(petName(p))} táplálásáról, egészségéről, tartásáról vagy neveléséről. A válasz a profiljához és az életszakaszához igazodik.</p>
@@ -1118,7 +1217,7 @@ function closeSheet(){$('#sheet').hidden=true;$('#sheet').innerHTML='';W=null;wz
 let W=null,wzStep=0;
 function wizard(id){
   const p=id&&S.pets.find(x=>x.id===id);
-  W=p?{...p,group:grp(p),count:p.count??'',tankL:p.tankL??'',weight:p.weight==null?'':gramSp(p)?Math.round(p.weight*1000):p.weight,step:3,mode:'date',edit:true,ey:'',em:'',ew:'',err:''}
+  W=p?{...p,group:tileOf(p),count:p.count??'',tankL:p.tankL??'',weight:p.weight==null?'':gramSp(p)?Math.round(p.weight*1000):p.weight,step:3,mode:'date',edit:true,ey:'',em:'',ew:'',err:''}
      :{group:'',species:'',speciesName:'',breed:'mix',size:'',count:'',tankL:'',birth:'',est:false,mode:'date',ey:'',em:'',ew:'',name:'',sex:'',neutered:'',weight:'',photo:'',step:1,err:''};
   drawWizard();
 }
@@ -1126,19 +1225,19 @@ function readWizard(){const f=$('#wz');if(!f)return;f.querySelectorAll('[name]')
 const radio=(name,opts,cur)=>`<div class="chips">${opts.map(([v,n])=>`<label><input type="radio" name="${name}" value="${v}"${cur===v?' checked':''}><span>${n}</span></label>`).join('')}</div>`;
 function drawWizard(){
   const w=W,t=iso(today()),g=grp(w);let body='';
-  if(w.step===1)body=`<h2>Milyen állat?</h2><div class="tiles">${Object.entries(GROUPS).map(([k,x])=>`<button class="tile" data-act="wzGroup" data-v="${k}" aria-pressed="${w.group===k}"><em style="--t:${x.c}">${ic(x.i)}</em>${x.n}</button>`).join('')}</div>
-    ${w.group&&w.group!=='egyeb'?`<div class="f"><span>Melyik faj?</span><div class="chips">${Object.entries(SPECIES).filter(([,x])=>x.g===w.group).map(([k,x])=>`<button type="button" class="chip" data-act="wzSpecies" data-v="${k}" aria-pressed="${w.species===k}">${x.n}</button>`).join('')}</div></div>`:''}
-    ${w.species==='egyeb'?`<label class="f"><span>Milyen állat pontosan?</span><input name="speciesName" value="${esc(w.speciesName)}" placeholder="pl. degu, törpesün, botsáska" maxlength="40"></label>`:''}${flagHtml(w.species)}`;
+  if(w.step===1)body=`<h2>Milyen állat?</h2><div class="tiles">${Object.keys(TILES).map(k=>{const x=tileInfo(k);return`<button class="tile" data-act="wzGroup" data-v="${k}" aria-pressed="${w.group===k}"><em style="--t:${x.c}">${ic(x.i)}</em>${x.n}</button>`}).join('')}</div>
+    ${w.group&&w.group!=='egyeb'?`<div class="f"><span>Melyik faj?</span><div class="chips">${Object.entries(SPECIES).filter(([,x])=>(x.t||x.g)===w.group).map(([k,x])=>`<button type="button" class="chip" data-act="wzSpecies" data-v="${k}" aria-pressed="${w.species===k}">${x.n}</button>`).join('')}</div></div>`:''}
+    ${w.species==='egyeb'?`<label class="f"><span>Milyen állat pontosan?</span><input name="speciesName" value="${esc(w.speciesName)}" placeholder="pl. degu, törpesün, egér" maxlength="40"></label>`:''}${flagHtml(w.species)}`;
   if(w.step===2){
     const dogKnown=w.species==='kutya'&&w.breed!=='mix'&&DOGSIZE[w.breed],list=BREEDS[w.species]||[];
-    const ttl=w.species==='edesvizi'?'Halfaj':g==='emlos'||g==='egyeb'?'Fajta':'Változat',mix=w.species==='edesvizi'?'Vegyes állomány / nem tudom':g==='emlos'?'Keverék / nem tudom':'Nem tudom';
+    const ttl=stock(w)?'Halfaj':g==='emlos'||g==='egyeb'?'Fajta':sp(w).vt||'Változat',mix=stock(w)?'Vegyes állomány / nem tudom':g==='emlos'?'Keverék / nem tudom':'Nem tudom';
     body=`<h2>${ttl}</h2>${w.species==='egyeb'
       ?`<label class="f"><span>Fajta (nem kötelező)</span><input name="breed" value="${esc(w.breed==='mix'?'':w.breed)}" maxlength="40"></label>`
       :list.length?`<label class="f"><span>Válassz a listából</span><select name="breed" id="wzBreed"><option value="mix">${mix}</option>${list.map(b=>`<option${w.breed===b?' selected':''}>${esc(b)}</option>`).join('')}</select></label>`
       :'<p class="sub">Ennél a fajnál nincs választható változat, lépj tovább.</p>'}
     ${w.species==='kutya'?(dogKnown?`<p class="sub">Méret a fajta alapján: ${SIZE_HU[dogKnown]}. Ettől függ, mikor számít felnőttnek és idősnek.</p>`
       :`<div class="f"><span>Mekkora (lesz) felnőttként?</span>${radio('size',Object.entries(SIZE_HINT),w.size)}</div><p class="sub">A nagyobb testű kutyák később nőnek fel és korábban számítanak idősnek.</p>`):''}
-    ${w.species==='edesvizi'?'<p class="sub">A halfajtól függ, mikor számít felnőttnek és idősnek. Vegyes állománynál csak az életkort követjük.</p>':''}`}
+    ${w.species==='edesvizi'?'<p class="sub">Több halfajnál a fajtól függ, mikor számít felnőttnek és idősnek. Vegyes állománynál, és ahol nincs megbízható adat, csak az életkort követjük.</p>':w.species==='tengeri'?'<p class="sub">Tengeri halaknál csak az életkort követjük.</p>':''}`}
   if(w.step===3)body=`<h2>Kor és adatok</h2>
     <div class="f"><span>Mit tudsz a koráról?</span>${radio('mode',[['date','Tudom a születésnapját'],['est','Csak becsülni tudom']],w.mode)}</div>
     ${w.mode==='date'?`<label class="f"><span>Születési dátum</span><input type="date" name="birth" value="${esc(w.birth)}" max="${t}"></label>`
@@ -1149,7 +1248,7 @@ function drawWizard(){
     <label class="f"><span>Az akvárium mérete literben</span><input name="tankL" inputmode="decimal" value="${esc(w.tankL)}" placeholder="pl. 60"></label>`
     :`<div class="f"><span>Ivar (nem kötelező)</span>${radio('sex',[['him','Hím'],['nosteny','Nőstény'],['','Nem tudom']],w.sex)}</div>
     ${g==='emlos'||g==='egyeb'?`<div class="f"><span>Ivartalanított? (nem kötelező)</span>${radio('neutered',[['igen','Igen'],['nem','Nem'],['','Nem tudom']],w.neutered)}</div>`:''}
-    <label class="f"><span>Súly ${gramSp(w)?'grammban':'kg-ban'} (nem kötelező)</span><input name="weight" inputmode="decimal" value="${esc(w.weight)}" placeholder="${gramSp(w)?'pl. 65':'pl. 12,5'}"></label>`}`;
+    ${noWeight(w)?'':`<label class="f"><span>Súly ${gramSp(w)?'grammban':'kg-ban'} (nem kötelező)</span><input name="weight" inputmode="decimal" value="${esc(w.weight)}" placeholder="${gramSp(w)?'pl. 65':'pl. 12,5'}"></label>`}`}`;
   openSheet(`<div id="wz"><div class="steps" aria-label="${w.step}. lépés a 3-ból">${[1,2,3].map(n=>`<i class="${n<=w.step?'on':''}"></i>`).join('')}</div>${body}
     ${w.err?`<p class="err" role="alert">${esc(w.err)}</p>`:''}
     <button class="btn" data-act="wzNext">${w.step<3?'Tovább':w.edit?'Változások mentése':'Állat mentése'}</button>
@@ -1169,7 +1268,7 @@ function wizardNext(){
     const fish=g==='hal',gr=gramSp(w);let kg=null,cnt=null,tank=null;
     if(fish){cnt=parseInt(w.count,10);tank=parseFloat(String(w.tankL).replace(',','.'));
       if(!w.err&&!(cnt>=1&&cnt<=999))w.err='Add meg, hány hal él az akváriumban (1 és 999 között).';else if(!w.err&&!(tank>0&&tank<=10000))w.err='Add meg az akvárium méretét literben, pl. 60.'}
-    else if(w.weight!==''){kg=parseFloat(String(w.weight).replace(',','.'));if(gr)kg/=1000;if(!(kg>0&&kg<200))w.err=gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.'}
+    else if(w.weight!==''&&!noWeight(w)){kg=parseFloat(String(w.weight).replace(',','.'));if(gr)kg/=1000;if(!(kg>0&&kg<200))w.err=gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.'}
     if(!w.err){
       const old=w.edit&&S.pets.find(x=>x.id===w.id),bs=iso(birth);
       const p={id:old?old.id:newId(),name:clean(w.name),species:w.species,speciesName:w.species==='egyeb'?clean(w.speciesName):'',breed:(w.species==='egyeb'?clean(w.breed):w.breed)||'mix',size:w.size,count:cnt,tankL:tank,birth:bs,
@@ -1227,7 +1326,7 @@ function chatContext(p,task){
     pa=recs(p,'par').slice(0,4).map(e=>`- ${e.date}: ${PAR_SHORT[e.ptype]}${e.product?' – '+e.product:''}`);
   return[`Mai dátum: ${iso(today())}`,'','Az állat profilja:',`- Név: ${p.name||'nincs megadva'}`,`- Faj: ${speciesLabel(p)} (fajcsoport: ${GROUPS[grp(p)].n.toLowerCase()})`,`- Fajta: ${breedLabel(p)||'nincs megadva'}`,
     size?`- Méret: ${SIZE_HU[size]}`:null,`- Életkor: ${fmtAge(p)} (születési dátum: ${p.birth}${p.est?', becsült':''})`,`- Életszakasz: ${st?stHU(p,st):'ennél a fajnál nincs meghatározva'}`,
-    `- Ivar: ${{him:'hím',nosteny:'nőstény'}[p.sex]||'nincs megadva'}`,grp(p)==='emlos'||grp(p)==='egyeb'?`- Ivartalanított: ${p.neutered||'nincs megadva'}`:null,grp(p)==='hal'?`- Állomány: ${p.count||'?'} db, ${p.tankL?fmtKg(p.tankL):'?'} literes akvárium`:`- Súly: ${p.weight?wTxt(p,p.weight):'nincs megadva'}`,'',
+    `- Ivar: ${{him:'hím',nosteny:'nőstény'}[p.sex]||'nincs megadva'}`,grp(p)==='emlos'||grp(p)==='egyeb'?`- Ivartalanított: ${p.neutered||'nincs megadva'}`:null,grp(p)==='hal'?`- Állomány: ${p.count||'?'} db, ${p.tankL?fmtKg(p.tankL):'?'} literes akvárium`:noWeight(p)?null:`- Súly: ${p.weight?wTxt(p,p.weight):'nincs megadva'}`,'',
     'Előzmények az életútból:',...(hist.length?hist:['- nincs rögzített esemény']),'','Esedékes teendők:',...(due.length?due:['- nincs']),'','Súlymérések:',...or(w),'','Tünetnapló:',...or(sy),'','Parazita elleni kezelések:',...or(pa),'',
     `Ha márkát vagy terméket említesz, csak ezek közül válassz: ${brandList(p)}.`,'','Sima szöveggel válaszolj, markdown formázás nélkül.',task||'A felhasználó üzenetei következnek.'].filter(x=>x!==null).join('\n');
 }
