@@ -1979,6 +1979,213 @@ Object.assign(GSRC,{tuskeseger:{food:['adwAco','ssAco','ppAco','wikiAco'],care:[
 {const bed=[['Chipsi','Carefresh cellulózalom','k']],noFood='Ehhez a fajhoz nem találtunk ellenőrizhető, márkás tápot. Az étrendet a Táplálkozás lap és egy egzotikus kisemlősökhöz értő állatorvos tanácsa szerint állítsd össze.';
  Object.assign(PROD,{tuskeseger:{tap:[],alom:bed,felsz:[['Trixie','házikó, futókerék, itató','k']],jatek:[]},csikosfueger:{tap:[],alom:[],felsz:[['Trixie','házikó','k']],jatek:[]},torpeeger:{tap:[],alom:bed,felsz:[['Trixie','házikó','k']],jatek:[]},torpepele:{tap:[],alom:bed,felsz:[['Trixie','házikó','k']],jatek:[]}});
  Object.assign(PNONE,{tuskeseger:{tap:noFood},csikosfueger:{tap:noFood,alom:'Fészekanyagnak széna és szalma való.'},torpeeger:{tap:noFood},torpepele:{tap:noFood}})}
+/* ---------- útmutatók 3/b kör: kétéltűek ----------
+   Kilenc faj; a levelibéka (korallujjú, vörösszemű) és az unka (kínai tűzhasú, vöröshasú) változatai külön útmutatót kapnak (GVAR, gkey).
+   Ha a változat nincs megadva, a lap a változat megadását kéri (VARPICK). Minden számadat forrásból van (SRC, GSRC; petvia-utmutatok-3b-keteltuek.md);
+   ahol a források eltérnek, a szöveg a tartományt adja meg, vagy megnevezi az eltérést. A vöröshasú unka védett faj: az útmutató csak a meglévő
+   állat tartásáról szól, beszerzésről és szaporításról nem. Leckék és játék fül nincs. */
+Object.assign(GVAR,{'Korallujjú levelibéka':'levelibeka:korall','Vörösszemű levelibéka':'levelibeka:vorosszemu','Kínai tűzhasú unka':'unka:kinai','Vöröshasú unka':'unka:voroshasu'});
+const VARPICK={levelibeka:'A korallujjú és a vörösszemű levelibéka igényei eltérnek (hőmérséklet, páratartalom, etetés).',unka:'A kínai tűzhasú és a vöröshasú unka tartása eltér (vízmélység, jogi helyzet).'};
+const varPick=p=>`<div class="card" style="margin-top:14px" id="varPick"><p>${VARPICK[p.species]}</p><p class="sub">Add meg a profilban, melyik változat a tiéd, és megmutatom a hozzá tartozó útmutatót.</p><button class="btn" data-act="varEdit" data-id="${p.id}">Változat megadása</button></div>`;
+const AM_LAW='A vöröshasú unka Magyarországon védett faj: a természetből befogni tilos, a tartásához és a szaporításához a természetvédelmi hatóság engedélye kell.';
+Object.assign(FLAG,{'levelibeka:vorosszemu':`${FLAG.levelibeka} ${citesFlag('A vörösszemű levelibéka')}`,'unka:voroshasu':AM_LAW});
+Object.assign(TIPS,{
+ 'levelibeka:korall':{all:['Nappal 24–29 °C, éjszaka 18–24 °C kell neki, a meleg végén sütkérezőhellyel.','Könnyen elhízik: a felnőttet hetente 2–3-szor etesd, és mérd a súlyát.','A rovarokat vitamin- és ásványianyag-porral szórd be.','Klórmentesített vizet használj a permetezéshez és a vizestálba.']},
+ 'levelibeka:vorosszemu':{all:['Könnyen túlmelegszik: tartsd 27 °C alatt, és figyeld hőmérővel.','Magas, párás (60–90%) terrárium kell neki nagy levelű növényekkel.','Éjszakai állat: este etesd, nappal hagyd aludni.','Kézbe csak akkor vedd, ha muszáj, benedvesített kesztyűben.']},
+ 'unka:kinai':{all:['Félig vízi terrárium kell neki: 2,5–10 cm mély vízzel és szárazulattal.','18–28 °C között érzi jól magát; sütkérezőlámpa nem kell.','A bőrváladéka irritáló: fogás után moss kezet, és ne nyúlj a szemedhez.','Társas állat: csoportban tartsd, de más fajjal ne keverd.']},
+ 'unka:voroshasu':{all:['Védett faj: a tartásához a természetvédelmi hatóság engedélye kell.','A leginkább vízi unka: mély (közel 25 cm-es) vízrész kell neki, kimászóval.','A bőrváladéka enyhén mérgező: fogás után moss kezet.','A természetben talált unkát hagyd a helyén.']}});
+const AM_WATER='Klórmentesített vizet használj (vízkezelő szerrel kezelt csapvíz vagy forrásvíz); desztillált vizet ne.';
+const AM_LID='Biztosan záró, de szellőző tető kell rá.';
+const AM_MBDN='A csak tücsökből álló, kiegészítő nélküli étrend csontanyagcsere-betegséghez vezethet.';
+const AM_UVB6='A forrás az UVB-fényforrás cseréjét félévente írja.';
+const AM_ARR=['Megérkezés','A terráriumot még az állat érkezése előtt rendezd be, és ellenőrizd a hőmérsékletet és a páratartalmat.'];
+const AM_ARRCB=['Megérkezés',AM_ARR[1]+' Fogságban tenyésztett állatot válassz: a befogott gyakran beteg vagy élősködőt hordoz.'];
+const AM_ARRW=['Megérkezés','Beüzemelt (ciklusolt) akváriumba telepítsd: a vízben az ammónia és a nitrit 0 legyen.'];
+const AM_HAND=['Kézbevétel','A kétéltűek bőre nagyon érzékeny, és a kéz melege is megterheli őket: inkább nézni való állat. Ha muszáj megfogni, benedvesített, púdermentes kesztyűben, röviden tedd; utána moss kezet, mert szalmonellát hordozhat.'];
+const AM_HANDTOX=tox=>['Kézbevétel',`A bőrmirigyei ${tox} váladékot termelnek: inkább nézni való állat. Ha muszáj megfogni, benedvesített, púdermentes kesztyűben tedd; a váladék ne jusson szembe, szájba vagy sebbe, és előtte-utána moss kezet.`];
+const AM_VET=['Állatorvos','Mutasd meg kétéltűekhez értő (egzotikus) állatorvosnak. A rossz étrend, a zsúfoltság, a túl sok kézbevétel és a rossz vízminőség a források szerint betegséghez vezet: a megelőzés a legjobb védekezés.'];
+const AM_QEATT=['Nem eszik','Ellenőrizd hőmérővel és páramérővel a terráriumot: a rossz hőmérséklet és a stressz is elveheti az étvágyát. Az étvágytalanság betegség jele is lehet: ha tartósan nem eszik, vagy fogy, vidd állatorvoshoz.'];
+const AM_QEATW=['Nem eszik','Mérd meg a vízhőmérsékletet és a vízértékeket: a túl meleg vagy rossz minőségű víz a leggyakoribb ok. Ha tartósan nem eszik, vagy fogy, vidd állatorvoshoz.'];
+const AM_QFAT=['Elhízott','A fő ok a túletetés: adj kisebb adagot és több helyet a mozgáshoz.'];
+const AM_QMBD=['Puha az állkapcsa, görbül a gerince, remeg','Csontanyagcsere-betegség jele lehet: kalcium, D3-vitamin vagy UVB-fény hiányában alakul ki, főleg ha csak tücsköt kap kiegészítő nélkül. Vidd kétéltűekhez értő állatorvoshoz, és nézd át az étrendet.'];
+const AM_QRED=['Vörös a lába vagy a hasa','A „vörösláb” bakteriális fertőzés jele lehet (a lábak, néha a has kivörösödése, duzzanat): mielőbb vidd állatorvoshoz.'];
+const AM_QCHY=['Sokat vedlik, fakó vagy szürkés a bőre, nem eszik','Bőrgombás fertőzés (chytridiomycosis) jele lehet, amely napok alatt az egész állományt megbetegítheti: azonnal vidd állatorvoshoz.'];
+const AM_QMOLD=['Fehér, vattaszerű csomók a bőrén','Vízipenész (gombás fertőzés) jele lehet. Ellenőrizd a vízértékeket és a hőmérsékletet, és vidd állatorvoshoz.'];
+const AM_QSHED=['Rajta maradt a levedlett bőr','A bennmaradt bőr (főleg az ujjakon) betegség jele lehet: mutasd meg állatorvosnak.'];
+const AM_QSTONE=['Kavicsot vagy aljzatot nyelt','A lenyelt kavics bélelzáródást okozhat, ami halálos is lehet: vidd állatorvoshoz, és cseréld le az aljzatot.'];
+const amFood=(base,young,adult,extra)=>({h:'Az étrend alapja',base,freq:{kolyok:young,novendek:young,felnott:adult,idos:adult},sw:false,bad:[],extra});
+const amCare=(young,adult,i,p)=>({g:{kolyok:young,novendek:young,felnott:adult,idos:adult},i,p});
+Object.assign(FOOD,{
+ axolotl:amFood(['Húsevő: gilisztát (a nagyot feldarabolva), szúnyoglárvát, feketeférget, tubifexet, sórákot és süllyedő pisztráng- vagy lazacpelletet eszik.','Egy alkalommal annyit adj, amennyit kb. 15 perc alatt megeszik; a maradékot vedd ki, mert rontja a vizet.','Az eleséghalat az egyik forrás említi, a másik az élősködők miatt nem ajánlja: inkább kerüld. Sózott vagy tengeri halat ne adj.'],
+  'A fiatal axolotlt naponta etesd.','A felnőttet hetente 2–3-szor (2–3 naponta) etesd. Könnyen elhízik: ne etesd túl.','Evés közben az aljzatot is lenyelheti: ezért ne legyen az akváriumban apró kavics.'),
+ 'levelibeka:korall':amFood(['Rovarevő: az alap a feltáplált tücsök; mellé giliszta, csótány és selyemhernyó adható. Viaszmoly-lárva és lisztkukac csak csemegének.','Egy alkalommal annyi tücsköt adj, amennyit 10–15 perc alatt megeszik (felnőttnek a források 2–8 tücsköt írnak).',LZ_GUT,'A rovarokat vitamin- és ásványianyag-porral szórd be: a források szerint fiatalnál hetente legalább kétszer, felnőttnél kb. hetente (2–4 etetésenként).'],
+  'A fiatal békát naponta vagy másnaponta etesd.','A felnőttet hetente 2–3-szor etesd.','Fogságban gyakran elhízik: a fő ok a túletetés. '+AM_MBDN),
+ 'levelibeka:vorosszemu':amFood(['Rovarevő: az alap a feltáplált tücsök; mellé csótány, selyemhernyó, katonalégy-lárva és kis giliszta adható. A viaszmoly zsíros: csak ritkán.','A zsákmány ne legyen szélesebb a béka fejénél. Alkalmanként 3–8 rovart adj.',LZ_GUT,'Kiegészítők: a források kalciumot (D-vitaminnal) felnőttnél hetente 2–3-szor, fiatalnál naponta, multivitamint hetente egyszer írnak.'],
+  'A fiatal békát naponta etesd.','A felnőttet a források szerint 1–3 naponta etesd, este: éjszaka aktív.',AM_MBDN),
+ 'unka:kinai':amFood(['Rovarevő: tücsköt, csótányt, kis gilisztát, lisztkukacot, viaszmolyt, selyemhernyót és katonalégy-lárvát eszik.','A zsákmány ne legyen szélesebb a fejénél; annyit adj, amennyit 15 perc alatt megeszik.',LZ_GUT,'Kiegészítők: az egyik forrás kalciumot (D-vitaminnal) minden etetéskor és multivitamint hetente 1–2-szer ír, a másik vitamin- és ásványianyag-port minden harmadik etetésnél.'],
+  'A fiatal unkát naponta vagy másnaponta etesd.','A felnőttet a források szerint hetente 1–2-szer, illetve 3 naponta etesd.',AM_MBDN),
+ 'unka:voroshasu':amFood(['Rovarevő: a természetben rovarokat és más vízi gerincteleneket eszik. Fogságban az unkáknak tücsköt, legyet, lisztkukacot és férgeket adnak.','A forrás szerint a rovarokat minden harmadik etetésnél vitamin- és ásványianyag-porral kell beszórni.'],
+  'A fiatal unkát naponta etesd.','A felnőttet 3 naponta etesd.','Az etetési adatok az unkák (Bombina nem) tartásáról szóló forrásból származnak: a vöröshasú unkára külön etetési útmutatót nem találtunk.'),
+ nyilmeregbeka:amFood(['Apró élő eleséget eszik: röpképtelen muslicát, frissen kelt tücsköt, ugróvillást és ászkát.','A források békánként 20–50 muslicát, illetve annyit írnak, amennyit egy órán belül megeszik.','Kiegészítők: kalciumpor minden vagy minden második etetéskor, multivitamin hetente 1–2-szer.'],
+  'A fiatal békát naponta etesd.','A felnőttet a források szerint hetente 3–4-szer, illetve naponta–másnaponta etesd.','A fogságban tenyésztett nyílméregbéka nem mérgező: a méreganyagot a vadon élők a táplálékukból szerzik.'),
+ szarvasbeka:amFood(['Húsevő: az alap a feltáplált tücsök és csótány, mellé giliszta. A lisztkukac és a viaszmoly zsíros: csak ritkán.','A felnőtt kéthetente fagyasztott, felengedett egeret is kaphat; élő rágcsálót soha ne adj.','Etetőcsipesszel etesd, hogy ne az ujjadat nézze ennivalónak.','Kiegészítők: a forrás kalciumot (D-vitaminnal) naponta, multivitamint hetente ír.'],
+  'A fiatal békát naponta etesd.','A felnőttet hetente 1–2-szer etesd.','Legyen kerek, de ne természetellenesen nagy: ha túl kövér, adj kevesebbet.'),
+ torpekarmosbeka:amFood(['Húsevő: süllyedő békapelletet, fagyasztott szúnyoglárvát és sórákot, vízibolhát, élő feketeférget eszik. Az eleség legalább 40–50%-a fehérje legyen.','Rosszul lát: az ételt ejtsd elé, vagy csipesszel, pipettával add; kis agyagtányérról könnyebben megtalálja.','Annyit adj, amennyit pár perc alatt megeszik, és a maradékot vedd ki: rontja a vizet.'],
+  'Naponta vagy másnaponta etesd, lehetőleg este.','Naponta vagy másnaponta etesd, lehetőleg este.','Lassan eszik: ha halakkal él együtt, figyeld, hogy neki is jusson.'),
+ tigrisszalamandra:amFood(['Húsevő: az ideális eleség a giliszta (a kicsiknek feldarabolva), mellé feltáplált tücsök és csótány. A viaszmoly és az egérbébi zsíros: csak nagyon ritkán. Lisztkukacot az egyik forrás nem ajánl.','Annyit adj, amennyit 10–15 perc alatt megeszik (felnőttnek kb. két nagy giliszta).','A tücsköt hetente 1–2-szer szórd be kalcium- és vitaminkészítménnyel, és etetés előtt 24–48 órával tápláld fel. (Az egyik forrás szerzője szerint a porozás fölösleges; a másik kettő ajánlja.)'],
+  'A fiatalt 1–2 naponta etesd.','A felnőttet szobahőmérsékleten hetente 2–3-szor etesd; hűvösebb helyen (kb. 16 °C alatt) elég hetente–kéthetente.','Könnyen elhízik: ne etesd túl. Etetés előtt kopogtass a terrárium falán: megtanulja a jelet, és gyakran megszelídül.'),
+ tuzhasugote:amFood(['Húsevő: gilisztát (a nagyot feldarabolva), szúnyoglárvát, sórákot és tubifexet eszik, élőt vagy fagyasztottat. A száraz gőtetáp csak kiegészítés, és nem minden állat fogadja el. Lisztkukacot ne adj.','A maradékot 10–15 percen belül vedd ki.'],
+  'A fiatalt naponta etesd.','A felnőttet másnaponta etesd.','Az újonnan vett gőte gyakran napokig nem eszik, és nem megy vízbe: ez többnyire a szállítás és a korábbi rossz tartás következménye. Ha más betegségjel nincs, adj neki nagyon sekély vizű pihenőhelyet.'),
+ bordasgote:amFood(['Húsevő: süllyedő gőte- vagy halpelletet (40–50% fehérje), garnélapelletet, feldarabolt gilisztát, fagyasztott szúnyoglárvát, sórákot és feketeférget eszik.','Annyit adj, amennyit kb. 20 perc alatt megeszik; a maradékot fél órán belül vedd ki.','Eleséghalat rendszeresen ne adj: betegséget hordozhat.'],
+  'A fiatalt naponta többször, keveset etesd, heti egy koplalónappal.','A felnőttet másnaponta etesd.','A felnőttek megeszik a lárvákat és a fiatalokat: különböző méretű állatokat ne tarts együtt.')});
+Object.assign(CARE,{
+ axolotl:amCare([['Megérkezés','Az akváriumot a betelepítés előtt legalább két héttel indítsd be, és ellenőrizd vízteszttel: az ammónia és a nitrit 0 legyen.'],['Fiatalon','A fiatal axolotl naponta eszik. A fiatalok megcsíphetik, megehetik egymást: csak hasonló méretűeket tarts együtt.'],['Kézbevétel','Kézbe ne vedd: a bőre és a kopoltyúja sérülékeny. Ha át kell helyezni, puha hálóval, röviden tedd, vagy tereld akváriumvízzel töltött edénybe.']],
+  [['Társak','Csak fajtársaival tartsd: a kis halat megeszi, a nagyobb vagy agresszív hal megsérti a kopoltyúját. Felnőttek elég hellyel együtt tarthatók; hímeket csak bő búvóhellyel.'],['Nyári meleg','24 °C fölött túlmelegszik: nyáron figyeld hőmérővel. A hálós fedél és egy ventilátor hűti a vizet.'],AM_VET],
+  ['Búvóhely (barlang, cső): nem kötelező, de jó neki.','Strapabíró növények: a gyengébbeket kiássa.','Kevés fény: az erős fény stresszeli.','Permetezőcső vagy dekoráció a szűrő kifolyója elé, hogy megtörje az áramlást.'],
+  [['Nem eszik','A leggyakoribb ok a túl meleg vagy rossz minőségű víz; lehet fertőzés vagy lenyelt tárgy is. Mérd meg a vízhőmérsékletet és a vízértékeket; ha nem javul, vidd állatorvoshoz.'],['A felszínen lebeg, nem eszik','Túlmelegedés jele lehet: mérd meg a vizet. Ha 24 °C fölött van, hűtsd fokozatosan, és ha nem javul, vidd állatorvoshoz.'],AM_QMOLD,AM_QSTONE,['Puffadt','A puffadás betegség jele: vidd állatorvoshoz.'],AM_QFAT]),
+ 'levelibeka:korall':amCare([AM_ARRCB,['Etetés fiatalon','A fiatal béka naponta vagy másnaponta eszik, és a rovarait gyakrabban kell vitaminporral beszórni, mint a felnőttét.'],['Kézbevétel','A nagyobb, jobban kézbe vehető békák közé tartozik, de a bőre így is érzékeny: a lehető legkevesebbet fogd meg, szappan- és krémmentes, nedves kézzel vagy benedvesített kesztyűben. Utána moss kezet.']],
+  [['Társak','Társas: több hasonló méretű béka együtt tartható. Nagyon kicsi békát ne tegyél nagyobbak mellé, mert megehetik.'],['Vedlés','Időnként levedli és megeszi a bőrét; előtte a bőre zavarosnak látszik. Ez természetes.'],['Elhízás','Fogságban gyakran elhízik: mérd rendszeresen a súlyát, és ha hízik, adj kevesebbet.'],AM_VET],
+  ['Vastag ágak ülőhelynek: legalább olyan vastagok legyenek, mint a béka teste.','Növények takarásnak.','Agyagcserép ülő- és búvóhelynek.','Nagy, sekély vizestál, amelybe beleülhet.'],
+  [AM_QEATT,AM_QFAT,AM_QMBD,AM_QRED,AM_QCHY,['Nehezen lélegzik','A rosszul szellőző terrárium légúti bajt okozhat: javíts a szellőzésen, és vidd állatorvoshoz.']]),
+ 'levelibeka:vorosszemu':amCare([AM_ARRCB,['Etetés fiatalon','A fiatal béka naponta eszik, és a rovarait naponta kell kalciummal beszórni.'],AM_HAND],
+  [['Társak','Hasonló méretű békák együtt tarthatók; felnőtt hímeket ne tarts együtt, és más fajjal ne keverd.'],['Éjszakai állat','Nappal a leveleken alszik, este kel fel: nappal ne zavard, és este etesd.'],['Vedlés','Naponta–néhány hetente vedlik, és megeszi a levedlett bőrét.'],AM_VET],
+  ['Átlós ágak és nagy levelű növények a talajtól a tetőig, amelyek elbírják a békát.','Legalább két búvóhely.','Sekély, fel nem borítható vizestál.','Digitális hő- és páramérő, naponta ellenőrizve.'],
+  [['Túlmelegedés','Könnyen túlmelegszik: az egyik forrás szerint már a rövid ideig tartó, 27 °C fölötti meleg is végzetes lehet. Nyáron figyeld hőmérővel.'],AM_QEATT,['Száraz a bőre, levert','Kiszáradás jele lehet: ellenőrizd a páratartalmat és a vizestálat, és vidd állatorvoshoz.'],AM_QMBD,AM_QRED,AM_QCHY]),
+ 'unka:kinai':amCare([AM_ARR,['Etetés fiatalon','A fiatal unka naponta vagy másnaponta eszik.'],AM_HANDTOX('mérgező')],
+  [['Társak','Társas: csoportban érzi jól magát. Más unkafajjal vagy más kétéltűvel ne tartsd együtt.'],['Szökés','Ügyes szökő: a tető zárjon szorosan.'],AM_VET],
+  ['Kimászó a vízből: lapos kő vagy parafakéreg.','Búvóhelyek a szárazulaton.','Két hőmérő: egy a szárazon, egy a vízben.'],
+  [AM_QEATT,AM_QSHED,AM_QRED,AM_QMBD,['Beesett vagy puffadt a hasa','Élősködők vagy bélelzáródás (pl. lenyelt kavics, kéregdarab) jele lehet: vidd állatorvoshoz.'],AM_QCHY]),
+ 'unka:voroshasu':amCare([['Jogi tudnivalók',AM_LAW+' Ez az útmutató a már engedéllyel tartott állat gondozásáról szól.'],['Etetés fiatalon','A fiatal unka naponta eszik.'],AM_HANDTOX('csípős, enyhén mérgező')],
+  [['Jogi tudnivalók',AM_LAW+' Ez az útmutató a már engedéllyel tartott állat gondozásáról szól.'],['Éves ritmus','A természetben március végén, április elején jön elő, egész nyáron a vízben vagy a közelében marad, és ősszel húzódik szárazföldi zugba telelni. A teleltetésről kérj tanácsot kétéltűekhez értő állatorvostól.'],AM_HANDTOX('csípős, enyhén mérgező'),AM_VET],
+  ['Sűrű vízinövényzet: a természetben is a növényzettel benőtt vizet kedveli.','Kimászó és szárazföldi búvóhely.','Kis szűrő a vízrészbe.'],
+  [AM_QEATT,AM_QSHED,AM_QRED,AM_QCHY,['Különös pózba merevedik','Ha megriad, védekező pózt vesz fel („unkareflex”): ilyenkor hagyd békén.']]),
+ nyilmeregbeka:amCare([['Megérkezés',AM_ARR[1]+' A kezdőknek ajánlott fajok fogságban tenyésztve kaphatók.'],['Etetés fiatalon','A fiatal béka naponta eszik, apró eleséget (muslicát, ugróvillást).'],AM_HAND],
+  [['Társak','Fajonként eltér: a Dendrobates auratus és a D. leucomelas csoportban tartható, a D. tinctorius territoriális, ezért párban vagy egyedül való.'],['Meleg','28 °C fölött a meleg halálos lehet: nyáron figyeld hőmérővel. Fűtés többnyire nem kell.'],AM_VET],
+  ['Vastag avarréteg az aljzaton.','Élő növények és búvóhelyek.','Sekély vízfelület: a mély vízbe belefulladhat.'],
+  [AM_QEATT,['Penészedik a terrárium','A nagyon párás terráriumban a jó légmozgás kulcsfontosságú: javíts a szellőzésen.'],AM_QMBD,AM_QRED,AM_QCHY]),
+ szarvasbeka:amCare([AM_ARR,['Növekedés','Gyorsan nő: 6–18 hónapos korára eléri a felnőtt méretét. A hím 6–10 cm-es, a nőstény 10–20 cm-es lesz.'],['Kézbevétel','Éles fogai vannak, és harap: inkább nézni való állat. Csak akkor vedd kézbe, ha feltétlenül szükséges, kesztyűben; utána moss kezet.']],
+  [['Egyedül tartsd','Territoriális, és a fajtársát is megeheti: egyedül kell tartani.'],['Ha betokozódik','Ha az aljzat kiszárad vagy kevés az eleség, kemény külső bőrrétegbe burkolózik, és halottnak tűnhet. Nedvesítsd újra az aljzatot: a burkot levedli és megeszi.'],AM_VET],
+  ['Vastag, nyirkos aljzat, amelybe beáshatja magát.','Búvóhely és élő növény (pl. szobai futóka).','Akkora sekély vizestál, amelybe beleülhet.'],
+  [AM_QEATT,AM_QSTONE,AM_QFAT,AM_QRED,AM_QMBD,['Megharapott','A nagy példány harapása vérezhet: a sebet tisztítsd ki, és etetéshez mindig csipeszt használj.']]),
+ torpekarmosbeka:amCare([['Megérkezés',AM_ARRW[1]+' Társas állat: párban vagy csoportban tartsd.'],['Kézbevétel','Kézbe ne vedd: teljesen vízi, a vízen kívül 15–20 percnél tovább nem marad életben. Áthelyezéshez akváriumi hálót használj; az akvárium körüli munka után moss kezet.']],
+  [['Társak','Békés halakkal tartható, pl. guppival, neonhallal, zebradánióval, páncélosharcsával; garnélával és csigával is.'],['Vedlés','Havonta 2–3-szor vedlik: előtte a bőre fehéres, egy darabban jön le, és megeheti. Ha ennél gyakrabban vedlik, ellenőrizd a vízminőséget.'],AM_VET],
+  ['Búvóhelyek: barlang, fa.','Éles szél nélküli növények.','Agyagtányér etetőhelynek.'],
+  [AM_QEATW,AM_QMOLD,['Puffadt a hasa, zavaros vagy duzzadt a szeme','Betegség jele: vidd állatorvoshoz.'],['Tartósan a felszínen lebeg','Betegség jele lehet: ellenőrizd a vízértékeket, és vidd állatorvoshoz.'],AM_QRED]),
+ tigrisszalamandra:amCare([AM_ARR,['Etetés fiatalon','A fiatal szalamandra 1–2 naponta eszik; a gilisztát darabold fel neki.'],['Kézbevétel','A lehető legkevesebbet fogd meg: előtte moss kezet, öblítsd le alaposan, és nedves kézzel vagy kesztyűben nyúlj hozzá. A bőrváladéka mérgező lehet: ne jusson szembe, szájba, sebbe.']],
+  [['Társak','Magányos állat. Két hasonló méretű felnőtt elfér egy nagyobb terráriumban, de kicsit naggyal ne tarts együtt, és etetéskor megharaphatják egymást.'],['Meleg','A hűvöset jobban tűri, mint a meleget: a források szerint tartósan 25–27 °C fölött veszélybe kerül. Fűtés nem kell.'],AM_VET],
+  ['Felnőttenként legalább egy nagy búvóhely.','Nedvességgrádiens: az egyik vég legyen nedvesebb, a másik szárazabb.','Vastag aljzat, amelybe beáshatja magát.'],
+  [AM_QEATT,AM_QFAT,AM_QSTONE,['Sebes a bőre, fekély van az orrán','A túl nedves, rosszul szellőző terrárium bőrfertőzést okozhat. Vidd állatorvoshoz, és javíts a szellőzésen.'],AM_QMBD]),
+ tuzhasugote:amCare([AM_ARRW,['Fiatalon','Az átalakulás után a fiatal gőte rendszerint szárazföldön él; az ivarérésig 1–3 év telik el.'],AM_HANDTOX('mérgező')],
+  [['Társak','Több gőte együtt tartható, ha van elég hely; más kétéltűvel ne tartsd együtt.'],['Meleg','Hűvös vizet igényel: 24 °C fölé ne menjen (az egyik forrás szerint már 23 °C fölött kerülendő).'],AM_VET],
+  ['Sűrű vízinövényzet és úszó növények (pl. jávai moha).','Vízből kiálló kő vagy úszó sziget pihenőhelynek.','Hálós fedél: kiszökik.'],
+  [AM_QEATW,['Nem megy vízbe','Az újonnan vett gőténél gyakori, a szállítás és a korábbi rossz tartás következménye. Ha más betegségjel nincs, adj neki nagyon sekély vizű pihenőhelyet.'],AM_QMOLD,['Beesett a hasa, duzzadt a szeme vagy rózsaszín fekély van rajta','Betegség jele: vidd kétéltűekhez értő állatorvoshoz.']]),
+ bordasgote:amCare([AM_ARRW,['Növekedés','Gyorsan nő: kb. 10 hónaposan ivarérett. Fogságban jellemzően 15–23 cm-esre nő.'],['Kézbevétel','Kézbe ne vedd; áthelyezéshez puha hálót használj. Védekezésül éles bordái az oldalán lévő szemölcsökön át kiszúrhatnak; fogságban ez ritka.']],
+  [['Társak','Csak fajtársaival tartsd: más gőtét megehet. Az egyik forrás szerint békés halak (guppi, molli, platti) mellé tehető.'],['Meleg','A hideget jól tűri, a meleget nem: a víz ne legyen tartósan 23 °C fölött.'],AM_VET],
+  ['Sűrű növényzet, jávai moha búvóhelynek.','Kis úszó sziget pihenőhelynek.','A vízszint legyen kb. 5 cm-rel a perem alatt: kiszökhet.'],
+  [AM_QEATW,AM_QMOLD,AM_QSTONE,AM_QCHY])});
+const AM_TERR='Exo Terra, Trixie',AM_TECH='Exo Terra, Zoo Med',AM_TANK='JUWEL, AQUAEL',AM_FILT='EHEIM, AQUAEL',AM_TEST='Tetra, JBL, sera';
+Object.assign(HOME,{
+ axolotl:[['Akvárium','Egy felnőttnek legalább 45 cm hosszú akvárium kell; a források kifejlett állatnak 78 litert vagy többet ajánlanak. Két felnőttnek egy 60 × 30 × 37 cm-es akvárium elég. A víz legalább 15 cm mély legyen. Fedél kell rá: kiugorhat.',AM_TANK],
+  ['Vízhőmérséklet','10–22 °C között tartsd; a források szerint 16–18 °C körül érzi magát a legjobban, 24 °C fölött túlmelegszik. Fűtő ritkán kell; a fél napon belüli, néhány foknál nagyobb ingás is megterheli.'],
+  ['Vízminőség','A pH 6,5–8,0 legyen (ideális 7,4–7,6); ammónia 0, nitrit 0, nitrát 10 ppm alatt, klór és klóramin 0. A források heti 10–30% vízcserét írnak. '+AM_WATER,AM_TEST],
+  ['Szűrő és áramlás','Jó szűrés kell, de az erős áramlás stresszeli: permetezőcsővel vagy dekorációval törd meg. Etetés után (vagy legalább hetente kétszer) szívd le a maradékot és az ürüléket.',AM_FILT],
+  ['Aljzat','Finom akváriumi homok (legfeljebb 1 mm-es szemcse) vagy csupasz alj; ha kő, akkor a fejénél jóval nagyobb. Közönséges akváriumi kavics ne legyen benne: lenyeli, és bélelzáródást okoz.'],
+  ['Fény','Külön világítás nem kell; az erős fény stresszeli.']],
+ 'levelibeka:korall':[['Terrárium','1–4 békának legalább 75 literes terrárium kell; a magasabb, mászóágakkal berendezett terrárium jobb. '+AM_LID,AM_TERR],
+  ['Hőmérséklet','Nappal 24–29 °C legyen a terráriumban, a meleg végén akár 32 °C; az egyik forrás 35 °C-os sütkérezőhelyet is ír. Éjszaka 18–24 °C-ra hűlhet.',AM_TECH],
+  ['Páratartalom','A források 60–70%-ot, illetve a terrárium részei szerint 30–70%-ot írnak. Naponta vagy néhány naponta permetezz; az aljzat nyirkos legyen, ne tocsogjon. Jobb a szárazabb, jól szellőző terrárium, mint a vizes.'],
+  ['Fény','Gyenge UVB-fény ajánlott (segíti a kalcium hasznosítását), napi 10–12 óra világítással. '+AM_UVB6,AM_TECH],
+  ['Aljzat','Kókuszrost, finom föld, nagy folyami kő vagy nedves papírtörlő. Kavics, homok, apró kéreg és hüllőszőnyeg ne legyen benne.'],
+  ['Víz','Nagy, sekély tál tiszta vízzel, naponta cserélve. '+AM_WATER]],
+ 'levelibeka:vorosszemu':[['Terrárium','Magas terrárium kell: egy békának legalább 45 × 45 × 60 cm-es, ez 2–4 felnőttnek is megfelel. A tető részben háló legyen a szellőzésért. '+AM_LID,AM_TERR],
+  ['Hőmérséklet','Nappal 24–27 °C legyen; éjszaka 21–24 °C-ra hűlhet. Két forrás szerint ne menjen 27 °C fölé, mások nappalra 29 °C-ig írják: a 27 °C alatti a biztonságos. Fűtőlap csak termosztátról menjen; fűtőkő ne legyen.',AM_TECH],
+  ['Páratartalom','A források 60–70%, 70–80%, illetve 70–90% közötti értéket írnak: tartsd 60–90% között, naponta permetezve.'],
+  ['Fény','10–12 óra világítás; gyenge UVB-fény ajánlott, úgy, hogy a béka el tudjon húzódni előle. '+AM_UVB6,AM_TECH],
+  ['Aljzat','Kókuszrost vagy nedves tőzegmoha; kavics, apró kéreg és hüllőszőnyeg ne legyen. Hetente folttisztítás, legalább havonta teljes csere.'],
+  ['Víz','Sekély (2,5–5 cm), fel nem borítható tál, naponta tisztítva. '+AM_WATER]],
+ 'unka:kinai':[['Terrárium','2–3 unkának 38–57 literes (kb. 45 × 45 × 45 cm-es) terrárium kell; hat állatig a forrás legalább 60 × 30 × 30 cm-eset ír. Minden további állatnak legalább 15 liter jár. '+AM_LID,AM_TERR],
+  ['Víz és szárazulat','Félig vízi: a források a terület felét, illetve kétharmadát írják víznek. A víz 2,5–10 cm mély legyen, kimászóval. A forrás háromhetente részleges vízcserét ír; kis szűrő segít. '+AM_WATER],
+  ['Hőmérséklet','18–28 °C között tartsd (az egyik forrás szerint 24–26 °C az ideális, egy másik nappalra 21–24 °C-ot ír); éjszaka 16 °C-ig hűlhet. Sütkérezőlámpa nem kell; a fűtés csak termosztátról menjen.',AM_TECH],
+  ['Páratartalom','50–80%.'],
+  ['Fény','Az egyik forrás gyenge UVB-fényt ajánl napi 10–12 órára, félévente cserélve.',AM_TECH],
+  ['Aljzat','A szárazulaton nagy, lapos kövek, kókuszrost, nedves tőzegmoha vagy parafakéreg. Kavics és apró kéreg ne legyen: lenyelheti.'],
+  ['Tisztítás','Naponta folttisztítás, hetente alapos takarítás.']],
+ 'unka:voroshasu':[['Terrárium','A forrás az unkáknak hat állatig legalább 60 × 30 × 30 cm-es, jól szellőző terráriumot ír, amelynek kb. kétharmada víz, egyharmada szárazulat. '+AM_LID,AM_TERR],
+  ['Víz','A vöröshasú unka a leginkább vízi unka: a forrás közel 25 cm mély vizet és kis szűrőt ajánl neki, háromhetente részleges vízcserével. '+AM_WATER],
+  ['Hőmérséklet','A forrás az unkáknak 18–28 °C-ot ír; a víz szobahőmérsékletű legyen.']],
+ nyilmeregbeka:[['Terrárium','2–3 békának 45 × 45 × 45 cm-es üvegterrárium kell, nagyobb csoportnak 60 × 45 × 60 cm-es vagy nagyobb. '+AM_LID,AM_TERR],
+  ['Hőmérséklet','21–27 °C között tartsd; éjszaka 20–21 °C-ra hűlhet. 28 °C fölött a meleg halálos lehet. Fűtés többnyire nem kell.',AM_TECH],
+  ['Páratartalom','70–100%: naponta legalább egyszer permetezz (a források napi háromszori permetezést is írnak), jó szellőzés mellett.'],
+  ['Fény','12 órás nappal LED- vagy gyenge UVB-fénnyel; az UVB a források szerint nem feltétlenül szükséges.'],
+  ['Aljzat','Alul drénréteg (agyaggolyó vagy kavics) hálóval letakarva, rá kókuszrost, orchideakéreg és tőzegmoha keveréke, a tetején vastag avarréteg.',AM_TECH],
+  ['Víz','Sekély medence vagy tál, hogy ne fulladhasson bele. '+AM_WATER]],
+ szarvasbeka:[['Terrárium','Egy békának 38–75 literes, inkább széles, mint magas terrárium kell, szorosan záró hálótetővel.',AM_TERR],
+  ['Hőmérséklet','Nappal 24–29 °C, éjszaka 21–24 °C legyen. (Az egyik forrás 18–29 °C közötti szobahőmérsékletet ír.)',AM_TECH],
+  ['Páratartalom','70–80%: naponta legalább egyszer permetezz; az aljzat nyirkos legyen, ne vizes.'],
+  ['Fény','A forrás gyenge UVB-fényt ajánl napi 10–12 órára, félévente cserélve.'],
+  ['Aljzat','Kókuszrost vagy tőzegmoha, felnőttnek 7,5–10 cm vastagon. Kavics, kő és hüllőszőnyeg ne legyen benne.',AM_TECH],
+  ['Víz','Akkora sekély tál, amelybe beleülhet; naponta tisztítsd. '+AM_WATER]],
+ torpekarmosbeka:[['Akvárium','Egy békának kb. 10, kettőnek kb. 19 liter kell, többnek 38–75 literes akvárium. A víz ne legyen 30 cm-nél mélyebb. Fedél kell rá (a hálós a legjobb): kiugorhat.',AM_TANK],
+  ['Vízhőmérséklet','18–27 °C (a források 22–26, 18–25, illetve 22–27 °C-ot írnak). Közvetlen napra ne tedd: a víz ott 5 °C-kal is melegebb lehet a szobánál.',AM_FILT],
+  ['Vízminőség','A pH 6,5–7,8 legyen. 2–4 hetente cserélj 10–25% vizet, szűrő nélkül legalább hetente; teljes vízcserét ne végezz. A pótvíz hőmérséklete legfeljebb 2 °C-kal térjen el. '+AM_WATER,AM_TEST],
+  ['Szűrő','Álló vagy gyenge áramlású víz kell neki; a nagy, erős szűrőt kerüld, mert érzékeny a zajra és a rezgésre.'],
+  ['Aljzat','Homok vagy nagy szemű akváriumi kavics; az apró kavicsot lenyelheti, ami bélelzáródást okoz.'],
+  ['Fény','10–12 óra világítás; UVB-fény nem kell.']],
+ tigrisszalamandra:[['Terrárium','Egy felnőttnek legalább 50 × 25 cm alapterületű (kb. 38–57 literes), kettőnek 75 × 30 cm-es (kb. 75 literes) terrárium kell; az alapterület fontosabb a magasságnál. '+AM_LID,AM_TERR],
+  ['Hőmérséklet','10–24 °C között aktív és jó étvágyú: szobahőmérsékleten (kb. 22 °C) vagy hűvösebben tartsd. Fűtés nem kell.'],
+  ['Aljzat és nedvesség','Legalább 10 cm vastag, adalékmentes föld vagy kókuszrost: nyirkos legyen, de összenyomva ne csöpögjön. Kavics, cédrus- és fenyőkéreg ne legyen benne. A tőzeget az egyik forrás a savassága miatt kerülendőnek tartja, egy másik ajánlja.',AM_TECH],
+  ['Páratartalom','Az egyik forrás 70% körüli páratartalmat és napi permetezést ír.'],
+  ['Fény','Különleges világítás nem kell: elég a szoba nappali fénye. Közvetlen nap és napozólámpa ne érje. (Az egyik forrás gyenge UVB-fényt ajánl, egy másik szerint az UV árthat a szemének és a bőrének.)'],
+  ['Víz','Sekély, nehéz tál, amelybe könnyen be- és kimászik; pár naponta cseréld. '+AM_WATER],
+  ['Tisztítás','Naponta folttisztítás; az aljzatot a források 2–4 havonta cserélik teljesen.']],
+ tuzhasugote:[['Akvárium','Egy gőtének legalább 57, kettőnek legalább 75 literes, inkább hosszú, mint magas akvárium kell, hálós fedéllel. A víz legalább másfélszer olyan mély legyen, mint a leghosszabb gőte; legyen benne kimászó (kiálló kő, úszó növény).',AM_TANK],
+  ['Vízhőmérséklet','14–24 °C; az egyik forrás szerint már 23 °C fölött kerülendő a meleg.'],
+  ['Vízminőség','2–4 hetente cserélj 10–25% vizet. '+AM_WATER,AM_TEST],
+  ['Szűrő','Lassú vagy mérsékelt áramlás kell: sodrásban rosszul úszik.',AM_FILT],
+  ['Aljzat','Nagy, sima kavics vagy pala, amelyet nem tud lenyelni.'],
+  ['Fény','10–12 óra világítás; a forrás gyenge UVB-fényt ajánl.']],
+ bordasgote:[['Akvárium','Gőténként 15–19 liter víz kell: egy 38 literes akvárium 1–2 gőtének elég. A víz 15–20 cm mély legyen, a vízszint kb. 5 cm-rel a perem alatt.',AM_TANK],
+  ['Vízhőmérséklet','Az egyik forrás 19–23 °C-ot ír a legjobbnak, egy másik szerint 21 °C alatt kell tartani; a hideget jól tűri. Fűtő nem kell; közvetlen nap ne érje.'],
+  ['Vízminőség','Hetente cserélj vizet (a forrás egy helyen legalább 10, másutt legalább 50%-ot ír). '+AM_WATER,AM_TEST],
+  ['Szűrő','Kevés áramlás kell, vagy semmi: szűrő nem kötelező; ha van, csökkentsd az áramlását.'],
+  ['Aljzat','Nem kötelező. Ha van, homok vagy nagy, durva kavics legyen: a borsónyi kavicsot lenyeli.'],
+  ['Fény','Különleges világítás nem kell.']]});
+const TR_AM=(wet,papers)=>[['Állatorvoshoz',wet?'Az akvárium vizével töltött, biztosan zárható edényben vagy zacskóban vidd; kiemeléshez puha hálót használj.':'Jól szellőző műanyag dobozban vidd, benedvesített papírtörlővel kibélelve.'],
+  ['Hőmérséklet','A meleg és a hideg is megterheli: tedd a dobozt hűtőtáskába vagy hőszigetelt táskába, így a hőmérséklet stabil marad. Soha ne hagyd az autóban.'],
+  ['Ha elutazol',wet?'Az akváriumot ne vidd magaddal: a legjobb, ha megbízható ismerős gondozza otthon. Hagyd meg neki írásban az etetés és a vízcsere rendjét.':'A terráriumot ne vidd magaddal: a legjobb, ha megbízható ismerős gondozza otthon. Hagyd meg neki írásban az etetés és a permetezés rendjét.'],
+  ...(papers?[papers]:[]),TR_NOPASS('Kétéltűre')];
+Object.assign(TRIP,{axolotl:TR_AM(1,TT_CITES),'levelibeka:korall':TR_AM(),'levelibeka:vorosszemu':TR_AM(0,TT_CITES),'unka:kinai':TR_AM(),'unka:voroshasu':TR_AM(0,['Papírok','Védett faj: szállítás vagy külföldi út előtt kérdezd meg a természetvédelmi hatóságot, milyen engedély kell hozzá.']),
+ nyilmeregbeka:TR_AM(0,TT_CITES),szarvasbeka:TR_AM(),torpekarmosbeka:TR_AM(1),tigrisszalamandra:TR_AM(),tuzhasugote:TR_AM(1),bordasgote:TR_AM(1)});
+{const RM='https://reptilesmagazine.com/',PM='https://www.petmd.com/',CC='https://www.caudata.org/cc/',MV='https://www.merckvetmanual.com/',TOL='https://treeoflifeexotics.vet/education-resource-center/for-clients/amphibians/';
+ Object.assign(SRC,{
+ lvAxo:['LafeberVet: Basic Information Sheet – Axolotl','https://lafeber.com/vet/basic-information-sheet-axolotl/'],ccAxo:['Caudata Culture: Ambystoma mexicanum (John Clare)',CC+'species/Ambystoma/A_mexicanum.shtml'],axoOrg:['axolotl.org: Housing (John P. Clare)','https://www.axolotl.org/housing.htm'],
+ lvWhite:['LafeberVet: Basic Information Sheet – White’s Tree Frog','https://lafeber.com/vet/basic-information-for-whites-tree-frog/'],rmWhite:['Reptiles Magazine: White’s Treefrog Care Sheet',RM+'whites-treefrog-care-sheet/'],acWhite:['Amphibian Care (Devin Edmonds): White’s Tree Frog','https://amphibiancare.com/2005/06/24/whites-tree-frog/'],
+ pmRed:['PetMD: Red-Eyed Tree Frog Care Sheet',PM+'reptile/red-eyed-tree-frog-care-sheet'],rmRed:['Reptiles Magazine: Keeping and Breeding Red-eyed Treefrogs',RM+'keeping-and-breeding-red-eyed-treefrogs/'],acRed:['Amphibian Care (Devin Edmonds): Red-eyed Tree Frog','https://amphibiancare.com/2007/11/19/redeyedtreefrog/'],
+ tolRed:['Tree of Life Exotic Pet Medical Center: Red-Eyed Tree Frog Care',TOL+'red-eyed-tree-frog-care'],jfRed:['Josh’s Frogs: How to Care for Red Eye Tree Frogs','https://joshsfrogs.com/care-sheet/red-eye-tree-frog-captive-bred-agalychnis-callidryas'],
+ pmFbt:['PetMD: Fire Bellied Toad Care Sheet',PM+'exotic/fire-bellied-toad-care-sheet'],jfFbt:['Josh’s Frogs: Fire-Bellied Toad Care Sheet','https://joshsfrogs.com/care-sheet/fire-bellied-toad-care-sheet'],rmBomb:['Reptiles Magazine: Care and Breeding Fire-bellied Toads',RM+'care-and-breeding-fire-bellied-toads/'],
+ hnpUnka:['Hortobágyi Nemzeti Park Igazgatóság: Vöröshasú unka (Natura 2000 fajtár)','https://www.hnp.hu/hu/szervezeti-egyseg/termeszetvedelem/natura2000/fajtar/voroshasu-unka-'],
+ hmUnka:['Hüllő Magazin: Magyarországi kétéltűfajok – vöröshasú unka','https://hullomagazin.hu/hu/blog/keteltuek/magyarorszagi-keteltufajok-23-voroshasu-unka-bombina-bombina.221.ahtml'],njtTvt:['Nemzeti Jogszabálytár: a természet védelméről szóló törvény','https://njt.jog.gov.hu/jogszabaly/1996-53-00-00'],
+ rmDart:['Reptiles Magazine: Beginner’s Guide To Poison Frog Care',RM+'beginners-guide-to-poison-frog-care/'],tolDart:['Tree of Life Exotic Pet Medical Center: Poison Dart Frog Care',TOL+'poison-dart-frog-care'],
+ pmPac:['PetMD: Pacman Frog Care Sheet',PM+'reptile/pacman-frog-care-sheet'],rmPac:['Reptiles Magazine: Pac Man Frog Care Sheet',RM+'pac-man-frog-care-sheet/'],
+ rmAdf:['Reptiles Magazine: Caring For The African Dwarf Frog',RM+'caring-for-the-african-dwarf-frog/'],acoAdf:['Aquarium Co-Op: Care Guide for African Dwarf Frogs','https://www.aquariumcoop.com/blogs/aquarium/caring-african-dwarf-frogs'],cbAdf:['Carolina Biological Supply: Care Guide – Dwarf Aquarium Frogs','https://www.carolina.com/teacher-resources/Interactive/care-guide-dwarf-aquarium-frogs/tr10496.tr'],
+ ccTiger:['Caudata Culture: Tiger Salamander 101 (Janice Williams)',CC+'articles/tiger_sal_101.shtml'],rmTiger:['Reptiles Magazine: Tiger Salamander Care Sheet',RM+'tiger-salamander-care-sheet/'],pmTiger:['PetMD: Tiger Salamander Care Sheet',PM+'exotic/tiger-salamander-care-sheet'],
+ pmNewt:['PetMD: Fire Bellied Newt Care Sheet',PM+'exotic/fire-bellied-newt-care-sheet'],ccCynops:['Caudata Culture: Cynops orientalis (Nate Nelson)',CC+'species/Cynops/C_orientalis.shtml'],
+ ccPleuro:['Caudata Culture: Pleurodeles waltl',CC+'species/Pleurodeles/P_waltl.shtml'],rmPleuro:['Reptiles Magazine: Spanish Ribbed Newt Care Information',RM+'spanish-ribbed-newt-care-information/'],
+ merckAmH:['Merck Veterinary Manual: Housing for Amphibians',MV+'all-other-pets/amphibians/housing-for-amphibians'],merckAmI:['Merck Veterinary Manual: Common Infectious Diseases of Amphibians',MV+'all-other-pets/amphibians/common-infectious-diseases-of-amphibians'],
+ merckAmN:['Merck Veterinary Manual: Nutritional Diseases of Amphibians',MV+'all-other-pets/amphibians/nutritional-diseases-of-amphibians'],merckAmC:['Merck Veterinary Manual: Clinical Techniques in Amphibians',MV+'en-us/veterinary/exotic-and-laboratory-animals/amphibians/clinical-techniques-in-amphibians'],
+ vcaFrog:['VCA Animal Hospitals: Frogs as Pets','https://vcahospitals.com/know-your-pet/frogs-as-pets']})}
+Object.assign(GSRC,{
+ axolotl:{food:['lvAxo','ccAxo'],care:['lvAxo','ccAxo','axoOrg','merckAmH','merckAmI'],trip:['merckAmC','citesII']},
+ 'levelibeka:korall':{food:['lvWhite','rmWhite','acWhite','merckAmN'],care:['lvWhite','rmWhite','acWhite','vcaFrog','merckAmH','merckAmI'],trip:['merckAmC']},
+ 'levelibeka:vorosszemu':{food:['pmRed','rmRed','acRed','tolRed','merckAmN'],care:['pmRed','rmRed','acRed','tolRed','jfRed','merckAmH','merckAmI'],trip:['merckAmC','citesII']},
+ 'unka:kinai':{food:['pmFbt','rmBomb','merckAmN'],care:['pmFbt','rmBomb','jfFbt','vcaFrog','merckAmH','merckAmI'],trip:['merckAmC']},
+ 'unka:voroshasu':{food:['rmBomb','hnpUnka','merckAmN'],care:['rmBomb','hnpUnka','hmUnka','njtTvt','merckAmH','merckAmI'],trip:['merckAmC','njtTvt']},
+ nyilmeregbeka:{food:['rmDart','tolDart','merckAmN'],care:['rmDart','tolDart','vcaFrog','merckAmH','merckAmI'],trip:['merckAmC','citesII']},
+ szarvasbeka:{food:['pmPac','rmPac','merckAmN'],care:['pmPac','rmPac','vcaFrog','merckAmH','merckAmI'],trip:['merckAmC']},
+ torpekarmosbeka:{food:['rmAdf','acoAdf','cbAdf'],care:['rmAdf','acoAdf','cbAdf','vcaFrog','merckAmH','merckAmI'],trip:['merckAmC']},
+ tigrisszalamandra:{food:['ccTiger','rmTiger','pmTiger','merckAmN'],care:['ccTiger','rmTiger','pmTiger','merckAmH','merckAmI'],trip:['merckAmC']},
+ tuzhasugote:{food:['pmNewt','ccCynops'],care:['pmNewt','ccCynops','merckAmH','merckAmI'],trip:['merckAmC']},
+ bordasgote:{food:['ccPleuro','rmPleuro'],care:['ccPleuro','rmPleuro','merckAmH','merckAmI'],trip:['merckAmC']}});
 const CT={guide:'Útmutató',home:'Otthon',les:'Leckék',play:'Játék és mozgás',prob:'Problémák',trip:'Utazás'};
 const TOPIC={path:'az életút, a mérföldkövek és az oltások',health:'az egészség, a tünetek és a megelőzés',food:'a táplálkozás és a tápválasztás',care:'a tartás, az otthoni felszerelés, a tanítás, a játék és a mozgás',prod:'a termékek és a felszerelés',vets:'az állatorvosi vizsgálatok és az állatorvos-választás'};
 const TOPIC_HU={home:'Általános',hub:'Gondozás',path:'Életút',health:'Egészség',food:'Táplálkozás',care:'Tartás és nevelés',prod:'Termékek',vets:'Állatorvosok',more:'Általános'};
@@ -2163,7 +2370,7 @@ function vHome(p){
   <section class="hero"><div class="who">${ava(p,1)}<div style="min-width:0"><h1>${esc(petName(p))}</h1>
    <div class="meta">${esc([p.name?speciesLabel(p).toLowerCase():'',breedLabel(p),size?SIZE_HU[size]:'',sex,p.count?p.count+' db':'',p.tankL?fmtKg(p.tankL)+' literes akvárium':''].filter(Boolean).join(', '))}</div>
    <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+stHU(p,st).toLowerCase():''}</div></div>
-   <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">${ic('pen')}</button></div>${trail(p)}</section>${flagHtml(p.species)}
+   <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">${ic('pen')}</button></div>${trail(p)}</section>${flagHtml(FLAG[gkey(p)]?gkey(p):p.species)}
   <h2>Teendők és emlékeztetők</h2>
   ${due.length||soon.length||par.length?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}
    ${par.map(x=>`<li class="${x.date<t?'late':''}"><div><b>${PAR_SHORT[x.t]} esedékes</b><span class="when">${fmtDate(x.date)}${x.date<t?', már elmúlt':''}</span></div><button class="btn small" data-act="parNew" data-t="${x.t}">Rögzítés</button></li>`).join('')}
@@ -2238,12 +2445,26 @@ const TERRA={
  szalagossiklo:{hot:[28,32],cool:[22,27],hum:[35,60],night:[16,24]},
  hazikigyo:{hot:[32],cool:[21,24],hum:[40,60]},
  torpepiton:{hot:[29,38],cool:[24,27],hum:[20,80]},
- zoldfapiton:{hot:[27,31],cool:[21,26],hum:[40,70],night:[20,22]}};
+ zoldfapiton:{hot:[27,31],cool:[21,26],hum:[40,70],night:[20,22]},
+ /* kétéltűek (petvia-utmutatok-3b-keteltuek.md): vízi fajoknál csak vízhőmérséklet; ahol nincs sütkérezőhely, egyetlen hőmérséklet („cool" mező);
+    [null,b]: csak felső határ */
+ axolotl:{water:[10,22],note:'A források szerint 16–18 °C körül érzi magát a legjobban; 24 °C fölött túlmelegszik.'},
+ torpekarmosbeka:{water:[18,27]},
+ bordasgote:{water:[null,23],note:'Az egyik forrás 19–23 °C-ot ír a legjobbnak, egy másik szerint 21 °C alatt kell tartani; a hideget jól tűri.'},
+ tuzhasugote:{water:[14,24],note:'Az egyik forrás szerint már 23 °C fölött kerülendő a meleg.'},
+ 'levelibeka:korall':{hot:[29,35],cool:[24,29],hum:[30,70],night:[18,24]},
+ 'levelibeka:vorosszemu':{cool:[24,27],hum:[60,90],night:[21,24],note:'Két forrás szerint ne menjen 27 °C fölé; mások nappalra 29 °C-ig írják.'},
+ 'unka:kinai':{cool:[18,28],hum:[50,80],night:[16,null],note:'A vízre a források nem adnak külön célértéket: szobahőmérsékletű legyen.'},
+ 'unka:voroshasu':{cool:[18,28],note:'A vízre a forrás nem ad külön célértéket: szobahőmérsékletű legyen.'},
+ nyilmeregbeka:{cool:[21,27],hum:[70,100],night:[20,27],note:'28 °C fölött a meleg halálos lehet.'},
+ szarvasbeka:{cool:[24,29],hum:[70,80],night:[21,24]},
+ tigrisszalamandra:{cool:[10,24],hum:[70],note:'A hűvöset jobban tűri, mint a meleget: a források szerint tartósan 25–27 °C fölött veszélybe kerül.'}};
 const TF={hot:['Meleg pont','°C'],cool:['Hűvös oldal','°C'],water:['Víz','°C'],hum:['Páratartalom','%']};
 const hasTerra=p=>['hullo','keteltu','gerinctelen'].includes(grp(p));
-const terraKind=p=>({vizi:'viz',viziteknos:'vt'})[kitOf(p)]||'sz';
-const terraFields=p=>({viz:['water'],vt:['hot','water'],sz:['hot','cool','hum']})[terraKind(p)];
-const tLabel=(p,f)=>f==='hot'&&terraKind(p)==='vt'?'Napozóhely':TF[f][0];
+const AMB=new Set(['levelibeka:vorosszemu','nyilmeregbeka','szarvasbeka','tigrisszalamandra']); /* nincs sütkérezőhely: egyetlen hőmérséklet */
+const terraKind=p=>({vizi:'viz',viziteknos:'vt'})[kitOf(p)]||(p.species==='unka'?'fv':AMB.has(gkey(p))?'amb':'sz');
+const terraFields=p=>({viz:['water'],vt:['hot','water'],sz:['hot','cool','hum'],amb:['cool','hum'],fv:['cool','water','hum']})[terraKind(p)];
+const tLabel=(p,f)=>{const k=terraKind(p);return f==='hot'&&k==='vt'?'Napozóhely':f==='cool'&&k==='amb'?'Hőmérséklet':f==='cool'&&k==='fv'?'Levegő':TF[f][0]};
 const htName=(p,k)=>k==='terra'&&terraKind(p)==='viz'?'Vízhőmérséklet':HT[k];
 const tNum=v=>String(Math.round(v*10)/10).replace('.',',');
 const tNight=(T,f)=>{const r=f==='hum'?T.nhum:f==='water'?T.nwater||T.water:T.night;if(!r)return null;const d=T[f];return r.length===2&&r[1]==null&&d&&d.length===2&&d[1]!=null&&d[1]>r[0]?[r[0],d[1]]:r}; /* csak alsó határú éjszakai célnál a felső határ a nappali felső érték (következtetés, nem forrásadat) */
@@ -2251,7 +2472,7 @@ const tRange=(T,f,tod)=>!T?null:tod==='n'?tNight(T,f):T[f]||null;
 const tCapped=T=>!!T&&['hot','cool','water'].some(f=>{const r=f==='water'?T.nwater:T.night,n=tNight(T,f);return r&&r[1]==null&&n&&n[1]!=null&&T[f]});
 const tSwap=e=>e.hot!=null&&e.cool!=null&&(e.tod==='n'?e.cool-e.hot>=2:e.cool>e.hot); /* éjjel, kikapcsolt fűtésnél a két oldal közel azonos lehet */
 const TBAD={lo:'alacsony',hi:'magas'};
-const tGoal=r=>!r?'':r.length===1?`kb. ${tNum(r[0])}`:r[1]==null?`legalább ${tNum(r[0])}`:`${tNum(r[0])}–${tNum(r[1])}`;
+const tGoal=r=>!r?'':r.length===1?`kb. ${tNum(r[0])}`:r[0]==null?`legfeljebb ${tNum(r[1])}`:r[1]==null?`legalább ${tNum(r[0])}`:`${tNum(r[0])}–${tNum(r[1])}`;
 const tStat=(v,r)=>!r||r.length===1||v==null?'':v<r[0]?'lo':r[1]!=null&&v>r[1]?'hi':'ok';
 const TSTAT={ok:'<span class="tag ok">célon belül</span>',lo:'<span class="tag off">alacsony</span>',hi:'<span class="tag off">magas</span>'};
 function tChart(l,ser,unit){ /* l: régi → új; ser: [[kulcs, felirat], …], legfeljebb két vonal */
@@ -2282,7 +2503,7 @@ function terraHtml(p){
   const block=(e,id,n)=>e?`<div id="${id}"><span class="when">Utolsó ${n} mérés: ${fmtDate(D(e.date))}</span><div class="tv" style="margin:8px 0 4px">${F.map(f=>cell(e,f)).join('')}</div>${tSwap(e)?`<p class="err">${SWAP}</p>`:''}</div>`:'';
   const lastD=l.find(e=>tod(e)==='d'),lastN=l.find(e=>tod(e)==='n');
   const ngoal=f=>{const n=tRange(T,f,'n');return n&&n!==T[f]?`, éjjel ${tGoal(n)} ${TF[f][1]}`:''};
-  const goals=T?`<h2>Célértékek</h2><ul class="list" id="tGoals">${F.filter(f=>T[f]).map(f=>`<li><div style="flex:1"><b>${tLabel(p,f)}</b><span class="when">nappal ${tGoal(T[f])} ${TF[f][1]}${ngoal(f)}</span></div></li>`).join('')}</ul>${T.note?`<p class="sub" style="margin-top:8px">${T.note}</p>`:''}<p class="sub" style="margin-top:8px">${terraKind(p)==='vt'?'A napozóhely':'A meleg pont (a sütkérezőhely)'} célértéke a levegő és a felület hőmérsékletét együtt fedi le; a részletek az útmutatóban vannak (Gondozás → Tartás és nevelés → Otthon).${tCapped(T)?' Éjszakára a források csak alsó határt adnak; a felső határ itt a nappali érték.':''}</p>`
+  const goals=T?`<h2>Célértékek</h2><ul class="list" id="tGoals">${F.filter(f=>T[f]).map(f=>`<li><div style="flex:1"><b>${tLabel(p,f)}</b><span class="when">nappal ${tGoal(T[f])} ${TF[f][1]}${ngoal(f)}</span></div></li>`).join('')}</ul>${T.note?`<p class="sub" style="margin-top:8px">${T.note}</p>`:''}<p class="sub" style="margin-top:8px">${F.includes('hot')?`${terraKind(p)==='vt'?'A napozóhely':'A meleg pont (a sütkérezőhely)'} célértéke a levegő és a felület hőmérsékletét együtt fedi le; a részletek`:'A részletek'} az útmutatóban vannak (Gondozás → Tartás és nevelés → Otthon).${tCapped(T)?' Éjszakára a források csak alsó határt adnak; a felső határ itt a nappali érték.':''}</p>`
     :'<p class="sub" id="tNoGoal" style="margin-top:14px">Ehhez a fajhoz az appban még nincs célérték. A méréseidet így is rögzítheted, és a változásukat a grafikonon követheted.</p>';
   const row=e=>F.filter(f=>e[f]!=null).map(f=>{const st=TBAD[tStat(e[f],tRange(T,f,tod(e)))];return`${tLabel(p,f).toLowerCase()} ${tNum(e[f])} ${TF[f][1]}${st?` <span class="tbad">(${st})</span>`:''}`}).join(', ')+(tSwap(e)?' <span class="tbad">– ellenőrizd a mérést</span>':'');
   return`<div class="card" style="margin-top:14px" id="tLast">${l.length?block(lastD,'tLastD','nappali')+(lastD&&lastN?'<div style="height:10px"></div>':'')+block(lastN,'tLastN','éjszakai'):'<p class="sub" style="margin:0">Még nincs rögzített mérés.</p>'}</div>
@@ -2334,6 +2555,7 @@ function vHealth(p){
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
 function vFood(p){
   const F=FOOD[gkey(p)],st=stageOf(p),L=limitsFor(p);
+  if(!F&&VARPICK[p.species])return`${BACK}<h1>Táplálkozás</h1>${varPick(p)}<p class="note">${DISC}</p>`;
   if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div>${foods(p).length?`<h2>Ajánlott eleségek és kiegészítők</h2>${tierChips()}<div style="height:10px"></div>${prodList(p,foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>`:PEMPTY[kitOf(p)]?`<p class="sub" style="margin-top:14px">${PEMPTY[kitOf(p)]}</p>`:''}<p class="note">${DISC}</p>`;
   /* adatvezérelt adatlap: ami az adott fajnál hiányzik (táplista, szakasz szerinti gyakoriság), az a lapról is kimarad */
   const kc=kcalRange(p),k100=+p.kcal100||0,meals=F.meals&&st?F.meals[st]:0,fl=foods(p),freq=(F.freq&&st&&F.freq[st])||F.freqAll||'';let portion;
@@ -2387,6 +2609,7 @@ const symAsk=e=>{symOpen=e.id;runAi('sym:'+e.id,`Feladat: a felhasználó ezt a 
 let cTab='guide',lesOpen='';
 function vCare(p){
   const k=gkey(p),C=CARE[k],cur=stageOf(p);
+  if(!C&&VARPICK[p.species])return`${BACK}<h1>Tartás és nevelés</h1>${varPick(p)}`;
   if(!C)return`${BACK}<h1>Tartás és nevelés</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített útmutató.</p><p class="sub">A tartásáról a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>${prodOf(p)?['felsz','alom','jatek'].filter(c=>(prodOf(p)[c]||[]).length).map(c=>`<h2>${pcat(p)[c]}</h2>${prodList(p,prodOf(p)[c],1)}`).join('')+`<p class="sub" style="margin-top:10px">${PNOTE}</p>`:''}`;
   const ask=(q,l='Kérdezd erről a Tanácsadót')=>`<button class="btn text" style="padding:0" data-act="askQ" data-q="${esc(q)}">${l}</button>`;
   const card=([t,d,br])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${br?`<p style="color:var(--ink)"><span class="tag" style="margin:0 6px 0 0">bevált márkák</span>${brs(br,p)}</p>`:''}</div>`;
@@ -2907,7 +3130,7 @@ const ACT={
   tab(el){tab=el.dataset.tab;chatNote='';render({top:true,toToday:true})},
   close:closeSheet,
   pets(){openSheet(`<h2>Állataim</h2><ul class="list">${S.pets.map(p=>`<li>${ava(p)}<button class="grow" data-act="petUse" data-id="${p.id}"><b>${esc(petName(p))}</b>${pet().id===p.id?' ✓':''}<span class="when">${fmtAge(p)}</span></button></li>`).join('')}</ul><button class="btn" data-act="petNew">Új állat felvétele</button><button class="btn ghost" data-act="close">Bezárás</button>`)},
-  petNew(){wizard()},petEdit(el){wizard(el.dataset.id)},
+  petNew(){wizard()},petEdit(el){wizard(el.dataset.id)},varEdit(el){wizard(el.dataset.id);W.step=2;drawWizard()},
   npSp(el){npSp=el.dataset.v;render()},npTab(el){npTab=el.dataset.v;render()},
   petUse(el){S.settings.activePetId=el.dataset.id;chatNote='';careSt=null;save();closeSheet();if(tab==='more')tab='home';render({top:true,toToday:true})},
   petDelAsk(el){const p=S.pets.find(x=>x.id===el.dataset.id);confirmSheet('Biztosan törlöd?',`${esc(petName(p))} profilja, eseményei és beszélgetései véglegesen törlődnek.`,'Igen, törlöm','petDel',p.id)},
