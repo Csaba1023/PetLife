@@ -1928,23 +1928,126 @@ const SHELTERS=[
  ['Zala','Élettér Állat- és Természetvédő Egyesület','Nagykanizsa','https://eletter-kanizsa.hu/gazdit-keresunk/kutyak/','https://eletter-kanizsa.hu/gazdit-keresunk/cicak/'],
  ['Zala','Bogáncs Zalaegerszegi Állatvédő Egyesület','Zalaegerszeg','https://bogancsmenhely.hu/orokbe-fogadhato-kutyaink',''],
  ['Zala','Szimat Állatvédő Egyesület','Zalaszentgrót','http://www.szimat-ave.hu/','']];
-let npSp='kutya',npMegye='';
+/* ---------- „Még nincs állatom": fajtatiszta állat (fajtaklubok, tenyésztőlisták) ----------
+   Egyes tenyésztőket nem ajánlunk: a link a hivatalos magyar szervezet (fajtaklub, MEOE Szövetség, Felis Hungarica)
+   oldalára visz, ahol a tenyésztők listája van. A klub–fajta megfeleltetés forrása a MEOE Szövetség fajtaklub-listája.
+   Csak letöltéssel ellenőrzött cím szerepel (2026. október); részletek: petvia-nincs-allatom.md.
+   KLUB: azonosító → [név, cím, mit nyit a link: t = tenyésztők listája, k = kennelek listája, o = a klub oldala] */
+const KLUBL={t:'tenyésztők listája',k:'kennelek listája',o:'a klub oldala'};
+const KLUB={
+ pte:['Pannon Terrier Egyesület','https://www.pannonterrier.hu/index.php?link=tagok&m=29','t'],
+ hbk:['Hungária Bulldog Klub','https://bulldogclubhungary.com/index.php/hu/tenyesztok-fejlec/tenyesztok','t'],
+ hbs:['Hungária Bulldog Szekció Fajtagondozó Egyesület','https://www.bulldogsection.eu/','o'],
+ ste:['Spániel Tenyésztők Egyesülete','https://spanielclubhungary.com/','o'],
+ aapk:['Angol és Ausztrál Pásztorkutya Klub Egyesület','https://www.aapkk.hu/','o'],
+ hcsc:['Hungária Collie Sheltie Corgi Tenyésztők Egyesülete','https://hcsc.hu/','o'],
+ hbjk:['Hungária Belga Juhászkutya Klub','https://hbjk.hu/tenyesztok/','t'],
+ hmc:['Hungária Malinois Club','https://www.hungariamalinoisclub.hu/','o'],
+ mbe:['Magyar Bernipásztor Egyesület','https://www.bshc.fw.hu/','o'],
+ abe:['Ázsiai Törpekutyák és Bichonok Fajtagondozó Egyesülete','https://www.abeinfo2014.com/tenyesztoink/','t'],
+ ctpe:['Chihuahua és Törpespániel Tartók Kynológiai Egyesülete','https://www.meoectpe.com/','o'],
+ htm:['Hungária Toymolosser Kutyások Egyesülete','https://www.meoectpe.com/','o'],
+ hbox:['Hungária Boxer Klub','https://hungariaboxerklub.hu/tenyesztok/','t'],
+ mbox:['Magyar Boxer Klub','https://boxerklub.hu/hu','o'],
+ rrc:['Rhodesian Ridgeback Club Hungary','https://www.rrclubhungary.hu/','o'],
+ hdk:['Hungária Dobermann Klub','https://www.hdk.hu/hu/','o'],
+ mdm:['Magyarországi Drótszőrű Magyarvizsla Tenyésztők Egyesülete','https://drotszorumagyarvizsla.hu/magyar-kennelek/','k'],
+ mekk:['Magyarországi Erdélyi Kopó Klub','https://www.erdelyikopo.net/kennelek/','k'],
+ mrve:['Magyar Retriever és Vízikutya Egyesület','https://retrieveregyesulet.hu/','o'],
+ agk:['Agár Klub','https://agarklub.hu/tenyesztok-2/','t'],
+ mafe:['Magyarországi Agarasok Fajtagondozó Egyesülete','https://iwclub.hu/rolunk/tenyesztok/','t'],
+ mafeo:['Magyarországi Agarasok Fajtagondozó Egyesülete','https://iwclub.hu/','o'],
+ magfe:['Magyar Agár Fajtagondozó Egyesület','https://iwclub.hu/magyar-agar/tenyesztok/','t'],
+ kar:['Karakán Klub Egyesület','https://www.karakan.hu/hu/klub-tenyesztoi/tenyesztok','t'],
+ hkk:['Hungária Komondor Klub','https://komondorklub.hu/kennelek/aktivkennelek/','k'],
+ mkke:['Magyar Komondor és Kuvasz Egylet','https://www.komondoregylet.hu/','o'],
+ mkfe:['Magyar Kuvasz Fajtagondozó Egyesület','https://www.magyarkuvasz.hu/','o'],
+ lfoe:['Leonbergi Fajtagondozó Országos Egyesület','https://www.leonbergiklub.hu/adatbazis/tenyesztok/','t'],
+ mvke:['Magyar Vizsla Klub Egyesület','https://magyarvizslaklub.hu/kennelek/','k'],
+ fmk:['Fényes Mudi Klub','https://www.fenyesmudiklub.hu/tagjaink-kenneljei/','k'],
+ mme:['Magyar Mudi Egyesület','https://magyarmudi.weebly.com/kennelek.html','k'],
+ mndk:['Magyarországi Német Dog Klub','https://www.mndkclub.com/','o'],
+ hnje:['Hunnia-Rex Német Juhászkutya Egyesület','https://hnje.hu/tenyesztok/','t'],
+ hpk:['Hungária Puli Klub','https://puli.hu/tenyeszetek/','t'],
+ mpk:['Magyar Puli Klub','https://puliklub.hu/hu/tenyesztoink/tenyesztok','t'],
+ pumi:['Magyar Pumi Klub','https://www.pumiklub.eu/hu/tenyesztes/tenyeszetek/pumi-tenyeszetek','t'],
+ npe:['Nemzetközi Pumi Egyesület','https://pumik.hu/pumit-szeretnek/','t'],
+ hmre:['Hírös Magyar Rottweiler Egyesület','https://www.rottweiler-hungary.hu/','o'],
+ mtoe:['Magyar Tacskósok Országos Egyesülete','https://www.tacskosok.hu/','o'],
+ mtte:['Magyar Tacskótenyésztők Egyesülete','https://magyartacsko.hu/','o'],
+ mut:['Magyarországi Uszkárbarátok Társasága','https://www.poodleclub.hu/','o']};
+/* fajta (a BREEDS.kutya nevei szerint) → klubok; amelyik fajta nincs itt, annál csak a MEOE Szövetség listája jelenik meg */
+const FAJTAKLUB={'Amerikai staffordshire terrier':['pte'],'Angol bulldog':['hbk','hbs'],'Angol cocker spániel':['ste'],'Ausztrál juhászkutya':['aapk','hcsc'],
+ 'Belga juhászkutya (malinois)':['hbjk','hmc'],'Berni pásztorkutya':['mbe'],'Bichon frisé':['abe'],'Bichon havanese':['abe'],'Bolognai pincsi':['abe'],
+ 'Border collie':['aapk','hcsc'],'Boston terrier':['htm'],'Boxer':['hbox','mbox'],'Bullterrier':['pte'],'Cavalier King Charles spániel':['ctpe'],'Csivava':['ctpe'],
+ 'Dalmata':['rrc'],'Dobermann':['hdk'],'Drótszőrű magyar vizsla':['mdm'],'Erdélyi kopó':['mekk'],'Francia bulldog':['htm'],'Golden retriever':['mrve'],
+ 'Ír farkaskutya':['mafe','agk'],'Kaukázusi juhászkutya':['kar'],'Komondor':['hkk','mkke'],'Közép-ázsiai juhászkutya':['kar'],'Kuvasz':['mkfe','mkke'],
+ 'Labrador retriever':['mrve'],'Leonbergi':['lfoe'],'Magyar agár':['magfe','agk'],'Magyar vizsla':['mvke'],'Máltai selyemkutya':['abe'],'Mopsz':['htm'],
+ 'Mudi':['fmk','mme'],'Német dog':['mndk'],'Német juhászkutya':['hnje'],'Pekingi palotakutya':['abe'],'Puli':['hpk','mpk'],'Pumi':['pumi','npe'],
+ 'Rottweiler':['hmre'],'Shih tzu':['abe'],'Staffordshire bullterrier':['pte'],'Tacskó':['mtoe','mtte'],'Törpe uszkár':['mut'],'Uszkár (közép)':['mut'],
+ 'Welsh corgi':['aapk','hcsc'],'Whippet':['agk','mafeo']};
+const MEOE_KLUBOK='https://www.kennelclub.hu/index.php?modul=szervezetek&szuro=fajta';
+/* macska: a Felis Hungarica (a FIFe magyarországi tagja) tenyésztőlistái kategóriánként; fajtánkénti aloldal nincs */
+const FH_HOME='https://www.felishungarica.eu/',FH_KAT=k=>`https://www.felishungarica.eu/hu/tenyesztok/tenyesztok-${k}-kategoria`;
+const FHKAT={'Perzsa':'i','Ragdoll':'i','Szent birman':'i','Maine coon':'ii','Norvég erdei':'ii','Szibériai':'ii','Bengáli':'iii','Brit rövidszőrű':'iii','Burma':'iii',
+ 'Európai rövidszőrű (házi macska)':'iii','Abesszin':'iv','Devon rex':'iv','Orosz kék':'iv','Szfinx':'iv','Sziámi':'iv'};
+/* a felelős tenyésztő ismertetőjelei: minden pont a BRSRC forrásaiból van */
+const BRSIGN={kutya:['A kölyök legalább 8 hetes, és addig az anyjával élt.',
+  'Mikrochippel van megjelölve: kutyát életkortól függetlenül csak chippel szabad átadni.',
+  'Megkapod a kisállat-egészségügyi könyvét (oltási könyv), benne az oltásokkal és a féreghajtással.',
+  'Ott nézheted meg, ahol felnőtt, az anyjával és a testvéreivel együtt, akár többször is.',
+  'A tenyésztő téged is kérdez, válaszol a szülők egészségéről és a fajtára jellemző örökletes betegségekről, a szűrésekről pedig papírt mutat.',
+  'Fajtatiszta kutyánál regisztrált, FCI kennelnévvel rendelkező tenyésztőt keress. A törzskönyv a származást igazolja, a jó tartást önmagában nem.',
+  'Intő jel, ha sürget a fizetéssel, nem mutatja meg az anyát, parkolóban vagy más közterületen adná át a kölyköt, vagy házhoz hozná.'],
+ macska:['A kölyök legalább 12 hetes, amikor új gazdához kerül.',
+  'Be van oltva fertőző gyomor- és bélgyulladás és macskanátha ellen, féregtelenítve van, és nincs élősködője.',
+  'A tenyésztő írásos megállapodást köt veled.',
+  'Minden kölyköt bejelent törzskönyvezésre. A tenyészmacskák mikrochipesek, a chip száma a törzskönyvben szerepel.',
+  'A tenyészmacskákon elvégezteti a fajtára előírt genetikai szűréseket: kérdezz rá.',
+  'A macskákat lakásban tartja, nem ketrecben.']};
+const BRSRC={kutya:[['Nébih: Kutyakötelesség. Útmutató a felelős kutyatartás jogszabályi előírásaihoz','https://portal.nebih.gov.hu/documents/10182/1055767/kutyatartasi_kezikonyv_2018_2kiad_ON.pdf/6139612a-1f45-305d-93f5-9e103cc3a970'],
+  ['RSPCA: How to Find a Good Puppy Breeder','https://www.rspca.org.uk/adviceandwelfare/pets/dogs/puppy/breeder'],
+  ['MEOE Szövetség: Fajtatiszta kiskutyát szeretne?','https://www.kennelclub.hu/index.php?link=Fajtatiszta_kiskutyat_szeretne__de_eddig_nem_tudta_hol_keresse_'],
+  ['MEOE Szövetség: fajtaklubok',MEOE_KLUBOK]],
+ macska:[['Felis Hungarica: Tenyésztési szabályzat','https://www.felishungarica.eu/hu/szabalyzatok/tenyesztesi-szabalyzat'],
+  ['FIFe: tagszervezetek','https://fifeweb.org/about-fife/members/']]};
+let npSp='kutya',npMegye='',npTab='adopt',npBreed={kutya:'',macska:''};
 const megyeHU=m=>m==='Budapest'?m:m+' megye';
 const shOf=(m,sp)=>SHELTERS.filter(s=>s[0]===m&&(sp==='kutya'?s[3]:s[4])).map(s=>({n:s[1],t:s[2],u:sp==='kutya'||s[4]==='='?s[3]:s[4],x:s[5]||''}));
-function vNoPet(){
-  const has=S.pets.length>0,c=S.settings.city||'',l=npMegye?shOf(npMegye,npSp):[],mit=npSp==='kutya'?'kutyát':'macskát';
+const npRow=(n,u,w)=>`<li><a class="plink" ${ext(u)}><b>${esc(n)}</b><span class="when">${esc(w)}</span></a></li>`;
+function npAdoptHtml(){
+  const c=S.settings.city||'',l=npMegye?shOf(npMegye,npSp):[],mit=npSp==='kutya'?'kutyát':'macskát';
   const a=(q,t,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${t}</a>`;
-  return`<button class="btn text back" data-act="tab" data-tab="${has?'more':'home'}">‹ ${has?'Beállítások':'Vissza'}</button><h1>Még nincs állatom</h1>
-  <p class="sub" style="margin-top:6px">Örökbe fogadnál? Válaszd ki, mit keresel és melyik megyében. A szervezet nevére koppintva az az oldala nyílik meg, ahol a gazdit kereső állatait bemutatja.</p>
-  <div class="seg2" role="group" aria-label="Milyen állatot keresel?">${[['kutya','Kutya'],['macska','Macska']].map(([v,n])=>`<button data-act="npSp" data-v="${v}" aria-pressed="${npSp===v}">${n}</button>`).join('')}</div>
-  <h2>Menhelyek és állatvédő szervezetek</h2>
+  return`<h2>Menhelyek és állatvédő szervezetek</h2><p class="sub">Válassz megyét. A szervezet nevére koppintva az az oldala nyílik meg, ahol a gazdit kereső állatait bemutatja.</p>
   <label class="f"><span>Megye</span><select id="npMegye"><option value="">Válassz megyét…</option>${MEGYEK.map(m=>`<option value="${m}"${m===npMegye?' selected':''}>${megyeHU(m)}</option>`).join('')}</select></label>
-  ${!npMegye?'':l.length?`<ul class="tasks" id="npList">${l.map(s=>`<li><a class="plink" ${ext(s.u)}><b>${esc(s.n)}</b><span class="when">${esc(s.t)}${s.x?', '+esc(s.x):''}</span></a></li>`).join('')}</ul><p class="sub" style="margin-top:8px">${l.length} szervezet. A link új lapon nyílik meg.</p>`
+  ${!npMegye?'':l.length?`<ul class="tasks" id="npList">${l.map(s=>npRow(s.n,s.u,s.t+(s.x?', '+s.x:''))).join('')}</ul><p class="sub" style="margin-top:8px">${l.length} szervezet. A link új lapon nyílik meg.</p>`
     :`<p class="sub" id="npNone">Itt most nincs a listánkon olyan szervezet, amelyik ${mit} ad örökbe. Nézz körül a szomszédos megyékben, vagy keress lent a térképen.</p>`}
   <h2>Keresés a térképen</h2><p class="sub">Írd be a településed, és a Google Térkép megmutatja a közeli menhelyeket. Ezeket a találatokat a PetVia nem nézte át.</p>
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
   <div id="mapBtns">${a('állatmenhely','Állatmenhely keresése a térképen','')}<div style="height:10px"></div>${a('állatvédő egyesület','Állatvédő szervezet keresése a térképen','ghost')}</div>
-  <p class="note">A listán csak létező szervezet szerepel, az oldalukat 2026 októberében néztük át; az elérhetőségük és az oldaluk címe változhat. A linkek nem fizetett hirdetések, a PetVia nem áll kapcsolatban a szervezetekkel, és nem tartja nyilván az örökbe fogadható állatokat. Örökbefogadás előtt mindig egyeztess a szervezettel.</p>
+  <p class="note">A listán csak létező szervezet szerepel, az oldalukat 2026 októberében néztük át; az elérhetőségük és az oldaluk címe változhat. A linkek nem fizetett hirdetések, a PetVia nem áll kapcsolatban a szervezetekkel, és nem tartja nyilván az örökbe fogadható állatokat. Örökbefogadás előtt mindig egyeztess a szervezettel.</p>`}
+function npBreedHtml(){
+  const sp=npSp,b=npBreed[sp],dog=sp==='kutya';let res='';
+  if(b&&dog){const ids=FAJTAKLUB[b]||[];
+    res=`${ids.length?'':'<p class="sub" id="npNoClub">Ehhez a fajtához most nincs olyan klublinkünk, amelyet ellenőrizni tudtunk. A MEOE Szövetség listájában megtalálod a fajta klubjait.</p>'}
+    <ul class="tasks" id="npClubs">${ids.map(i=>npRow(KLUB[i][0],KLUB[i][1],KLUBL[KLUB[i][2]])).join('')}${npRow('MEOE Szövetség: fajtaklubok',MEOE_KLUBOK,'az összes hivatalos fajtaklub listája')}</ul>`}
+  if(b&&!dog){const k=FHKAT[b];
+    res=`${b.startsWith('Európai')?'<p class="note" id="npHazi" style="margin-top:0">A házi macskák többsége nem törzskönyvezett. Ha nem kifejezetten törzskönyvezett európai rövidszőrűt keresel, nézz körül a menhelyeken. <button class="btn text" style="padding:0;min-height:0" data-act="npTab" data-v="adopt">Örökbefogadás megnyitása</button></p>':''}
+    ${k?'':'<p class="sub" id="npNoClub">Ez a fajta nem szerepel a Felis Hungarica kategórialistáin, ezért ehhez nem tudunk hivatalos tenyésztőlistát mutatni. Az egyesületnél érdeklődhetsz.</p>'}
+    <ul class="tasks" id="npClubs">${k?npRow(`Felis Hungarica: tenyésztők, ${k.toUpperCase()}. kategória`,FH_KAT(k),'a táblázat a fajtát és az országot is mutatja'):''}${npRow('Felis Hungarica (Magyar Macskások Egyesülete)',FH_HOME,'a FIFe magyarországi tagegyesülete')}</ul>`}
+  return`<h2>Fajtaklubok és tenyésztőlisták</h2><p class="sub">Válassz fajtát. A link a hivatalos magyar szervezet oldalára visz, ahol a tenyésztők listáját találod.</p>
+  <label class="f"><span>Fajta</span><select id="npBreed"><option value="">Válassz fajtát…</option>${BREEDS[sp].map(x=>`<option value="${esc(x)}"${x===b?' selected':''}>${esc(x)}</option>`).join('')}</select></label>
+  ${res}
+  <h2>Miről ismered fel a felelős tenyésztőt?</h2>${dog?'':'<p class="sub">A Felis Hungarica tagjaira vonatkozó tenyésztési szabályzat szerint:</p>'}
+  <ul class="steps2" id="npSigns" style="margin-top:8px">${BRSIGN[sp].map(x=>`<li>${x}</li>`).join('')}</ul>
+  <details class="acc" style="margin-top:14px"><summary>Források</summary><ul class="srcs">${BRSRC[sp].map(([n,u])=>`<li><a ${ext(u)}>${esc(n)}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">A felsorolás tájékoztató jellegű, a pontjai ezekből a forrásokból származnak.</p></details>
+  <p class="note">A linkek nem fizetett hirdetések. A PetVia egyes tenyésztőket nem ajánl és nem ellenőriz: a listákat a szervezetek vezetik, és az oldaluk címe változhat. A klubok oldalát 2026 októberében néztük át.</p>`}
+function vNoPet(){
+  const has=S.pets.length>0,seg=(act,cur,l,lab)=>`<div class="seg2" role="group" aria-label="${lab}">${l.map(([v,n])=>`<button data-act="${act}" data-v="${v}" aria-pressed="${cur===v}">${n}</button>`).join('')}</div>`;
+  return`<button class="btn text back" data-act="tab" data-tab="${has?'more':'home'}">‹ ${has?'Beállítások':'Vissza'}</button><h1>Még nincs állatom</h1>
+  <p class="sub" style="margin-top:6px">Válaszd ki, kutyát vagy macskát keresel, és hogy örökbe fogadnál, vagy fajtatiszta állatot szeretnél.</p>
+  ${seg('npSp',npSp,[['kutya','Kutya'],['macska','Macska']],'Milyen állatot keresel?')}${seg('npTab',npTab,[['adopt','Örökbefogadás'],['breed','Fajtatiszta']],'Honnan szeretnéd?')}
+  ${npTab==='breed'?npBreedHtml():npAdoptHtml()}
   <h2>Megvan az új családtag?</h2><p class="sub">Vedd fel, és a PetVia végigkíséri az életét.</p><button class="btn" data-act="petNew">Állat felvétele</button>`}
 function vHub(p){
   const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
@@ -2212,7 +2315,7 @@ const ACT={
   close:closeSheet,
   pets(){openSheet(`<h2>Állataim</h2><ul class="list">${S.pets.map(p=>`<li>${ava(p)}<button class="grow" data-act="petUse" data-id="${p.id}"><b>${esc(petName(p))}</b>${pet().id===p.id?' ✓':''}<span class="when">${fmtAge(p)}</span></button></li>`).join('')}</ul><button class="btn" data-act="petNew">Új állat felvétele</button><button class="btn ghost" data-act="close">Bezárás</button>`)},
   petNew(){wizard()},petEdit(el){wizard(el.dataset.id)},
-  npSp(el){npSp=el.dataset.v;render()},
+  npSp(el){npSp=el.dataset.v;render()},npTab(el){npTab=el.dataset.v;render()},
   petUse(el){S.settings.activePetId=el.dataset.id;chatNote='';careSt=null;save();closeSheet();if(tab==='more')tab='home';render({top:true,toToday:true})},
   petDelAsk(el){const p=S.pets.find(x=>x.id===el.dataset.id);confirmSheet('Biztosan törlöd?',`${esc(petName(p))} profilja, eseményei és beszélgetései véglegesen törlődnek.`,'Igen, törlöm','petDel',p.id)},
   petDel(el){const id=el.dataset.id;S.pets=S.pets.filter(p=>p.id!==id);S.events=S.events.filter(e=>e.petId!==id);delete S.chat[id];delete S.ai[id];if(S.settings.activePetId===id)S.settings.activePetId=null;save('chat','photo_'+id);closeSheet();tab='home';render({top:true});toast('Állat törölve')},
@@ -2261,6 +2364,7 @@ document.addEventListener('change',e=>{const t=e.target;
   else if(t.name==='theme'){S.settings.theme=t.value;applyTheme();save()}
   else if(t.id==='cityIn')save();
   else if(t.id==='npMegye'){npMegye=t.value;render();const s=$('#npMegye');s&&s.focus({preventScroll:true})}
+  else if(t.id==='npBreed'){npBreed[npSp]=t.value;render();const s=$('#npBreed');s&&s.focus({preventScroll:true})}
   else if(t.id==='kcalIn'){const v=parseFloat(t.value.replace(',','.')),p=pet();if(t.value.trim()&&!(v>=30&&v<=700))return toast('30 és 700 közötti értéket írj be (kcal / 100 g).');p.kcal100=v||null;save();render()}});
 document.addEventListener('input',e=>{const t=e.target;
   if(t.id==='chatIn'){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'}
