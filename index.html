@@ -2336,6 +2336,253 @@ Object.assign(GSRC,{
  edesvizi:{food:['rspcaFishD','merckFishH'],care:['merckFishH','merckFishR','merckFishD','merckAqEnv','rspcaFishE','rspcaFishH','acoPh'],trip:['rspcaFishE','merckAqEnv']},
  harcoshal:{food:['pmBetta','rspcaFishD'],care:['pmBetta','merckFishH','merckFishD','merckAqEnv','rspcaFishE','rspcaFishH','acoPh'],trip:['rspcaFishE','merckAqEnv']},
  tengeri:{food:['pmClown','merckFishH','rspcaFishD'],care:['merckFishH','merckFishR','merckFishD','merckAqEnv','pmClown','maRegal'],trip:['rspcaFishE','merckAqEnv']}});
+/* ---------- útmutatók 4/b kör: gerinctelenek ----------
+   Hat faj: madárpók (általános útmutató és öt faj saját adatai), ugrópók, császárskorpió, botsáska (általános, indiai, ausztrál óriás),
+   imádkozó sáska, óriás achátcsiga. A fajváltozatok kulcsa a GVAR-ban van (gkey). Minden számadat forrásból van (SRC, GSRC;
+   petvia-utmutatok-4b-gerinctelenek.md); ahol a források eltérnek, a szöveg megnevezi az eltérést, és az óvatosabb változatot ajánlja.
+   Életszakaszra bontás nincs (a csiga kivételével szakasz sincs): az életkor szerinti etetés a szövegben áll. Szaporítási tanács nincs,
+   a petékről csak annyi, hogy mi a teendő a nem kívánt petékkel. Leckék és játék fül nincs. */
+Object.assign(GVAR,{'Chilei rózsaszín madárpók':'madarpok:rosea','Mexikói vöröstérdű madárpók':'madarpok:hamorii','Göndörszőrű madárpók':'madarpok:albo','Fehértérdű madárpók':'madarpok:genic','Brazil fekete madárpók':'madarpok:pulchra','Indiai botsáska':'botsaska:indiai','Ausztrál óriás botsáska':'botsaska:ausztral'});
+Object.assign(FLAG,{'madarpok:hamorii':citesFlag('A mexikói vöröstérdű madárpók'),'madarpok:albo':citesFlag('A göndörszőrű madárpók')});
+const IV_ARR=['Megérkezés','A terráriumot még az állat érkezése előtt rendezd be, és ellenőrizd a hőmérsékletet és a páratartalmat.'];
+const ivFood=(base,freqAll,extra)=>({h:'Az étrend alapja',base,freqAll,sw:false,bad:[],extra});
+const ivCare=(g,i,p)=>({g:{all:g},i,p});
+const TR_IV=(papers,box)=>[['Állatorvoshoz',box||'Jól szellőző, biztosan zárható, kis műanyag dobozban vidd, papírtörlővel kibélelve, hogy ne csúszkáljon benne.'],
+  ['Hőmérséklet','A meleg és a hideg is megterheli: tedd a dobozt hűtőtáskába vagy hőszigetelt táskába, így a hőmérséklet stabil marad. Soha ne hagyd az autóban.'],
+  ['Ha elutazol','A terráriumot ne vidd magaddal: a legjobb, ha megbízható ismerős gondozza otthon. Hagyd meg neki írásban az etetés, az itatás és a permetezés rendjét.'],
+  ...(papers?[papers]:[]),TR_NOPASS('Gerinctelen állatra')];
+
+/* --- madárpók: közös szövegek, fajonként saját adatokkal (MP) --- */
+const MP={
+ rosea:{about:'Chile, Bolívia és Argentína félszáraz vidékeiről származik. A lábfesztávja kb. 15 cm. A nőstény akár 20 évig, a hím kb. 5 évig él. Az egyik legnyugodtabb madárpók, de figyelmeztetés nélkül védekezővé válhat; csalánszőrt ritkán szór.',
+  temp:'Ennek a fajnak a tartási útmutató 20–23 °C-os szobahőmérsékletet ír.',hum:'Ennél a fajnál a kereskedői forrás 40–55%-ot ír: száraz vidékről származik.',sub:'Jól szikkadó, inkább száraz aljzat kell neki: a túl nedves aljzatot kerüld. A fiatal pók aljzata legyen enyhén nyirkos.',
+  fast:' A chilei rózsaszín madárpók hónapokig is koplalhat egészségesen: ennél a fajnál ez önmagában nem ok az aggodalomra.',T:{cool:[20,30],hum:[40,65]},src:['ivTtcRosea','ivDubRosea']},
+ hamorii:{about:'Mexikó nyugati partvidékéről származik. A lábfesztávja kb. 14 cm (egy másik forrás 14–16,5 cm-t ír). Lassan nő. A nőstény akár 25–30 évig, a hím kb. 10 évig él. Nyugodt, fiatalon ijedősebb; megriadva csalánszőrt rúg, amely irritálja a bőrt.',
+  temp:'Ennek a fajnak a tartási útmutató 21–25 °C-ot ír (a kereskedői forrás 21–27 °C-ot).',hum:'Ennél a fajnál a kereskedői forrás 40–60%-ot ír.',sub:'Az aljzata jórészt száraz legyen, egy része enyhén nyirkos. A fiatal pók aljzata legyen enyhén nyirkos.',
+  fast:'',T:{cool:[20,30],hum:[40,65]},src:['ivTtcHam','ivDubHam'],cites:['ivTlilWiki','ivCec']},
+ albo:{about:'Honduras, Nicaragua és Costa Rica esőerdeiből származik. A teste kb. 8 cm, a lábfesztávja kb. 17 cm. Lassan nő. A nőstény akár 25 évig, a hím kb. 5 évig él. Kifejletten nyugodt és strapabíró; fiatalon ijedős, és mélyre ássa magát. Megzavarva csalánszőrt szór.',
+  temp:'Ennek a fajnak a tartási útmutató 20–24 °C-ot ír (a kereskedői forrás 26–29 °C-ot).',hum:'Ennél a fajnál a kereskedői forrás 65–85%-ot ír: esőerdei faj.',sub:'Az aljzat alsó rétege legyen nyirkos, a teteje száraz.',
+  fast:'',T:{cool:[20,30],hum:[60,85]},src:['ivTtcAlbo','ivDubAlbo'],cites:['ivTlilWiki']},
+ genic:{about:'Észak-Brazília erdeiből származik. Nagy testű faj: a teste kb. 9 cm, a lábfesztávja akár 21 cm. Gyorsan nő. A nőstény akár 20 évig, a hím kb. 4 évig él. Fiatalon ideges; a csalánszőre erősen irritálja a bőrt és a szemet. Nagyon jó étvágyú: a zsákmányra erővel ráveti magát.',
+  temp:'Ennek a fajnak a tartási útmutató 20–24 °C-ot ír.',hum:'',sub:'Az aljzat alsó rétege legyen nyirkos, a teteje két öntözés között száradjon ki.',
+  fast:'',T:{cool:[20,30]},src:['ivTtcGen']},
+ pulchra:{about:'Brazíliából származik. A lábfesztávja 15–18 cm. A nőstény akár 20–30 évig él; a hím az ivarérés után jellemzően egy évnél nem él tovább. Nyugodt természetű, csalánszőrt ritkán szór. Nehéz testű: már kis eséstől is megrepedhet a potroha.',
+  temp:'Ennek a fajnak a tartási útmutató 20–23 °C-os szobahőmérsékletet ír.',hum:'',sub:'A kifejlett pók aljzata jórészt száraz legyen, időnként egy sarkát nedvesítsd meg; a fiatalé legyen enyhén nyirkos.',
+  fast:' A brazil fekete madárpók vedlés előtt hosszabb ideig is koplalhat.',T:{cool:[20,30]},src:['ivTtcPul']}};
+const mpFood=v=>ivFood(['Húsevő: élő, tenyésztett rovarokat eszik: tücsköt, sáskát, csótányt, legyet, viaszmoly-lárvát; a fiatal pók muslicát. Változatosan, kis adagokban etesd.',
+  'Lisztkukacot az állatorvosi forrás nem ajánl (kevés a tápértéke, és beássa magát az aljzatba). Húst és újszülött egeret ne adj: a forrás szerint elhízáshoz és más egészségi bajhoz vezet.',
+  'A fiatal póknak a saját méretének kétharmadánál nagyobb zsákmányt leölve add.',
+  'A meg nem evett zsákmányt vedd ki: az állatorvosi forrás szerint percek múlva, a tartási útmutató szerint legkésőbb 24 óra után. Az éhes rovar megsebezheti a pókot, ezért egyszerre ne tegyél be sokat.',
+  'Figyeld a potrohát: ha keskenyebb a fejtor legszélesebb részénél, etesd gyakrabban; ha szélesebb, ritkábban, mert az elhízás is árt.'],
+ 'A fiatal, néhány centis pókot hetente kétszer etesd; a növendéket 7–10 naponta 2–3 kisebb tücsökkel; a kifejlettet 2–3 hetente 4–5 nagy tücsökkel vagy egy nagy csótánnyal. (Az állatorvosi forrás hetente néhány etetést ír.)',
+ 'Vedlés előtt napokig, hetekig nem eszik: ez természetes. Vedlés után várj az etetéssel, amíg a méregkarmai megfeketednek: fiatal póknál 1–2, növendéknél 3–7, kifejlettnél 5–10 napot.'+(v?v.fast:''));
+const mpCare=v=>ivCare([...(v?[['A fajról',v.about]]:[]),
+  ['Megérkezés',IV_ARR[1]+' Csendes, félhomályos helyre tedd, erős fénytől és közvetlen naptól távol.'],
+  ['Egyedül tartsd','Minden madárpókot külön terráriumban kell tartani: megeszik egymást.'],
+  ['Kézbevétel','A lehető legkevesebbet vedd kézbe: a pók és a gazda is megsérülhet. Ha muszáj, előtte alaposan moss kezet (a kézen maradt nikotin vagy más vegyszer megmérgezheti), és alacsonyan, puha felület fölött tartsd: már egy kis esés is végzetes lehet.'],
+  ['Csalánszőr és marás','Sok faj a potrohán lévő csalánszőröket szórja védekezésül: ezek irritálják a bőrt és a szemet, egyeseknél erős reakciót váltanak ki. Kesztyű és szemvédő viselése ajánlott. Minden madárpók fájdalmasan marhat, a nyugodt fajok is.'],
+  ['Vedlés','Vedlés előtt nem eszik, és fakóbb lesz; vedléskor a hátán fekszik mozdulatlanul, ami 15 perctől egy teljes napig tarthat. Ne mozgasd, ne fordítsd meg, és ne legyen bent eleségállat. A levetett bőr természetes. Friss vize legyen.'],
+  ...(v?[]:[['Élettartam','Az állatorvosi forrás szerint a hím akár 10, a nőstény 30 évnél is tovább élhet. A hímek az ivarérés után jellemzően már csak rövid ideig élnek.']]),
+  ['Állatorvos','Pókokhoz értő (egzotikus) állatorvost keress. Vidd el, ha a vedlése elakad, vagy ha étvágytalan, és fehér váladék látszik a szájszervei körül: ez szájüregi fonálférgesség jele lehet.']],
+ ['Búvóhely: fél parafakéreg-cső vagy oldalára fordított fél virágcserép.','Minimum–maximum hőmérő és páramérő a terráriumban.','A terrárium külsejét a búvóhely felől takard le, hogy a póknak nyugta legyen.'],
+ [['Nem eszik','Vedlés előtt a koplalás természetes, és egyes fajok egészségesen is sokáig kihagyják az evést. Friss vize mindig legyen. Ha fehér váladék látszik a szájszervei körül, vidd állatorvoshoz.'],
+  ['A hátán fekszik','Ez a vedlés testhelyzete, nem betegség: ne nyúlj hozzá, és ne fordítsd meg. 15 perctől egy napig tarthat.'],
+  ['Elakadt a vedlése','Vedlési gonddal fordulj pókokhoz értő állatorvoshoz.'],
+  ['Kopasz a potroha','A csalánszőrök kiszórása okozza, ami stressz jele lehet. Nézd át, mi zavarhatja: erős fény, gyakori bolygatás, kézbevétel.'],
+  ['Leesett','A nehéz testű, talajlakó pók potroha már kis eséstől is megrepedhet. Mielőbb keress pókokhoz értő állatorvost, és a terráriumban csökkentsd az esésmagasságot (több aljzat, alacsonyabb terrárium).'],
+  ['Csalánszőr került a bőrödre vagy a szemedbe','A csalánszőr irritációt okoz, egyeseknél erős reakciót. Ha a szemedbe került, vagy erős a reakció, fordulj orvoshoz.'],
+  ['Atka a terráriumban','A faforgács és a kéregdarabos aljzat atkát hozhat: cseréld kókuszrostra vagy műtrágyamentes virágföldre.']]);
+const mpHome=v=>[['Terrárium','A talajlakó madárpóknak fekvő, inkább széles, mint magas terrárium kell: az alapterülete legalább a lábfesztáv háromszorosa legyen (kifejlettnél inkább négy-ötszöröse). Ne legyen magas: ha felmászik és leesik, megsérülhet. Üvegből vagy műanyagból legyen, szökésbiztos, szorosan záró tetővel; a hálós tetőbe beakadhat a lába.',AM_TERR],
+  ['Aljzat','Kókuszrost vagy műtrágyamentes virágföld, a terrárium feléig–kétharmadáig töltve: így áshat, és kisebb az esésmagasság. Homok, kavics, faforgács és kéregdarab ne legyen benne.'+(v?' '+v.sub:''),AM_TECH],
+  ['Búvóhely','Fél parafakéreg-cső vagy oldalára fordított fél virágcserép. Kő és kaktusz ne legyen a terráriumban: sérülést okozhat.'],
+  ['Hőmérséklet','Fűtött szobában többnyire nem kell külön fűtés: az állatorvosi forrás inkább meleg szobát ajánl, mint fűtőlapot vagy lámpát, mert azok kiszárítják a pókot. A madárpókokra sokat idézett tartomány 23–30 °C (egy másik állatorvosi forrás 21–29 °C-ot ír).'+(v?' '+v.temp:'')+' Kerüld a nagy ingadozást.'],
+  ['Páratartalom','Az állatorvosi forrás szerint a legtöbb fajnak 60–65% körüli, állandó páratartalom való'+(v?'.':', a párás vidékről származóknak 75%.')+(v&&v.hum?' '+v.hum:'')+' Ha permetezel, az aljzatot permetezd, a pókot soha.'],
+  ['Fény','UV-fény és hőlámpa nem kell: elég a szoba fénye. Erős fénytől tartsd távol.'],
+  ['Víz','Sekély vizestál legyen bent, mert a mélyben megfulladhat; vizes vattát vagy szivacsot ne tegyél bele, mert baktérium telepszik meg rajta. Az állatorvosi források szerint naponta, illetve legalább hetente kétszer cseréld a vizet.']];
+const MP_SRC=['ivRvcTar','ivIlTar'];
+Object.assign(FOOD,{madarpok:mpFood()});Object.assign(CARE,{madarpok:mpCare()});Object.assign(HOME,{madarpok:mpHome()});Object.assign(TRIP,{madarpok:TR_IV()});
+Object.assign(GSRC,{madarpok:{food:[...MP_SRC,'ivTtcRosea','ivThMolt'],care:[...MP_SRC,'ivTtcRosea','ivThMolt']}});
+Object.keys(MP).forEach(k=>{const v=MP[k],id='madarpok:'+k;FOOD[id]=mpFood(v);CARE[id]=mpCare(v);HOME[id]=mpHome(v);TRIP[id]=TR_IV(v.cites&&TT_CITES);
+  GSRC[id]={food:[...MP_SRC,...v.src,'ivThMolt'],care:[...MP_SRC,...v.src,'ivThMolt',...(v.cites||[])],...(v.cites?{trip:v.cites}:{})}});
+
+/* --- botsáska: közös szövegek, fajonként saját adatokkal (BS) --- */
+const BS={
+ indiai:{plants:'Az indiai botsáska a szedren kívül a fagyalt és a borostyánt is megeszi, emellett a rózsát, a galagonyát, a tölgyet és a mogyorót.',
+  life:['Méret és élettartam','Kifejletten 7–10 cm hosszú, szárnyatlan. A teljes élettartama kb. egy év. Éjszaka aktív.'],
+  eggs:' Az indiai botsáska nősténye párzás nélkül is életképes petét rak, élete során több százat; szobahőmérsékleten 10–12 hét alatt kelnek ki. Több országban a szabadba került petékből lett kártevő.',
+  cage:' Kifejlett indiai botsáskának legalább 20 × 20 × 30 cm-es terrárium kell, több állatnak nagyobb.',
+  temp:'17–25 °C: szobahőmérsékleten jól megvan, fűtés nem kell. Nyáron ne melegedjen túl, és közvetlen nap ne érje.',
+  hum:'A páratartalomra nem érzékeny, nyitott ketrecben is megvan. Esténként enyhén permetezd meg a terráriumot: ebből iszik.',
+  extra:[],idea:[],T:{cool:[17,25]},src:['ivDubInd','ivUcStick']},
+ ausztral:{plants:'Az ausztrál óriás botsáska szedret, málnát, tölgyet, rózsát, mogyorót, galagonyát és eukaliptuszt eszik.',
+  life:['Méret és élettartam','A nőstény 12–15 cm-es, testes, tüskés, a szárnya csökevényes; a hím 9–13 cm-es, karcsú, hosszú szárnyú, és repül. Kb. egy évig él: melegebben rövidebb, hűvösebben hosszabb ideig. Éjszaka aktív.'],
+  eggs:' Az ausztrál óriás botsáska nősténye hím nélkül is rakhat életképes petét. A megtermékenyített peték 4–6, a hím nélkül rakottak 6–12 hónap alatt kelnek ki.',
+  cage:' Kifejlett nősténynek legalább 30 × 30 × 45 cm-es terrárium kell. Az oldala legyen érdes vagy hálós: a nehéz nőstény a sima üvegen nem tud megkapaszkodni.',
+  temp:'20–30 °C (a kereskedői forrás 21–27 °C-ot ír); éjszaka hűvösebb lehet. A szobahőmérséklet többnyire elég. Ha lámpával fűtesz, a rovar ne érhesse el, mert megég; éjszakára kapcsold ki.',
+  hum:'A kereskedői forrás 60–80%-ot ír; a fiatal állatoknak kb. 60% kell a könnyebb vedléshez. Szinte naponta permetezd meg enyhén a leveleket: ebből iszik. A jó szellőzés létfontosságú: a pangó, párás levegő gyakori halálok.',
+  extra:[['Védekezés','Fenyegetve a potrohát a háta fölé hajlítja, mint a skorpió: ez megtévesztés. A szakegyesületek szerint a faj csíphet, ha nem szokta a kézbevételt, és védekező váladékot is kibocsáthat: gyerek csak felnőtt mellett vegye kézbe.']],
+  idea:['Páramérő a terráriumban.'],T:{cool:[20,30],hum:[60,80]},src:['ivPsg9','ivKiPrick','ivDubPrick']}};
+const bsFood=v=>ivFood(['Növényevő: friss leveleket eszik. A megmosott szedret szinte minden faj megeszi; sok faj a rózsát, a galagonyát és a tölgyet is.'+(v?' '+v.plants:''),
+  'Mindig legyen bent friss, leveles ág, vízbe állítva: így napokig friss marad. Az edény száját fedd le, hogy a rovar ne essen a vízbe.',
+  'Csak vegyszermentes növényt adj: kertészetből vagy virágboltból származó levelet ne, és forgalmas út mellől se szedj. Etetés előtt mosd meg.',
+  'Esténként permetezd meg a leveleket: a cseppekből iszik.'],
+ 'Folyamatosan legyen előtte friss levél; a hervadt, kiszáradt ágat cseréld le.',
+ v?'A szederből az idősebb leveleket add. Télen a szeder többnyire zöld marad; a tölgylevél lefagyasztva is eltartható.':'A tápnövény fajonként eltér: add meg a profilban a botsáska faját, vagy nézz utána a saját fajodnak.');
+const bsCare=v=>ivCare([...(v?[v.life]:[]),IV_ARR,
+  ['Társak','Több példány együtt tartható, ha elég a hely: a zsúfoltság vedléskor lábvesztéshez vezet.'],
+  ['Vedlés','Vedléskor fejjel lefelé lóg, ezért kell a magas terrárium, fölül szabad térrel. Ilyenkor ne zavard. Az elvesztett láb csak a következő vedléskor nő vissza; a kifejlett állaté már nem.'],
+  ['Kézbevétel','Ne a lábánál fogd, és ne húzd le az ágról, mert elveszítheti a lábát: tedd a tenyered az első lábai elé, és hátulról finoman tereld rá. A kicsiket ecsettel mozgasd. Megriadva megmerevedhet és leeshet. Utána moss kezet.'],
+  ...(v?v.extra:[]),
+  ['Peték','A nőstény kb. nyolc héttel a kifejlés után petézni kezd. A peték magra vagy ürülékre hasonlítanak, ezért takarításkor könnyen a szemétbe kerülnek.'+(v?v.eggs:'')+' A ketrec almát zacskóba zárva egy hétre tedd a fagyasztóba, csak utána dobd ki. Sem az állatot, sem a petéit ne engedd szabadon.']],
+ ['Mászóágak és parafakéreg, különböző szögben rögzítve.','Hőmérő a terrárium közepén.',...(v?v.idea:[])],
+ [['Elvesztette a lábát','Zsúfoltság, rossz fogás vagy nehéz vedlés okozhatja. A fiatal állat lába a következő vedléskor visszanő, a kifejletté már nem. Adj több helyet, és ne a lábánál fogd.'],
+  ['Vedlés közben leesett','A szakegyesület szerint megmenthető, ha a régi bőrénél, a potroha végénél fogva, fejjel lefelé felakasztod.'],
+  ['Penész a terráriumban','Gombás fertőzés gyanújánál takarítsd ki alaposan a terráriumot, és különítsd el az érintett állatokat.'],
+  ['Nem eszik','Cseréld frissre a leveleket, és ellenőrizd, hogy a fajának megfelelő, vegyszermentes növényt kap-e: a vegyszerrel kezelt levél árt neki.'],
+  ['Vízbe esett','A vízbe állított ág edényét fedd le, és szellőztess, hogy ne csapódjon le a pára: a botsáska a kevés vízbe is belefulladhat.']]);
+const bsHome=v=>[['Terrárium','Magas terrárium kell: a magassága legalább a kifejlett állat hosszának háromszorosa legyen (legalább 30 cm), mert vedléskor lelóg. Jól szellőzzön.'+(v?v.cage:''),AM_TERR],
+  ['Hőmérséklet',v?v.temp:'Szobahőmérsékleten vagy kicsit melegebben tartsd; a szakegyesület szerint a legtöbb fajnak 25 °C körül a legjobb. Közvetlen napra ne tedd.'],
+  ['Páratartalom és permetezés',v?v.hum:'Esténként permetezd meg a terráriumot és a leveleket: a botsáska a cseppekből iszik. A páraigény fajonként eltér.'],
+  ['Aljzat','2,5–5 cm nedvességet tartó aljzat (pl. kókuszrost); hetente cseréld, és a terráriumot forró vízzel öblítsd ki.',AM_TECH],
+  ['Fény','Külön világítás nem kell, ha a szoba napi kb. 12 órán át világos.']];
+const BS_SRC=['ivAesStick','ivPsgStick'];
+Object.assign(FOOD,{botsaska:bsFood()});Object.assign(CARE,{botsaska:bsCare()});Object.assign(HOME,{botsaska:bsHome()});Object.assign(TRIP,{botsaska:TR_IV()});
+Object.assign(GSRC,{botsaska:{food:[...BS_SRC],care:[...BS_SRC,'ivUcStick','ivDubInd']}});
+Object.keys(BS).forEach(k=>{const v=BS[k],id='botsaska:'+k,s=[...new Set([...BS_SRC,...v.src,'ivUcStick','ivDubInd'])];FOOD[id]=bsFood(v);CARE[id]=bsCare(v);HOME[id]=bsHome(v);TRIP[id]=TR_IV();GSRC[id]={food:s,care:s}});
+
+/* --- ugrópók, császárskorpió, imádkozó sáska, óriás achátcsiga --- */
+Object.assign(FOOD,{
+ ugropok:ivFood(['Húsevő: élő rovarokat eszik. A fiatal póknak röpképtelen muslica való, a nagyobbnak kis tücsök, kis csótány, viaszmoly-lárva.',
+   'A zsákmány legyen kisebb a pók testénél: legfeljebb a mérete kétharmada.',
+   'A meg nem evett zsákmányt 24 óra után vedd ki. Vadon fogott rovart ne adj.',
+   'Figyeld a potrohát: ha keskenyebb a fejtor legszélesebb részénél, etesd gyakrabban; ha szélesebb, ritkábban. Az elhízás megnehezíti a vedlést.'],
+  'A fiatal pókot hetente 2–3-szor etesd, a növendéket 3–4 naponta, a kifejlettet hetente 1–2-szer. (A kereskedői forrás 5–7 naponta egy etetést ír.)',
+  'Vedlés után várj az etetéssel, amíg újra járkál: fiatalnál ez 1–3 nap, kifejlettnél akár egy hét.'),
+ csaszarskorpio:ivFood(['Rovarevő: tücsköt, csótányt, lisztkukacot, sáskát eszik. Egy etetésre 3–4 tücsök vagy hasonló mennyiségű más rovar való.',
+   'Az eleségrovart az etetés előtti 48 órában tápláld fel jó minőségű eleséggel.',
+   'Este etesd, mert éjszaka aktív; a meg nem evett zsákmányt másnap reggel vedd ki.',
+   'Vedlés idején ne etesd: ilyenkor puha a páncélja, és sérülékeny.'],
+  'A források eltérnek: az állatorvosi rendelő a fiatalt naponta (kisebb zsákmánnyal), a kifejlettet kétnaponta eteti; a kereskedői útmutató hetente egy etetést ír. Ha nagyon jóllakott, és nehezen mozog, tarts 5–7 nap szünetet.',
+  'Friss vize mindig legyen, sekély tálban.'),
+ imadkozosaska:ivFood(['Csak élő rovart eszik. A fiatal sáskának muslica vagy más apró rovar való, annyi, amennyit megeszik; a nagyobbnak légy, tücsök, sáska, csótány.',
+   'A meg nem evett tücsköt, sáskát, csótányt vedd ki: megrághatják a lábát vagy a szárnyát.',
+   'A gyorsan mozgó zsákmányt (pl. a legyet) könnyebben elkapja. Ha nem látod enni, kínáld csipesszel.',
+   'A kifejlett nőstény többet eszik, mint a hím.'],
+  '1–4 naponta etesd, a faj, a méret és a kondíció szerint; egyes fajoknak a napi etetés árt.',
+  'Vizet a permetezett cseppekből iszik: külön itató nem kell.'),
+ achatcsiga:ivFood(['Növényevő: leveles zöldeket (saláta, spenót, káposzta, vízitorma, zsázsa, pitypang, fű), zöldséget és gyümölcsöt (uborka, cukkini, alma, banán, dinnye, szőlő) eszik.',
+   'Mindent alaposan moss meg, hogy ne maradjon rajta vegyszer, és aprítsd fel; sekély tálban vagy az aljzatra téve kínáld.',
+   'A maradékot 24 óra után vedd ki, a penészes ételt azonnal.',
+   'Kalcium mindig legyen előtte a háza épüléséhez: szépiacsont, természetes kréta, tört tojáshéj vagy az ételre szórt kalciumpor.'],
+  'Naponta adj friss ételt: a 24 óránál régebbi maradékot ki kell venni.',
+  'A rovarász egyesület szerint az étrend része lehet fehérje is (csigáknak szánt fehérjekeverék).')});
+Object.assign(CARE,{
+ ugropok:ivCare([['Megérkezés',IV_ARR[1]+' Világos helyre tedd, de ne közvetlen napra: napi 10–12 óra fényre van szüksége.'],
+   ['Egyedül tartsd','Magányos állat: együtt tartva megtámadják, megeszik egymást.'],
+   ['Kézbevétel','Türelemmel, óvatosan kézre engedhető, de soha ne erőltesd. Kiszámíthatatlanul ugrik. Ritkán mar, főleg ha megijed.'],
+   ['Vedlés','Vedlés előtt szövedékből „függőágyat” sző, és abban marad: fiatalon egy napnál rövidebb ideig, később egy-két napig. Ne érj hozzá, ne zavard, és tartsd fenn a páratartalmat. A kifejlett pók már nem vedlik.'],
+   ['Méret és élettartam','A teste 1,2–2,3 cm; a nőstény a nagyobb. Rövid életű: a források 1–3 évet írnak, a nőstény él tovább.'],
+   ['Állatorvos','Az ugrópókok állatorvosi ellátása korlátozott, de egyes egzotikus állatorvosok pókokat is ellátnak: érdemes előre megkérdezni.']],
+  ['Függőleges ágak, parafakéreg, mű- vagy élő növény a mászáshoz.','Ne zsúfold tele: az ugráshoz szabad tér kell.','Hő- és páramérő a terráriumban.'],
+  [['Beragadt a vedlése','A forrás szerint ilyenkor a páratartalmat kell emelni. A vedlő pókot ne érintsd meg.'],
+   ['Nem vadászik, bizonytalanul mozog','Kiszáradás jele lehet: permetezz a terrárium falára, hogy ihasson a cseppekből, és ellenőrizd a páratartalmat.'],
+   ['Rángatózik, koordinálatlanul mozog, nem eszik','Az ugrópókoknál leírt mozgászavar (DKS) jele lehet: a forrás szerint az oka nem ismert, kezelése nincs, és gyakran végzetes.'],
+   ['Apró élősködők a pókon','Atkák lehetnek; a jelük a nyugtalan, ingerült pók. Kérj tanácsot pókokhoz értő állatorvostól.'],
+   ['Nem eszik','Vedlés körül természetes. Ha a potroha telt, várj az etetéssel.']]),
+ csaszarskorpio:ivCare([IV_ARR,
+   ['Társak','A források eltérnek: a szakegyesület szerint hasonló méretű példányok elég hely és több búvóhely mellett együtt tarthatók (a folyton támadót ki kell venni, nagyot kicsivel nem szabad összetenni); a kereskedői útmutató a kannibalizmus veszélye miatt nem ajánlja. Ha most kezded, tartsd egyedül.'],
+   ['Kézbevétel','Nem szelídíthető, és a források nem ajánlják a kézbevételét. Inkább az ollójával csíp, mint szúr, de a csípése is fájdalmas, és felsértheti a bőrt.'],
+   ['Szúrás','A mérge enyhe: egészséges felnőttre nem veszélyes, a fájdalom a méhcsípéséhez hasonló. Gyerekre, idősre, allergiásra és legyengült immunrendszerűre veszélyes lehet: ilyenkor, vagy erős reakció esetén fordulj orvoshoz.'],
+   ['Vedlés','Vedléskor puha a páncélja, és sérülékeny: ne zavard, és ne etesd.'],
+   ['Méret és élettartam','15–18 cm-re nő, ritkán 20 cm-re. Jó tartás mellett akár 8 évig él. Éjszaka aktív.'],
+   ['Állatorvos','Az állatorvosi rendelő évente ellenőrzést ajánl. Vidd egzotikus állatorvoshoz, ha étvágytalan, levert, fogy, megváltozik a színe, vagy megsérült a páncélja.']],
+  ['Legalább két búvóhely: parafakéreg, cső vagy lapos kő.','Ágak és kéreg mászáshoz.','Éjszakai megfigyeléshez gyenge, éjszakai (vörös) fény.','Hő- és páramérő a terráriumban.'],
+  [['Megsérült a páncélja','Sürgős eset: a sérülésen át gyorsan kiszárad. Azonnal vidd egzotikus állatorvoshoz.'],
+   ['Nem eszik','Vedlés idején és nagy evés után természetes. Ha tartósan étvágytalan, levert vagy fogy, vidd állatorvoshoz.'],
+   ['Levert, vagy magasra tartott ollóval folyton járkál','A szakegyesület szerint az ilyen állat ritkán egészséges. Ellenőrizd a hőmérsékletet és a páratartalmat, és kérj tanácsot egzotikus állatorvostól.'],
+   ['Rovarirtó érte','A rovarirtó szer megmérgezi: fordulj azonnal állatorvoshoz.'],
+   ['Penész vagy szag a terráriumban','Takarítsd ki soron kívül: a forrás havonta ír alapos takarítást, penész vagy szag esetén hamarabb.']]),
+ imadkozosaska:ivCare([IV_ARR,
+   ['Egyedül tartsd','A legtöbb faj megeszi a társát, főleg ha az egyik nagyobb. A kis nimfák csak a második–harmadik vedlésig tarthatók együtt, bő hely, sok búvóhely és bőséges eleség mellett.'],
+   ['Vedlés','Vedléskor egy ágról lóg le, ezért kell a magas terrárium. A pára ilyenkor a legfontosabb: túl száraz levegőn nehezen vedlik, és a lábát veszítheti. Az elvesztett láb csak a következő vedléskor nő vissza; a kifejlett (szárnyas) sáskáé már nem.'],
+   ['Méret és élettartam','A források szerint kb. 12–18 hónapig él. A rovarász egyesület által kezdőknek ajánlott nyugat-afrikai faj (Sphodromantis viridis) kb. 8 cm-re nő.']],
+  ['Ágak, vesszők, műnövény a mászáshoz és a függeszkedéshez: ragasztótól és rovarirtótól mentesek legyenek.','Szellőző tető: minél több a szellőzőnyílás, annál gyakrabban kell permetezni.'],
+  [['Nehezen vedlik','A túl száraz levegő okozza: permetezz rendszeresen, főleg vedlés idején. A fiatal sáska elvesztett lába a következő vedléskor visszanő.'],
+   ['Megrágta az eleségállat','A bent hagyott tücsök, sáska vagy csótány megrághatja a lábát, a szárnyát: a maradékot mindig vedd ki.'],
+   ['Nem eszik','Sokáig bírja evés nélkül. Kínálj neki gyorsan mozgó zsákmányt (legyet), vagy add csipesszel.'],
+   ['A kis nimfa vízcseppbe ragadt','Finoman permetezz: a nagy cseppekbe a kicsik beleragadhatnak, és megfulladhatnak.']]),
+ achatcsiga:ivCare([['Megérkezés',IV_ARR[1]+' Közvetlen naptól, fűtőtesttől és huzattól távol legyen a helye.'],
+   ['Társak','Egyedül és csoportban is tartható. Hímnős: két hasonló méretű csiga nagy eséllyel szaporodik, és egyetlen csiga is rakhat petét.'],
+   ['Peték','2–3 havonta rakhat petecsomót. A nem kívánt petéket 48 órára tedd a fagyasztóba, csak utána dobd ki. Sem a csigát, sem a petéit ne engedd szabadon: a faj a világ sok táján kártevő, több mint 500-féle növényt megeszik.'],
+   ['Kézbevétel','A házánál fogva, óvatosan emeld fel, lehetőleg amikor az aljzaton van, nem az üvegre tapadva. A fiatal csiga háza nagyon törékeny: a legbiztosabb, ha egy levélre csalogatod, és azzal együtt viszed. Vegyszeres kézzel ne nyúlj hozzá: a vegyszer a bőrén át felszívódik.'],
+   ['Higiénia','Szalmonellát hordozhat: fogás és takarítás után moss kezet.'],
+   ['Méret és élettartam','Akár 20 cm-re nő. Az állatorvosi forrás szerint átlagosan 5–7 évig él, jó körülmények között akár 10 évig. Éjszaka aktív.'],
+   ['Állatorvos','Mutasd meg egzotikus állatorvosnak, ha kis fehér foltok jelennek meg a bőrén, vagy megsérül a háza.']],
+  ['Nagy kéregdarab búvóhelynek (ha magad gyűjtöd, előtte áztasd be egy éjszakára).','Avar és moha az aljzatra: segít nyirkosan tartani.','Minimum–maximum hőmérő és páramérő.','Árnyékos rész a tartályban: az erős fényt kerüli.'],
+  [['Visszahúzódott, lezárta a házát','Túl hideg, túl meleg vagy rossz körülmények között hártyával lezárja a háza száját, és nyugalmi állapotba vonul: ez hónapokig tarthat, és bele is pusztulhat. Állítsd be a hőmérsékletet és a páratartalmat: ha rendben vannak, újra aktív lesz.'],
+   ['Sokat van a házában','Kiszáradás jele lehet: ellenőrizd a páratartalmat, permetezz, és legyen sekély vize. A túlmelegedés és a tűző nap is kiszárítja.'],
+   ['Eltört vagy sérült a háza','A törött ház és a kalciumhiány a forrás szerint gyakori baj. Mutasd meg egzotikus állatorvosnak, és mindig legyen előtte kalciumforrás. A fiatalok háza különösen törékeny.'],
+   ['Fehér foltok a bőrén','A forrás szerint állatorvosi kezelést igényelhet: mutasd meg egzotikus állatorvosnak.'],
+   ['Vegyszer érte','A háztartási tisztítószerek, a rovarirtók és a vegyszeres kerti föld mérgezők neki. A tartály közelében ne használj vegyszert, és csak forró vízzel takaríts.']])});
+Object.assign(HOME,{
+ ugropok:[['Terrárium','Fán lakó pók: kicsi, de álló terrárium kell neki, amely magasabb, mint amilyen széles. A kereskedői forrás legalább 10 × 10 × 18 cm-t ír. Jól szellőzzön: az álló levegő árt neki.',AM_TERR],
+  ['Aljzat','2,5–5 cm kókuszrost vagy tőzegmoha (egy másik forrás a terrárium alsó harmadát írja), enyhén nyirkosan, de nem vizesen.',AM_TECH],
+  ['Hőmérséklet','A források eltérnek: a tartási útmutató 20–24 °C-os szobahőmérsékletet ír, a kereskedői forrás nappalra 24–29, éjszakára 21–24 °C-ot. Szobahőmérsékleten tartsd, és ne érje tűző nap.'],
+  ['Páratartalom','A források 40–70%, illetve 65–75% közötti értéket írnak. A terrárium falát permetezd finoman, a pókot soha.'],
+  ['Fény','Napi 10–12 óra fény kell neki: elég a szoba szórt fénye vagy egy időzített lámpa. Közvetlen napra ne tedd.'],
+  ['Víz','A fiatal pók a falra permetezett cseppekből iszik. A nagyobbnak tegyél be kis, sekély vizestálat (pl. kupakot apró kavicsokkal), hogy biztonságosan ihasson.']],
+ csaszarskorpio:[['Terrárium','Egy példánynak legalább 50 × 25 × 30 cm-es (kb. 37 literes) terrárium kell, biztosan záró tetővel. A szakegyesület 2–3 példánynak 75 × 30 × 30 cm-est ír.',AM_TERR],
+  ['Aljzat','Vastag, nyirkos, ásható aljzat kell: kókuszrost, vagy termőföld és tőzeg keveréke. A források 5–10, illetve 13–15 cm-t írnak: a vastagabb jobban tartja a párát, és jobban áshat benne.',AM_TECH],
+  ['Hőmérséklet','26–32 °C közötti hőgrádiens kell a terrárium két vége között (a források 26–28, illetve 27–32 °C-ot írnak; 32 °C fölött nincs előnye). A kereskedői útmutató szerint a fűtőlapot az oldalfalra tedd, ne a terrárium aljára, és termosztátról menjen.',AM_TECH],
+  ['Páratartalom','A források 60–80, 70–90, illetve 80–90%-ot írnak: az aljzat legyen nyirkos, de ne tocsogjon; szükség szerint permetezz langyos vízzel.'],
+  ['Fény','UVB-fény nem kell; 12 órás nappal–éjszaka ritmus legyen.'],
+  ['Víz','Sekély vizestál, amelybe nem fulladhat bele; naponta cseréld.'],
+  ['Tisztítás','A maradék eleséget másnap reggel vedd ki; a terráriumot havonta takarítsd ki alaposan, penész vagy szag esetén hamarabb.']],
+ imadkozosaska:[['Terrárium','Magas terrárium kell: a függeszkedő ág tetejétől a padlóig legalább a testhossz négyszerese legyen (egy másik forrás legalább háromszoros magasságot és kétszeres szélességet ír). Ahogy nő, költöztesd nagyobba. Szellőző teteje legyen.',AM_TERR],
+  ['Hőmérséklet','20–25 °C, minél állandóbban; ha kell, termosztátról működő fűtőlappal. Az igény fajonként eltér: nézz utána a saját fajodnak.',AM_TECH],
+  ['Páratartalom és permetezés','Naponta egyszer permetezd meg tiszta vízzel (egyes fajoknál ritkábban is elég): ebből iszik, és ez adja a párát is.'],
+  ['Aljzat','Nedvességet tartó, nem penészedő aljzat: papírtörlő, vermikulit vagy virágföld.'],
+  ['Tisztítás','A félig megevett zsákmányt vedd ki. Csak forró vízzel takaríts, tisztítószer nélkül: az árt a sáskának.']],
+ achatcsiga:[['Tartály','Jól szellőző, biztosan záródó üveg- vagy műanyag tartály. Két csigának legalább 60 × 45 × 40 cm kell, többnek nagyobb. Fából ne legyen: megrágja, és a szálka megsebzi.',AM_TERR],
+  ['Aljzat','Legalább 4–6 cm vastag tőzegpótló vagy tőzegmentes virágföld, nyirkosan, de nem tocsogósan. Kerti földet ne használj: vegyszer és kő lehet benne.',AM_TECH],
+  ['Hőmérséklet','21–23 °C az ideális (a rovarász egyesület 20–25 °C-ot ír); 18 °C alá ne hűljön, és 29 °C fölé ne melegedjen. Ha a szoba hűvösebb, tegyél termosztátos fűtőlapot a tartály fele alá.',AM_TECH],
+  ['Páratartalom','75–90% (a rovarász egyesület 70–80%-ot ír): permetezz naponta vagy kétnaponta langyos vízzel.'],
+  ['Fény','Külön világítás nem kell; közvetlen nap ne érje.'],
+  ['Víz','Nagyon sekély vizestál, legfeljebb 5 mm mély vízzel, mert a mélyebbe belefulladhat; naponta cseréld.'],
+  ['Tisztítás','A falakat rendszeresen mosd le. Az aljzatot az állatorvosi forrás hetente cseréli; a rovarász egyesület szerint egyszerre legfeljebb a negyedét. Csak forró vízzel takaríts, tisztítószer nélkül.']]});
+Object.assign(TRIP,{ugropok:TR_IV(),csaszarskorpio:TR_IV(TT_CITES),imadkozosaska:TR_IV(),
+ achatcsiga:TR_IV(null,'Erős, jól szellőző fedelű műanyag dobozban vidd, nyirkos, tiszta papírtörlővel kibélelve, hogy ne száradjon ki.')});
+{const TC='https://www.thetarantulacollective.com/caresheets/',DU='https://dubiaroaches.com/blogs/invert-care/',RVC='https://rvc.ac.uk/Media/Default/Beaumont%20Sainsbury%20Animal%20Hospital/EXOTICS/Animal%20Care%20Factsheets/',AES='https://www.amentsoc.org/insects/caresheets/',PSG='https://phasmidstudygroup.org/';
+ Object.assign(SRC,{
+ ivRvcTar:['Royal Veterinary College (Beaumont Sainsbury Animal Hospital): Tarantula care',RVC+'Tarantula%20care%202024%20jh.pdf'],
+ ivIlTar:['University of Illinois College of Veterinary Medicine: Tarantulas May Live 10 to 30 Years','https://vetmed.illinois.edu/?p=5428'],
+ ivThMolt:['Tarantula Heaven: How To Care For Your Tarantula After A Molt (hobbi szakoldal)','https://tarantulaheaven.com/how-to-care-for-your-tarantula-after-a-molt'],
+ ivTtcRosea:['The Tarantula Collective: Chilean Rose Hair (hobbi szakoldal)',TC+'grammostola-rosea'],ivTtcHam:['The Tarantula Collective: Mexican Red Knee Tarantula (hobbi szakoldal)',TC+'brachypelma-hamorii'],
+ ivTtcAlbo:['The Tarantula Collective: Curly Hair Tarantula (hobbi szakoldal)',TC+'tliltocatl-albopilosus'],ivTtcGen:['The Tarantula Collective: Brazilian White Knee Tarantula (hobbi szakoldal)',TC+'acanthoscurria-geniculata'],
+ ivTtcPul:['The Tarantula Collective: Brazilian Black Tarantula (hobbi szakoldal)',TC+'grammostola-pulchra'],
+ ivDubRosea:['Dubia.com: Chilean Rosehair Tarantula Care Sheet (kereskedő)',DU+'chilean-rosehair-tarantula-care-sheet'],ivDubHam:['Dubia.com: Mexican Red Knee Tarantula Care Sheet (kereskedő)',DU+'mexican-red-knee-tarantula-care-sheet'],
+ ivDubAlbo:['Dubia.com: Curly Hair Tarantula Care Sheet (kereskedő)',DU+'curly-hair-tarantula-care-sheet'],
+ ivTlilWiki:['Wikipedia: Tliltocatl epicureanus (a Brachypelma és a Tliltocatl nem CITES-besorolása)','https://en.wikipedia.org/wiki/Tliltocatl_epicureanus'],
+ ivCec:['Commission for Environmental Cooperation: Sustainable Trade in Tarantulas','https://www.cec.org/publications/sustainable-trade-in-tarantulas-action-plan-for-north-america/'],
+ ivTtcJump:['The Tarantula Collective: Phidippus regius (hobbi szakoldal)','https://thetarantulacollective.com/care-sheets-2/phidippus-regius'],
+ ivPsJump:['PetSmart: Regal Jumping Spider Care Guide (kereskedő)','https://www.petsmart.com/learning-center/reptile-care/regal-jumping-spider-care-guide'],
+ ivBtsScorp:['British Tarantula Society: The Emperor Scorpion, Pandinus imperator','https://thebts.co.uk/Pandinus_imperator.htm'],
+ ivAzScorp:['azeah.com (egzotikus állatorvosi rendelő): Basic Care – Emperor Scorpion','https://azeah.com/node/402'],
+ ivDubScorp:['Dubia.com: Emperor Scorpion Care Sheet (kereskedő)',DU+'emperor-scorpion-care-sheet'],ivPandWiki:['Wikipedia: Pandinus (CITES-besorolás, méreg)','https://en.wikipedia.org/wiki/Pandinus'],
+ ivAesStick:['Amateur Entomologists’ Society: Stick Insect caresheet',AES+'stick-insect.html'],ivPsgStick:['Phasmid Study Group: Looking After Stick Insects',PSG+'phasmids/species-care/looking-after-stick-insects'],
+ ivPsg9:['Phasmid Study Group: Extatosoma tiaratum (fajlap)',PSG+'phasmid-info/psg-culture-list/species-info?psg_no=9'],ivUcStick:['University of California IPM: Indian Walking Stick','https://ipm.ucanr.edu/home-and-landscape/indian-walking-stick/'],
+ ivDubInd:['Dubia.com: Indian Stick Insect Care Sheet (kereskedő)',DU+'indian-stick-insect-care-sheet'],ivDubPrick:['Dubia.com: Giant Prickly Stick Insect Care Sheet (kereskedő)',DU+'giant-prickly-stick-insect-care-sheet'],
+ ivKiPrick:['Keeping Insects: Giant Prickly Stick Insect (hobbi szakoldal)','https://www.keepinginsects.com/stick-insect/species/giant-prickly-stick-insect/'],
+ ivAesMant:['Amateur Entomologists’ Society: Praying Mantids caresheet',AES+'praying-mantids.html'],ivKiMant:['Keeping Insects: Caring for a mantis (hobbi szakoldal)','https://keepinginsects.com/praying-mantis/care/'],
+ ivRvcSnail:['Royal Veterinary College (Beaumont Sainsbury Animal Hospital): Giant African land snail',RVC+'Giant%20african%20land%20snail%202024%20jh.pdf'],
+ ivRspcaSnail:['RSPCA: Giant African land snails','https://www.rspca.org.uk/documents/1494939/7712578/Giant+African+land+snails'],
+ ivAesSnail:['Amateur Entomologists’ Society: Giant African Land Snails caresheet',AES+'giant-african-land-snails.html'],
+ ivAphisSnail:['USDA APHIS: Giant African Snail','https://www.aphis.usda.gov/plant-pests-diseases/mollusks']})}
+Object.assign(GSRC,{
+ ugropok:{food:['ivTtcJump','ivPsJump'],care:['ivTtcJump','ivPsJump']},
+ csaszarskorpio:{food:['ivAzScorp','ivBtsScorp','ivDubScorp'],care:['ivAzScorp','ivBtsScorp','ivDubScorp','ivPandWiki'],trip:['ivPandWiki']},
+ imadkozosaska:{food:['ivAesMant','ivKiMant'],care:['ivAesMant','ivKiMant']},
+ achatcsiga:{food:['ivRvcSnail','ivRspcaSnail','ivAesSnail'],care:['ivRvcSnail','ivRspcaSnail','ivAesSnail','ivAphisSnail'],trip:['ivRspcaSnail']}});
 const CT={guide:'Útmutató',home:'Otthon',les:'Leckék',play:'Játék és mozgás',prob:'Problémák',trip:'Utazás'};
 const TOPIC={path:'az életút, a mérföldkövek és az oltások',health:'az egészség, a tünetek és a megelőzés',food:'a táplálkozás és a tápválasztás',care:'a tartás, az otthoni felszerelés, a tanítás, a játék és a mozgás',prod:'a termékek és a felszerelés',vets:'az állatorvosi vizsgálatok és az állatorvos-választás'};
 const TOPIC_HU={home:'Általános',hub:'Gondozás',path:'Életút',health:'Egészség',food:'Táplálkozás',care:'Tartás és nevelés',prod:'Termékek',vets:'Állatorvosok',more:'Általános'};
@@ -2613,10 +2860,18 @@ const TERRA={
  nyilmeregbeka:{cool:[21,27],hum:[70,100],night:[20,27],note:'28 °C fölött a meleg halálos lehet.'},
  szarvasbeka:{cool:[24,29],hum:[70,80],night:[21,24]},
  tigrisszalamandra:{cool:[10,24],hum:[70],note:'A hűvöset jobban tűri, mint a meleget: a források szerint tartósan 25–27 °C fölött veszélybe kerül.'}};
+/* 4/b kör: a gerinctelenek célértékei. A madárpókfajoknál a hőmérséklet a források tartományait fogja össze (20–30 °C), a fajra szabott érték az útmutatóban áll. */
+Object.assign(TERRA,{madarpok:{cool:[21,30],hum:[60,75]},
+ ugropok:{cool:[20,29],hum:[40,75],note:'A források eltérnek: a tartási útmutató 20–24 °C-ot, a kereskedői forrás nappalra 24–29 °C-ot ír.'},
+ csaszarskorpio:{hot:[29,32],cool:[26,28],hum:[60,90]},
+ imadkozosaska:{cool:[20,25],note:'Az igény fajonként eltér: nézz utána a saját fajodnak.'},
+ achatcsiga:{cool:[20,25],hum:[70,90],note:'Az állatorvosi forrás szerint 21–23 °C az ideális; 18 °C alá ne hűljön, és 29 °C fölé ne melegedjen.'}});
+Object.keys(MP).forEach(k=>TERRA['madarpok:'+k]=Object.assign({note:'A célérték a források tartományait fogja össze; a fajra szabott értékek az útmutatóban vannak.'},MP[k].T));
+Object.keys(BS).forEach(k=>TERRA['botsaska:'+k]=BS[k].T);
 const TF={hot:['Meleg pont','°C'],cool:['Hűvös oldal','°C'],water:['Víz','°C'],hum:['Páratartalom','%']};
 const hasTerra=p=>['hullo','keteltu','gerinctelen'].includes(grp(p));
-const AMB=new Set(['levelibeka:vorosszemu','nyilmeregbeka','szarvasbeka','tigrisszalamandra']); /* nincs sütkérezőhely: egyetlen hőmérséklet */
-const terraKind=p=>({vizi:'viz',viziteknos:'vt'})[kitOf(p)]||(p.species==='unka'?'fv':AMB.has(gkey(p))?'amb':'sz');
+const AMB=new Set(['levelibeka:vorosszemu','nyilmeregbeka','szarvasbeka','tigrisszalamandra','madarpok','ugropok','botsaska','imadkozosaska','achatcsiga']); /* nincs sütkérezőhely: egyetlen hőmérséklet */
+const terraKind=p=>({vizi:'viz',viziteknos:'vt'})[kitOf(p)]||(p.species==='unka'?'fv':AMB.has(gkey(p))||AMB.has(p.species)?'amb':'sz');
 const terraFields=p=>({viz:['water'],vt:['hot','water'],sz:['hot','cool','hum'],amb:['cool','hum'],fv:['cool','water','hum']})[terraKind(p)];
 const tLabel=(p,f)=>{const k=terraKind(p);return f==='hot'&&k==='vt'?'Napozóhely':f==='cool'&&k==='amb'?'Hőmérséklet':f==='cool'&&k==='fv'?'Levegő':TF[f][0]};
 const htName=(p,k)=>k==='terra'&&terraKind(p)==='viz'?'Vízhőmérséklet':HT[k];
