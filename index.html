@@ -131,6 +131,9 @@ button{cursor:pointer}
 .tl>li.now::before{border-color:var(--brand)}
 .tl>li.late::before{border-color:var(--alert)}
 .tl>li.own::before{background:var(--ink);border-color:var(--ink)}
+.tl>li.wc{display:flex;justify-content:space-between;align-items:baseline;gap:10px;min-height:21px;margin-bottom:10px;font-size:14px;font-weight:600}
+.tl>li.wc small{flex:none;font-weight:500;font-size:13px;color:var(--muted)}
+.tl>li.wc::before{top:0}
 .tl .card{padding:14px}
 .tl .card b{display:block}
 .tl .card p{font-size:14px;color:var(--muted);margin:6px 0 0}
@@ -2530,14 +2533,18 @@ function vPath(p){
   const b=D(p.birth),L=limitsFor(p),arr=buildItems(p);
   S.events.filter(e=>e.petId===p.id&&e.kind==='own').forEach(e=>arr.push({own:e,date:D(e.date)}));
   arr.push({birth:1,date:b},{now:1,date:today()});
+  /* halaknál a rögzített vízcserék és a következő esedékes vízcsere is az idővonalra kerül */
+  if(grp(p)==='hal'){recs(p,'wchg').forEach(e=>arr.push({wc:e,date:D(e.date)}));const n=wcNext(p);if(n)arr.push({wcn:1,date:n})}
   if(L)L.forEach((m,i)=>arr.push({stage:STAGES[i+1],date:addM(b,m)}));
-  const ord=x=>x.birth?0:x.stage?1:x.now?3:x.pending?4:2;
+  const ord=x=>x.birth?0:x.stage?1:x.now?3:x.pending||x.wcn?4:2;
   arr.sort((a,c)=>a.date-c.date||ord(a)-ord(c));
   const row=x=>{
     if(x.birth)return`<li class="stage">${hatch(p)?(p.est?'Becsült kelés':'Kelés'):p.est?'Becsült születés':'Születés'}<small>${fmtDate(x.date)}</small></li>`;
     if(x.stage)return`<li class="stage">${STAGE_START[x.stage]}<small>${x.date>today()?'várhatóan ':''}${fmtDate(x.date)}</small></li>`;
     if(x.now)return`<li class="today" id="tlToday">${BALL}Ma</li>`;
     if(x.own){const e=x.own,c=EVCAT[e.cat||'other'];return`<li class="it own"><div class="card"><b>${c[0]} ${esc(e.title)}</b><span class="when">${fmtDate(x.date)}, ${c[1].toLowerCase()}</span>${e.note?`<p>${esc(e.note)}</p>`:''}<div class="acts"><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></div></div></li>`}
+    if(x.wc)return`<li class="it done wc"><span>Részleges vízcsere${x.wc.pct?`, ${x.wc.pct}%`:''}</span><small>${fmtDate(x.date)}</small></li>`;
+    if(x.wcn){const late=x.date<today(),soon=x.date-today()<=DAY;return`<li class="it ${late?'late':soon?'now':'later'}" id="tlWc"><div class="card"><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(x.date)}${late?', már elmúlt':''}</span><div class="acts"><button class="btn small${soon?'':' ghost'}" data-act="wcNew">Rögzítés</button></div></div></li>`}
     const s=statusOf(x),m=x.m;
     if(x.done)return`<li class="it done"><div class="card"><b>${esc(m.t)}</b><span class="when">${fmtDate(x.date)}</span>${x.done.note?`<p>${esc(x.done.note)}</p>`:''}${tags(m)}<div class="acts"><span class="ok">✓ Megvolt</span><button class="btn text" data-act="untick" data-id="${x.done.id}">Visszavonás</button></div></div></li>`;
     return`<li class="it ${s}"><div class="card"><b>${esc(m.t)}</b><span class="when">${s==='missed'?'Ha megvolt, jelöld be.':whenText(x)}</span><p>${esc(m.d)}</p>${tags(m)}<div class="acts"><button class="btn small${s==='later'||s==='missed'?' ghost':''}" data-act="tick" data-key="${m.key}">Megvolt</button></div></div></li>`};
