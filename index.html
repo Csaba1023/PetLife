@@ -161,6 +161,9 @@ button{cursor:pointer}
 .seg2 button[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
 .short{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .num{font:600 30px/1.1 Fraunces,Georgia,serif}
+.tv{display:flex;flex-wrap:wrap;gap:10px}.tv>div{flex:1 1 130px;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px}.tv .num{font-size:26px;margin:2px 0}
+.tag.bad{background:none;border:1px solid var(--alert);color:var(--alert)}.tag.ok{background:var(--soft);color:var(--brand)}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin-top:6px}.leg i{display:inline-block;width:22px;border-top:2.5px solid var(--brand);vertical-align:middle;margin-right:6px}.leg i.b{border-top:2.5px dashed var(--muted)}
 .chart{display:block;width:100%;height:auto;margin-top:12px}
 .bad{list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0}
 .bad li{background:var(--alert-bg);color:var(--alert);border-radius:10px;padding:6px 10px;font-weight:600;font-size:14px}
@@ -460,7 +463,7 @@ const MS={
 const AT_ADD=p=>D(p.createdAt),YEARLY=p=>ageAtAdd(p)+12;
 const EXVET={key:'vet1',t:'Első vizsgálat egzotikus állatorvosnál',d:'Általános állapotfelmérés és bélsárvizsgálat parazitákra, a fajhoz értő állatorvosnál.',ageM:0,always:1,dueFn:AT_ADD};
 const EXCHECK={key:'check',t:'Éves ellenőrzés egzotikus állatorvosnál',d:'Állapotfelmérés, testsúly, szükség esetén bélsárvizsgálat.',every:12,fromM:YEARLY};
-const UVB={key:'uvb',t:'UVB-fényforrás cseréje',d:'Az UVB-kibocsátás akkor is csökken, ha a lámpa még világít. A cserét a gyártó ajánlása szerint végezd, jellemzően 6–12 havonta.',every:12,fromM:YEARLY};
+const UVB={key:'uvb',t:'UVB-fényforrás cseréje',d:'Az UVB-kibocsátás akkor is csökken, ha a lámpa még világít. A cserét a gyártó ajánlása szerint végezd, jellemzően 6–12 havonta.',every:p=>p.uvbM||12,fromM:YEARLY};
 const BIRDVET={key:'vet1',t:'Első vizsgálat madarakhoz értő állatorvosnál',d:'Általános állapotfelmérés, testsúly, a csőr és a karmok ellenőrzése.',ageM:0,always:1,dueFn:AT_ADD};
 const BIRDCHECK={key:'check',t:'Éves ellenőrzés madarakhoz értő állatorvosnál',d:'Állapotfelmérés, testsúly, a csőr és a karmok ellenőrzése.',every:12,fromM:YEARLY};
 const MOLT=(a,b,d)=>({key:'molt1',t:'Első vedlés',d,ageM:a,byM:b});
@@ -488,7 +491,7 @@ Object.assign(MS,{
  nyilmeregbeka:[EXVET,EXCHECK],szarvasbeka:[EXVET,EXCHECK],tigrisszalamandra:[EXVET,EXCHECK],torpekarmosbeka:[CYCLE,EXVET],bordasgote:[CYCLE,EXVET],tuzhasugote:[CYCLE,EXVET],
  /* gerincteleneknél nincs rutinszerű állatorvosi teendő */
  madarpok:[],ugropok:[],csaszarskorpio:[],botsaska:[],imadkozosaska:[],achatcsiga:[]});
-const msFor=p=>MS[p.species]||MS.egyeb;
+const msFor=p=>{const l=MS[p.species]||MS.egyeb;return p.uvbOn&&!l.some(m=>m.key==='uvb')?[...l,UVB]:l};
 
 const TIPS={
  kutya:{kolyok:['A szocializáció fő időszaka kb. 3–14 hetes kor: mutass neki sokféle embert, hangot és helyzetet, mindig jó élménnyel.','Kölyöktápot kapjon, a napi adagot 3–4 részre osztva.','Szobatisztaság: evés, alvás és játék után rögtön vidd ki, és dicsérd meg, ha kint végzi a dolgát.'],
@@ -653,7 +656,7 @@ function kcalRange(p){
     ?{kolyok:ageM(p)<4?[2.7,3]:[2,2.5],novendek:[1.8,2],felnott:n?[1.4,1.6]:[1.6,1.8],idos:[1.2,1.4]}
     :{kolyok:[2,2.5],novendek:[1.6,2],felnott:n?[1,1.2]:[1.2,1.4],idos:[1.1,1.4]};
   const rer=70*Math.pow(kg,.75);return F[st].map(f=>Math.round(rer*f/10)*10)}
-const HT={vacc:'Oltások',par:'Paraziták',w:'Súly',sym:'Tünetek',vit:'Vitaminok',vet:'Látogatások'};
+const HT={vacc:'Oltások',par:'Paraziták',w:'Súly',terra:'Terrárium',sym:'Tünetek',vit:'Vitaminok',vet:'Látogatások'};
 const VACC=new Set(['combo','rabies1','rabies2','rabiesY','vacc','vaccY']);
 const PAR={kulso:'Külső paraziták (bolha, kullancs)',belso:'Belső paraziták (féreghajtás)'};
 const PAR_SHORT={kulso:'Bolha és kullancs elleni kezelés',belso:'Féreghajtás'};
@@ -875,7 +878,7 @@ const VITG={madar:'Változatos étrend mellett az egészséges díszmadárnak á
  keteltu:'A rovarevő kétéltűek eleségét kalcium- és vitaminporral szokás beszórni; az axolotlnál a változatos, teljes értékű eleség az alap. A készítményt és a gyakoriságot a fajhoz értő állatorvossal egyeztesd.'};
 const vitFor=p=>VIT[p.species]||VITG[grp(p)]||VIT.egyeb;
 /* az Egészség lap részei fajcsoportonként: halnál nincs oltás, parazitakezelés és súlymérés; madárnál, hüllőnél és kétéltűnél nincs rutinoltás és rutin parazitakezelés */
-const htFor=p=>{const g=grp(p);return Object.keys(HT).filter(k=>g==='hal'||g==='gerinctelen'?k==='sym'||k==='vet':!['madar','hullo','keteltu'].includes(g)||(k!=='vacc'&&k!=='par'))};
+const htFor=p=>{const g=grp(p);return Object.keys(HT).filter(k=>k==='terra'?hasTerra(p):g==='hal'||g==='gerinctelen'?k==='sym'||k==='vet':!['madar','hullo','keteltu'].includes(g)||(k!=='vacc'&&k!=='par'))};
 const SMALL_YOUNG_GP=[['Megérkezés','Az első napokban hagyd megnyugodni, búvóhellyel. Kézből adott zölddel barátkozz vele.'],['Hely','Nagy, sík alapterület kell neki, nem emeletek. A rácsos aljzat nem való a lábának.']];
 const SMALL_YOUNG_H=[['Megérkezés','Az első napokban ne vedd kézbe, csak etesd és beszélj hozzá. Utána tenyérből kínálj falatot.'],['Hely','Nagy alapterületű ketrec vagy terrárium kell, vastag alommal az ásáshoz és zárt futófelületű kerékkel.']];
 const CARE={
@@ -1635,10 +1638,10 @@ function buildItems(p){
       (done[m.key]||[]).forEach(e=>items.push({m,done:e,date:D(e.date)}));
       const anchors=[m.key,...(m.anchors||[])].flatMap(k=>done[k]||[]).map(e=>D(e.date)).sort((a,c)=>c-a);
       let due,unknown=false;
-      if(anchors.length)due=addM(anchors[0],m.every);
+      if(anchors.length)due=addM(anchors[0],val(m.every,p));
       else if(val(m.needsAnchor,p))continue;
       else if(m.mand){due=created;unknown=true}
-      else{const from=val(m.fromM,p);if(from==null)continue;for(let k=0;k<80;k++){due=addM(b,from+k*m.every);if(due>=created)break}}
+      else{const from=val(m.fromM,p);if(from==null)continue;for(let k=0;k<80;k++){due=addM(b,from+k*val(m.every,p));if(due>=created)break}}
       const until=val(m.untilM,p);if(until!=null&&due>=addM(b,until))continue;
       items.push({m,date:due,pending:true,unknown});
     }else{
@@ -1725,6 +1728,76 @@ function chart(l,p){ /* l: régi → új */
   ${grid(hi)}${hi!==lo?grid(lo):''}<polyline points="${pts.map(q=>q.join(',')).join(' ')}" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
   ${pts.map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="3.5" fill="var(--card)" stroke="var(--brand)" stroke-width="2"/>`).join('')}
   <text x="${px}" y="${H-6}">${fmtDate(D(l[0].date))}</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${fmtDate(D(l[l.length-1].date))}</text></svg>`}
+/* ---------- terráriumnapló (hőmérséklet, páratartalom, UVB-csere) ----------
+   A mérések: S.events, kind:'terra' {date, tod:'d'|'n', hot?, cool?, water?, hum?}; egy napra és napszakra egy mérés.
+   Az UVB-csere a meglévő 'uvb' mérföldkő (kind:'ms'); az emlékeztető időköze állatonként állítható (p.uvbM: 6, 9 vagy 12 hónap).
+   TERRA: célértékek az útmutatók forrásaiból (petvia-utmutatok-2-gyikok.md, petvia-utmutatok-2-teknosok.md), a források tartományainak
+   egyesítésével; a sütkérezőhelynél a levegő és a felület hőmérséklete együtt. [a,b] tartomány, [a,null] alsó határ, [a] hozzávetőleges
+   érték (nincs jelzés). night: éjszakai hőmérséklet; nhum, nwater: éjszakai pára és víz. Ahol nincs sor, ott nincs célérték. */
+const TERRA={
+ leopardgekko:{hot:[28,36],cool:[21,26],hum:[30,40],night:[18,null]},
+ zsirfarkugekko:{hot:[26,34],cool:[20,25],hum:[50,80],night:[17,25]},
+ agama:{hot:[38,46],cool:[22,29],hum:[30,60],night:[20,null]},
+ vitorlasgekko:{hot:[26,29],cool:[20,24],hum:[40,80],night:[18,22]},
+ nappaligekko:{hot:[29,32],cool:[25,28],hum:[40,75],night:[21,25]},
+ sisakoskameleon:{hot:[29],cool:[22,25],hum:[40,60],night:[13,18],nhum:[80,100]},
+ parduckameleon:{hot:[29,35],cool:[22,25],hum:[50,80],night:[15,21],nhum:[75,100]},
+ keknyelvuszkink:{hot:[30,46],cool:[21,27],hum:[40,60],night:[20,22]},
+ zoldleguan:{hot:[33,50],cool:[24,31],hum:[60,80],night:[23,28]},
+ viziagama:{hot:[32,35],cool:[25,30],hum:[60,90],night:[21,25]},
+ gorogteknos:{hot:[30,35],cool:[20,30],hum:[40,75],night:[18,null]},
+ morteknos:{hot:[30,35],cool:[20,30],night:[18,null]},
+ szegelyesteknos:{hot:[30,35],cool:[18,30],night:[18,null]},
+ sarkantyusteknos:{hot:[38,41],cool:[27,32],night:[21,null],note:'A célértékek a fiatal, bent tartott teknősre vonatkoznak.'},
+ szenesteknos:{hot:[32,35],cool:[24,29],hum:[70,90],night:[20,null]},
+ diszteknos:{hot:[30,40],water:[22,26],nwater:[20,null]},
+ 'diszteknos:hiero':{hot:[29],water:[22,26]},
+ 'diszteknos:pezsma':{hot:[29,32],water:[22,26]}};
+const TF={hot:['Meleg pont','°C'],cool:['Hűvös oldal','°C'],water:['Víz','°C'],hum:['Páratartalom','%']};
+const hasTerra=p=>['hullo','keteltu','gerinctelen'].includes(grp(p));
+const terraKind=p=>({vizi:'viz',viziteknos:'vt'})[kitOf(p)]||'sz';
+const terraFields=p=>({viz:['water'],vt:['hot','water'],sz:['hot','cool','hum']})[terraKind(p)];
+const tLabel=(p,f)=>f==='hot'&&terraKind(p)==='vt'?'Napozóhely':TF[f][0];
+const htName=(p,k)=>k==='terra'&&terraKind(p)==='viz'?'Vízhőmérséklet':HT[k];
+const tNum=v=>String(Math.round(v*10)/10).replace('.',',');
+const tRange=(T,f,tod)=>!T?null:tod==='n'?(f==='hum'?T.nhum:f==='water'?T.nwater||T.water:T.night)||null:T[f]||null;
+const tGoal=r=>!r?'':r.length===1?`kb. ${tNum(r[0])}`:r[1]==null?`legalább ${tNum(r[0])}`:`${tNum(r[0])}–${tNum(r[1])}`;
+const tStat=(v,r)=>!r||r.length===1||v==null?'':v<r[0]?'lo':r[1]!=null&&v>r[1]?'hi':'ok';
+const TSTAT={ok:'<span class="tag ok">célon belül</span>',lo:'<span class="tag bad">alacsony</span>',hi:'<span class="tag bad">magas</span>'};
+function tChart(l,ser,unit){ /* l: régi → új; ser: [[kulcs, felirat], …], legfeljebb két vonal */
+  const use=l.filter(e=>ser.some(([k])=>e[k]!=null)),vals=ser.flatMap(([k])=>use.map(e=>e[k]).filter(v=>v!=null));
+  if(use.length<2||!ser.some(([k])=>use.filter(e=>e[k]!=null).length>1))return'';
+  const W=320,H=150,px=38,pr=10,pt=10,pb=22,xs=use.map(e=>+D(e.date)),x0=xs[0],x1=xs[xs.length-1]||x0+1;let lo=Math.min(...vals),hi=Math.max(...vals);if(hi===lo){hi+=1;lo-=1}
+  const X=x=>px+(x1===x0?.5:(x-x0)/(x1-x0))*(W-px-pr),Y=y=>pt+(1-(y-lo)/(hi-lo))*(H-pt-pb);
+  const grid=v=>`<line x1="${px}" x2="${W-pr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)"/><text x="${px-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${tNum(v)}</text>`;
+  const line=([k],n)=>{const q=use.map((e,j)=>e[k]==null?null:[X(xs[j]).toFixed(1),Y(e[k]).toFixed(1)]).filter(Boolean),c=n?'var(--muted)':'var(--brand)';
+    return q.length?`${q.length>1?`<polyline points="${q.map(z=>z.join(',')).join(' ')}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"${n?' stroke-dasharray="6 5"':''}/>`:''}${q.map(z=>`<circle cx="${z[0]}" cy="${z[1]}" r="3.5" fill="var(--card)" stroke="${c}" stroke-width="2"/>`).join('')}`:''};
+  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${ser.map(x=>x[1]).join(' és ')}: ${use.length} mérés, ${tNum(lo)} és ${tNum(hi)} ${unit} között" font-size="11" fill="var(--muted)">${grid(hi)}${grid(lo)}${ser.map(line).join('')}
+  <text x="${px}" y="${H-6}">${fmtDate(D(use[0].date))}</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${fmtDate(D(use[use.length-1].date))}</text></svg>
+  <div class="leg">${ser.map(([k,n],j)=>`<span><i${j?' class="b"':''}></i>${n} (${unit})</span>`).join('')}</div>`}
+function uvbHtml(p){
+  if(terraKind(p)==='viz')return'';
+  const def=(MS[p.species]||MS.egyeb).some(m=>m.key==='uvb');
+  if(!def&&!p.uvbOn)return`<h2>UVB-fényforrás</h2><p class="sub">Ha használsz UVB-fényforrást, itt követheted a cseréjét: az app emlékeztet, amikor esedékes.</p><button class="btn ghost" data-act="uvbOn">UVB-csere követése</button>`;
+  const it=buildItems(p).filter(i=>i.m.key==='uvb'),done=it.filter(i=>i.done).sort((a,c)=>c.date-a.date),last=done[0],next=it.find(i=>i.pending),late=!!(last&&next&&next.date<today());
+  return`<h2>UVB-fényforrás cseréje</h2><div class="card" id="uvbCard">${last?`<p style="margin:0"><b>Utolsó csere:</b> ${fmtDate(last.date)}${last.done.note?', '+esc(last.done.note):''}</p>${next?`<p class="${late?'err':'sub'}" id="uvbNext">Következő: ${fmtDate(next.date)}${late?', már elmúlt':''}</p>`:''}`:'<p class="sub" style="margin:0">Még nincs rögzített csere. Rögzítsd az utolsót, és az app emlékeztet a következőre.</p>'}
+  <div class="f"><span>Emlékeztető a csere után</span>${radio('uvbM',[['6','6 hónap'],['9','9 hónap'],['12','12 hónap']],String(p.uvbM||12))}</div>
+  <button class="btn small" data-act="tick" data-key="uvb">Csere rögzítése</button>
+  ${done.length?`<ul class="list" style="margin-top:8px">${done.slice(0,6).map(i=>`<li><div style="flex:1;min-width:0">${fmtDate(i.date)}${i.done.note?`<span class="when">${esc(i.done.note)}</span>`:''}</div><button class="btn text" data-act="untick" data-id="${i.done.id}">Törlés</button></li>`).join('')}</ul>`:''}</div>
+  <p class="sub" style="margin-top:10px">Az UVB-kibocsátás akkor is csökken, ha a lámpa még világít. Az időközt a gyártó ajánlása szerint állítsd be.${def?'':' <button class="btn text" style="padding:0;min-height:0" data-act="uvbOff">Követés kikapcsolása</button>'}</p>`}
+function terraHtml(p){
+  const T=TERRA[gkey(p)],F=terraFields(p),l=recs(p,'terra'),last=l[0],tod=last?last.tod||'d':'d',day=[...l].filter(e=>(e.tod||'d')==='d').reverse();
+  const cell=f=>{const v=last?last[f]:null,r=tRange(T,f,tod),u=TF[f][1];return`<div><span class="when">${tLabel(p,f)}</span><div class="num">${v==null?'–':tNum(v)+' '+u}</div>${r?`<span class="when">cél: ${tGoal(r)} ${u}</span>`:''}${TSTAT[tStat(v,r)]||''}</div>`};
+  const goals=T?`<h2>Célértékek</h2><ul class="list" id="tGoals">${F.filter(f=>T[f]).map(f=>`<li><div style="flex:1"><b>${tLabel(p,f)}</b><span class="when">nappal ${tGoal(T[f])} ${TF[f][1]}${tRange(T,f,'n')&&tRange(T,f,'n')!==T[f]?`, éjjel ${tGoal(tRange(T,f,'n'))} ${TF[f][1]}`:''}</span></div></li>`).join('')}</ul>${T.note?`<p class="sub" style="margin-top:8px">${T.note}</p>`:''}<p class="sub" style="margin-top:8px">${terraKind(p)==='vt'?'A napozóhely':'A meleg pont (a sütkérezőhely)'} célértéke a levegő és a felület hőmérsékletét együtt fedi le; a részletek az útmutatóban vannak (Gondozás → Tartás és nevelés → Otthon).</p>`
+    :'<p class="sub" id="tNoGoal" style="margin-top:14px">Ehhez a fajhoz az appban még nincs célérték. A méréseidet így is rögzítheted, és a változásukat a grafikonon követheted.</p>';
+  const row=e=>F.filter(f=>e[f]!=null).map(f=>`${tLabel(p,f).toLowerCase()} ${tNum(e[f])} ${TF[f][1]}`).join(', ');
+  return`<div class="card" style="margin-top:14px" id="tLast">${last?`<span class="when">Utolsó mérés: ${fmtDate(D(last.date))}, ${tod==='n'?'éjjel':'nappal'}</span><div class="tv" style="margin-top:8px">${F.map(cell).join('')}</div>`:'<p class="sub" style="margin:0">Még nincs rögzített mérés.</p>'}</div>
+  <p style="margin-top:12px"><button class="btn" data-act="terraNew">Mérés rögzítése</button></p>
+  ${day.length>1?`<h2>Nappali mérések</h2><div class="card" id="tCharts">${tChart(day,F.filter(f=>f!=='hum').map(f=>[f,tLabel(p,f)]),'°C')}${F.includes('hum')?tChart(day,[['hum',TF.hum[0]]],'%'):''}</div>`:''}
+  ${goals}
+  ${l.length?`<h2>Mérések</h2><ul class="list" id="tList">${l.slice(0,14).map(e=>`<li><div style="flex:1;min-width:0"><b>${fmtDate(D(e.date))}, ${(e.tod||'d')==='n'?'éjjel':'nappal'}</b><span class="when">${row(e)}</span></div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}
+  ${uvbHtml(p)}${T?srcBox(p,'care'):''}
+  <p class="sub" style="margin-top:14px">A célértékek tájékoztató jellegűek. Ha az értékek tartósan a célon kívül vannak, vagy az állat viselkedése megváltozik, kérj tanácsot a fajhoz értő állatorvostól.</p>`}
 function vHealth(p){
   const t=today(),tabs=htFor(p);let b='';if(!tabs.includes(hTab))hTab=tabs[0];
   if(hTab==='vacc'){
@@ -1748,6 +1821,7 @@ function vHealth(p){
     <p style="margin-top:12px"><button class="btn" data-act="wNew">Súly rögzítése</button></p>
     ${l.length?`<h2>Mérések</h2><ul class="list">${l.slice(0,12).map(e=>`<li><div style="flex:1"><b>${wTxt(p,e.kg)}</b><span class="when">${fmtDate(D(e.date))}</span></div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}
     <p class="sub" style="margin-top:14px">Hirtelen fogyás vagy hízás esetén kérj állatorvosi tanácsot.</p>`}
+  if(hTab==='terra')b=terraHtml(p);
   if(hTab==='sym'){
     const l=recs(p,'sym');
     b=`<p class="note warn">Sürgős tünetnél (pl. légzési nehézség, görcs, mérgezés gyanúja, erős vérzés) azonnal fordulj állatorvoshoz vagy ügyelethez.</p><button class="btn" data-act="symNew">Tünet rögzítése</button>
@@ -1762,7 +1836,7 @@ function vHealth(p){
     b=`<p style="margin-top:14px"><button class="btn" data-act="evNew" data-cat="vet">Látogatás rögzítése</button></p>
     ${l.length?`<ul class="tasks" style="margin-top:14px">${l.map(e=>`<li><div><b>${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}${D(e.date)>t?', tervezett':''}</span>${e.note?`<span class="when">${esc(e.note)}</span>`:''}</div><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></li>`).join('')}</ul>`:'<p class="sub" style="margin-top:14px">Még nincs rögzített látogatás. A jövőbeli időpont emlékeztetőként megjelenik a Főoldalon.</p>'}
     <p style="margin-top:12px"><button class="btn ghost" data-act="tab" data-tab="vets">Állatorvos keresése</button></p>`}
-  return`<h1>Egészség</h1><div class="seg2" role="group" aria-label="Az Egészség részei">${tabs.map(k=>[k,HT[k]]).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}<p class="note">${DISC}</p>`}
+  return`<h1>Egészség</h1><div class="seg2" role="group" aria-label="Az Egészség részei">${tabs.map(k=>[k,htName(p,k)]).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}<p class="note">${DISC}</p>`}
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
 function vFood(p){
   const F=FOOD[gkey(p)],st=stageOf(p),L=limitsFor(p);
@@ -2267,6 +2341,7 @@ function symSheet(){openSheet(`<h2>Tünet rögzítése</h2><label class="f"><spa
   <div class="f"><span>Mennyire tűnik súlyosnak?</span>${radio('sySev',Object.entries(SEV).map(([k,v])=>[k,v[0].toUpperCase()+v.slice(1)]),'enyhe')}</div>
   <p class="sub">Súlyos vagy gyorsan romló tünetnél ne várj: fordulj állatorvoshoz.</p><p class="err" id="hErr" role="alert" hidden></p>
   <button class="btn" data-act="symSave" data-ai="1">Mentés és lehetséges okok kérése</button><button class="btn ghost" data-act="symSave">Csak mentés</button><button class="btn ghost" data-act="close">Mégse</button>`)}
+function terraSheet(){const p=pet();openSheet(`<h2>Mérés rögzítése</h2><p class="sub">Elég azt beírni, amit mértél.</p>${terraFields(p).map(f=>`<label class="f"><span>${tLabel(p,f)} (${TF[f][1]})</span><input id="tr_${f}" inputmode="decimal" maxlength="5" placeholder="${f==='hum'?'pl. 55':'pl. 31,5'}"></label>`).join('')}${dateF('hDate','Mérés dátuma')}<div class="f"><span>Napszak</span>${radio('trTod',[['d','Nappal'],['n','Éjjel']],'d')}</div>${sheetEnd('terraSave','Mérés mentése')}`)}
 function parSheet(k){openSheet(`<h2>${PAR_SHORT[k]}</h2>${dateF('hDate','Kezelés dátuma')}<label class="f"><span>Készítmény neve (nem kötelező)</span><input id="paProd" maxlength="60"></label>
   <label class="f"><span>Emlékeztető a következő kezelésre</span><select id="paNext">${[[0,'Nem kérek emlékeztetőt'],[28,'4 hét múlva'],[56,'8 hét múlva'],[84,'12 hét múlva'],[91,'3 hónap múlva'],[182,'6 hónap múlva'],[365,'1 év múlva']].map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select></label>
   <p class="sub">Az ismétlés idejét a készítmény tájékoztatójából vagy az állatorvostól tudod meg.</p>${sheetEnd('parSave','Kezelés mentése',` data-t="${k}"`)}`)}
@@ -2358,6 +2433,12 @@ const ACT={
   evDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Esemény törölve')},
   hTab(el){hTab=el.dataset.k;render()},
   wNew(){wSheet()},symNew(){symSheet()},parNew(el){parSheet(el.dataset.t)},
+  terraNew(){terraSheet()},
+  terraSave(){const p=pet(),d=$('#hDate').value,tod=(document.querySelector('[name=trTod]:checked')||{}).value==='n'?'n':'d',e={id:newId(),petId:p.id,kind:'terra',date:d,tod};let n=0;
+    for(const f of terraFields(p)){const raw=$('#tr_'+f).value.trim();if(!raw)continue;const v=parseFloat(raw.replace(',','.'));if(!/^\d{1,3}([.,]\d)?$/.test(raw)||!(v>=0&&v<=(f==='hum'?100:60)))return showErr('#hErr',f==='hum'?'A páratartalmat 0 és 100 közötti számmal add meg, pl. 55.':'A hőmérsékletet 0 és 60 °C közötti számmal add meg, pl. 31,5.');e[f]=Math.round(v*10)/10;n++}
+    if(!n)return showErr('#hErr','Írj be legalább egy mért értéket.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
+    S.events=S.events.filter(x=>!(x.petId===p.id&&x.kind==='terra'&&x.date===d&&(x.tod||'d')===tod));S.events.push(e);save();closeSheet();render();toast('Mérés mentve')},
+  uvbOn(){pet().uvbOn=true;save();render()},uvbOff(){pet().uvbOn=false;save();render()},
   wSave(){const p=pet(),gr=gramSp(p),kg=parseFloat($('#wKg').value.replace(',','.'))/(gr?1000:1),d=$('#hDate').value;if(!(kg>0&&kg<200))return showErr('#hErr',gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===d));S.events.push({id:newId(),petId:p.id,kind:'w',date:d,kg});syncWeight(p);save();closeSheet();render();toast('Súly mentve')},
   symSave(el){const text=$('#syText').value.trim(),d=$('#hDate').value,ai=el.dataset.ai;if(!text)return showErr('#hErr','Írd le röviden, mit vettél észre.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
@@ -2386,6 +2467,7 @@ document.addEventListener('change',e=>{const t=e.target;
   if(t.id==='photoIn')pickPhoto(t);
   else if(t.id==='wzBreed'||t.name==='mode'){readWizard();W.err='';drawWizard()}
   else if(t.name==='theme'){S.settings.theme=t.value;applyTheme();save()}
+  else if(t.name==='uvbM'){const p=pet();if(p){p.uvbM=+t.value;save();render()}}
   else if(t.id==='cityIn')save();
   else if(t.id==='npMegye'){npMegye=t.value;render();const s=$('#npMegye');s&&s.focus({preventScroll:true})}
   else if(t.id==='npBreed'){npBreed[npSp]=t.value;render();const s=$('#npBreed');s&&s.focus({preventScroll:true})}
