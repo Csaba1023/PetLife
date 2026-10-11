@@ -343,7 +343,7 @@ const SIZES={s:'kicsi',m:'kozepes',l:'nagy',g:'orias'};
 const SIZE_HU={kicsi:'kistestű',kozepes:'közepes testű',nagy:'nagytestű',orias:'óriás testű'};
 const SIZE_HINT={kicsi:'Kicsi (kb. 10 kg alatt)',kozepes:'Közepes (kb. 10–25 kg)',nagy:'Nagy (kb. 25–45 kg)',orias:'Óriás (kb. 45 kg felett)'};
 const DOGSIZE={};
-'Akita|l;Amerikai staffordshire terrier|m;Angol bulldog|m;Angol cocker spániel|m;Ausztrál juhászkutya|m;Basset hound|m;Beagle|m;Belga juhászkutya (malinois)|l;Bernáthegyi|g;Berni pásztorkutya|l;Bichon frisé|s;Bichon havanese|s;Bolognai pincsi|s;Border collie|m;Boston terrier|s;Boxer|l;Bullterrier|m;Cane corso|l;Cavalier King Charles spániel|s;Csivava|s;Dalmata|l;Dobermann|l;Drótszőrű magyar vizsla|m;Erdélyi kopó|l;Francia bulldog|s;Golden retriever|l;Ír farkaskutya|g;Jack Russell terrier|s;Kaukázusi juhászkutya|g;Komondor|g;Közép-ázsiai juhászkutya|g;Kuvasz|g;Labrador retriever|l;Leonbergi|g;Magyar agár|l;Magyar vizsla|m;Máltai selyemkutya|s;Mopsz|s;Mudi|m;Német dog|g;Német juhászkutya|l;Óriás schnauzer|l;Pekingi palotakutya|s;Pomerániai törpespicc|s;Puli|m;Pumi|m;Rottweiler|l;Shar-pei|m;Shiba inu|m;Shih tzu|s;Staffordshire bullterrier|m;Szamojéd|m;Szibériai husky|m;Tacskó|s;Törpe pincser|s;Törpe schnauzer|s;Törpe uszkár|s;Újfundlandi|g;Uszkár (közép)|m;Weimari vizsla|l;Welsh corgi|m;West highland white terrier|s;Whippet|m;Yorkshire terrier|s'
+'Akita|l;Amerikai staffordshire terrier|m;Angol bulldog|m;Angol cocker spániel|m;Ausztrál juhászkutya|m;Basset hound|m;Beagle|m;Belga juhászkutya (malinois)|l;Bernáthegyi|g;Berni pásztorkutya|l;Bichon frisé|s;Bichon havanese|s;Bolognai pincsi|s;Border collie|m;Boston terrier|s;Boxer|l;Bullterrier|m;Cane corso|l;Cavalier King Charles spániel|s;Csivava|s;Dalmata|l;Dobermann|l;Drótszőrű magyar vizsla|m;Erdélyi kopó|l;Francia bulldog|s;Golden retriever|l;Ír farkaskutya|g;Jack Russell terrier|s;Kaukázusi juhászkutya|g;Komondor|g;Közép-ázsiai juhászkutya|g;Kuvasz|g;Labrador retriever|l;Leonbergi|g;Magyar agár|l;Magyar vizsla|m;Máltai selyemkutya|s;Mopsz|s;Mudi|m;Német dog|g;Német juhászkutya|l;Óriás schnauzer|l;Pekingi palotakutya|s;Pomerániai törpespicc|s;Puli|m;Pumi|m;Rottweiler|l;Schnauzer (közép)|m;Shar-pei|m;Shiba inu|m;Shih tzu|s;Staffordshire bullterrier|m;Szamojéd|m;Szibériai husky|m;Tacskó|s;Törpe pincser|s;Törpe schnauzer|s;Törpe uszkár|s;Újfundlandi|g;Uszkár (közép)|m;Weimari vizsla|l;Welsh corgi|m;West highland white terrier|s;Whippet|m;Yorkshire terrier|s'
   .split(';').forEach(x=>{const[n,s]=x.split('|');DOGSIZE[n]=SIZES[s]});
 const BREEDS={
   kutya:Object.keys(DOGSIZE),
@@ -1931,7 +1931,7 @@ const SHELTERS=[
 /* ---------- „Még nincs állatom": fajtatiszta állat (fajtaklubok, tenyésztőlisták) ----------
    Egyes tenyésztőket nem ajánlunk: a link a hivatalos magyar szervezet (fajtaklub, MEOE Szövetség, Felis Hungarica)
    oldalára visz, ahol a tenyésztők listája van. A klub–fajta megfeleltetés forrása a MEOE Szövetség fajtaklub-listája.
-   Csak letöltéssel ellenőrzött cím szerepel (2026. október); részletek: petvia-nincs-allatom.md.
+   Csak ellenőrzött cím szerepel (2026. október): letöltéssel, vagy ahol az oldal a gépi letöltést tiltja, Csaba megnyitotta; részletek: petvia-nincs-allatom.md.
    KLUB: azonosító → [név, cím, mit nyit a link: t = tenyésztők listája, k = kennelek listája, o = a klub oldala] */
 const KLUBL={t:'tenyésztők listája',k:'kennelek listája',o:'a klub oldala'};
 const KLUB={
@@ -1975,18 +1975,29 @@ const KLUB={
  hmre:['Hírös Magyar Rottweiler Egyesület','https://www.rottweiler-hungary.hu/','o'],
  mtoe:['Magyar Tacskósok Országos Egyesülete','https://www.tacskosok.hu/','o'],
  mtte:['Magyar Tacskótenyésztők Egyesülete','https://magyartacsko.hu/','o'],
- mut:['Magyarországi Uszkárbarátok Társasága','https://www.poodleclub.hu/','o']};
+ mut:['Magyarországi Uszkárbarátok Társasága','https://www.poodleclub.hu/','o'],
+ /* a következő címeket gépi letöltéssel nem lehetett ellenőrizni; Csaba nyitotta meg őket 2026. október 11-én */
+ g5:['Amerikai Akita és Ősi Típusú Kutyák Egyesülete','https://group5dogs.hu/hu','o'],
+ szk:['Szánhúzó Kutyások Kynológiai Egyesülete','http://szanhuzoklub.hu/','o'],
+ spz:['Magyar Spitz Egyesület','http://www.spitz.hu/','o'],
+ bbf:['Beagle és Bloodhound Fajtások Kynológiai Egyesülete','http://www.bbfke.hu/','o'],
+ mmk:['Magyar Molosser Kedvelők Egyesülete','http://2016mmke.hu','o'],
+ hsp:['Hungária Schnauzer Pinscher Klub','http://www.hspk.hu/','o'],
+ msp:['Magyarországi Schnauzer Pinscher Dobermann Klub','http://www.mspdk.hu/','o'],
+ nvk:['Német Vizsla Klub Magyarország','http://nemetvizslaklub.eu/','o'],
+ tkk:['Társasági Kutyások Kynológiai Egyesülete','http://www.tkke.hu/hirek.html','o']};
 /* fajta (a BREEDS.kutya nevei szerint) → klubok; amelyik fajta nincs itt, annál csak a MEOE Szövetség listája jelenik meg */
-const FAJTAKLUB={'Amerikai staffordshire terrier':['pte'],'Angol bulldog':['hbk','hbs'],'Angol cocker spániel':['ste'],'Ausztrál juhászkutya':['aapk','hcsc'],
- 'Belga juhászkutya (malinois)':['hbjk','hmc'],'Berni pásztorkutya':['mbe'],'Bichon frisé':['abe'],'Bichon havanese':['abe'],'Bolognai pincsi':['abe'],
- 'Border collie':['aapk','hcsc'],'Boston terrier':['htm'],'Boxer':['hbox','mbox'],'Bullterrier':['pte'],'Cavalier King Charles spániel':['ctpe'],'Csivava':['ctpe'],
+const FAJTAKLUB={'Akita':['g5','szk'],'Amerikai staffordshire terrier':['pte'],'Angol bulldog':['hbk','hbs'],'Angol cocker spániel':['ste'],'Ausztrál juhászkutya':['aapk','hcsc'],
+ 'Beagle':['bbf'],'Belga juhászkutya (malinois)':['hbjk','hmc'],'Bernáthegyi':['mmk'],'Berni pásztorkutya':['mbe'],'Bichon frisé':['abe','tkk'],'Bichon havanese':['abe','tkk'],'Bolognai pincsi':['abe','tkk'],
+ 'Border collie':['aapk','hcsc'],'Boston terrier':['htm'],'Boxer':['hbox','mbox'],'Bullterrier':['pte'],'Cane corso':['mmk'],'Cavalier King Charles spániel':['ctpe'],'Csivava':['ctpe'],
  'Dalmata':['rrc'],'Dobermann':['hdk'],'Drótszőrű magyar vizsla':['mdm'],'Erdélyi kopó':['mekk'],'Francia bulldog':['htm'],'Golden retriever':['mrve'],
- 'Ír farkaskutya':['mafe','agk'],'Kaukázusi juhászkutya':['kar'],'Komondor':['hkk','mkke'],'Közép-ázsiai juhászkutya':['kar'],'Kuvasz':['mkfe','mkke'],
- 'Labrador retriever':['mrve'],'Leonbergi':['lfoe'],'Magyar agár':['magfe','agk'],'Magyar vizsla':['mvke'],'Máltai selyemkutya':['abe'],'Mopsz':['htm'],
- 'Mudi':['fmk','mme'],'Német dog':['mndk'],'Német juhászkutya':['hnje'],'Pekingi palotakutya':['abe'],'Puli':['hpk','mpk'],'Pumi':['pumi','npe'],
- 'Rottweiler':['hmre'],'Shih tzu':['abe'],'Staffordshire bullterrier':['pte'],'Tacskó':['mtoe','mtte'],'Törpe uszkár':['mut'],'Uszkár (közép)':['mut'],
- 'Welsh corgi':['aapk','hcsc'],'Whippet':['agk','mafeo']};
-const MEOE_KLUBOK='https://www.kennelclub.hu/index.php?modul=szervezetek&szuro=fajta';
+ 'Ír farkaskutya':['mafe','agk'],'Kaukázusi juhászkutya':['kar','mmk'],'Komondor':['hkk','mkke'],'Közép-ázsiai juhászkutya':['kar','mmk'],'Kuvasz':['mkfe','mkke'],
+ 'Labrador retriever':['mrve'],'Leonbergi':['lfoe'],'Magyar agár':['magfe','agk'],'Magyar vizsla':['mvke'],'Máltai selyemkutya':['abe','tkk'],'Mopsz':['htm'],
+ 'Mudi':['fmk','mme'],'Német dog':['mndk'],'Német juhászkutya':['hnje'],'Óriás schnauzer':['hsp','msp'],'Pekingi palotakutya':['abe','tkk'],'Pomerániai törpespicc':['spz','g5'],'Puli':['hpk','mpk'],'Pumi':['pumi','npe'],
+ 'Rottweiler':['hmre'],'Schnauzer (közép)':['hsp','msp'],'Shar-pei':['mmk','tkk'],'Shiba inu':['g5','spz'],'Shih tzu':['abe','tkk'],'Staffordshire bullterrier':['pte'],'Szamojéd':['g5','szk'],'Szibériai husky':['g5','szk'],
+ 'Tacskó':['mtoe','mtte'],'Törpe pincser':['hsp','msp'],'Törpe schnauzer':['hsp','msp'],'Törpe uszkár':['mut'],'Újfundlandi':['mmk'],'Uszkár (közép)':['mut'],
+ 'Weimari vizsla':['nvk'],'Welsh corgi':['aapk','hcsc'],'Whippet':['agk','mafeo']};
+const MEOE_KLUBOK='https://www.kennelclub.hu/index.php?modul=szervezetek&szuro=fajta',MEOE_HIRD='http://apro.meoesz.hu/';
 /* macska: a Felis Hungarica (a FIFe magyarországi tagja) tenyésztőlistái kategóriánként; fajtánkénti aloldal nincs */
 const FH_HOME='https://www.felishungarica.eu/',FH_KAT=k=>`https://www.felishungarica.eu/hu/tenyesztok/tenyesztok-${k}-kategoria`;
 const FHKAT={'Perzsa':'i','Ragdoll':'i','Szent birman':'i','Maine coon':'ii','Norvég erdei':'ii','Szibériai':'ii','Bengáli':'iii','Brit rövidszőrű':'iii','Burma':'iii',
@@ -2030,7 +2041,7 @@ function npBreedHtml(){
   const sp=npSp,b=npBreed[sp],dog=sp==='kutya';let res='';
   if(b&&dog){const ids=FAJTAKLUB[b]||[];
     res=`${ids.length?'':'<p class="sub" id="npNoClub">Ehhez a fajtához most nincs olyan klublinkünk, amelyet ellenőrizni tudtunk. A MEOE Szövetség listájában megtalálod a fajta klubjait.</p>'}
-    <ul class="tasks" id="npClubs">${ids.map(i=>npRow(KLUB[i][0],KLUB[i][1],KLUBL[KLUB[i][2]])).join('')}${npRow('MEOE Szövetség: fajtaklubok',MEOE_KLUBOK,'az összes hivatalos fajtaklub listája')}</ul>`}
+    <ul class="tasks" id="npClubs">${ids.map(i=>npRow(KLUB[i][0],KLUB[i][1],KLUBL[KLUB[i][2]])).join('')}${npRow('MEOE Szövetség: kölyökhirdetések',MEOE_HIRD,'regisztrált, FCI kennelnévvel rendelkező tenyésztők hirdetései')}${npRow('MEOE Szövetség: fajtaklubok',MEOE_KLUBOK,'az összes hivatalos fajtaklub listája')}</ul>`}
   if(b&&!dog){const k=FHKAT[b];
     res=`${b.startsWith('Európai')?'<p class="note" id="npHazi" style="margin-top:0">A házi macskák többsége nem törzskönyvezett. Ha nem kifejezetten törzskönyvezett európai rövidszőrűt keresel, nézz körül a menhelyeken. <button class="btn text" style="padding:0;min-height:0" data-act="npTab" data-v="adopt">Örökbefogadás megnyitása</button></p>':''}
     ${k?'':'<p class="sub" id="npNoClub">Ez a fajta nem szerepel a Felis Hungarica kategórialistáin, ezért ehhez nem tudunk hivatalos tenyésztőlistát mutatni. Az egyesületnél érdeklődhetsz.</p>'}
