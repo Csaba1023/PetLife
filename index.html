@@ -1675,7 +1675,7 @@ function trail(p){
   <p class="next">${next} A szakaszhatárok tájékoztató jellegűek.</p>`}
 function vEmpty(){return`<div class="empty"><div class="big">${ic('paw')}</div><h1>Kövesd végig a kedvenced életét</h1>
   <p class="sub">Add meg a faját, fajtáját és korát, és a PetVia mindig az aktuális életszakaszához illő teendőket és tippeket mutatja.</p>
-  <p><button class="btn" data-act="petNew">Állat felvétele</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
+  <p><button class="btn" data-act="petNew">Állat felvétele</button></p><p><button class="btn ghost" data-act="tab" data-tab="nopet">Még nincs állatom</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
 function vHome(p){
   const st=stageOf(p),items=buildItems(p),due=dueList(p,items),t=today();
   const soon=S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&D(e.date)>=t&&D(e.date)-t<=30*DAY).sort((a,c)=>a.date<c.date?-1:1);
@@ -1858,6 +1858,103 @@ function vVets(){
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
   <div id="mapBtns">${a(ex?'egzotikus állatorvos':'állatorvos',ex?'Egzotikus állatorvos keresése a térképen':'Állatorvos keresése a térképen','')}<div style="height:10px"></div>${a('állatorvosi ügyelet','Ügyelet keresése a térképen','ghost')}</div>
   <p class="sub" style="margin-top:12px">A térkép új lapon nyílik meg, a település megadása után.</p>`}
+/* ---------- „Még nincs állatom": örökbefogadás ----------
+   Csak létező szervezet. A cím a szervezet saját oldala, ahol a gazdit kereső állatait mutatja be
+   (ahol ilyen aloldalt nem találtunk, a főoldala). A linkek nem fizetett hirdetések.
+   Sor: [megye, név, település, kutyás cím, macskás cím, megjegyzés?]; a macskás címnél '=' : ugyanaz, mint a kutyás, '' : nincs.
+   Átnézve: 2026. október; a források és az ellenőrzés módja a projekt petvia-nincs-allatom.md dokumentumában. */
+const MEGYEK=['Budapest','Bács-Kiskun','Baranya','Békés','Borsod-Abaúj-Zemplén','Csongrád-Csanád','Fejér','Győr-Moson-Sopron','Hajdú-Bihar','Heves','Jász-Nagykun-Szolnok','Komárom-Esztergom','Nógrád','Pest','Somogy','Szabolcs-Szatmár-Bereg','Tolna','Vas','Veszprém','Zala'];
+const SHELTERS=[
+ ['Budapest','Illatos úti Állategészségügyi Szolgálat','Budapest, IX. kerület','http://illatosut.hu/osszes_kutya','http://illatosut.hu/macskak'],
+ ['Budapest','Noé Állatotthon Alapítvány','Budapest','http://www.noeallatotthon.hu/index.php?pid=1&faj=0&statusz=0','='],
+ ['Budapest','Rex Kutyaotthon Alapítvány','Budapest, IV. kerület','https://www.rex.hu/hu/orokbefogadas/','='],
+ ['Budapest','HEROSZ Budapesti Állatotthon','Budapest, XXII. kerület','https://herosz.hu/allatfajok/kutya/','https://herosz.hu/allatfajok/macska/'],
+ ['Budapest','Vigyél Haza Alapítvány','Budapest','https://vigyelhaza.hu/kutyalista/',''],
+ ['Budapest','Állatmentő Liga','Budapest','https://allatmentoliga.com/','='],
+ ['Budapest','Ebremény Kutyavédő Egyesület','Budapest','https://www.ebremeny.hu/gazdikeresoink-kutyak/','https://www.ebremeny.hu/gazdikeresoink-macskak/'],
+ ['Budapest','Kismaszat Állatmentő Egyesület','Budapest','https://kismaszat.hu/gazdikereso-kutyak/','https://kismaszat.hu/gazdikereso-macskak/'],
+ ['Budapest','Eszkuláp Állatvédő Egyesület','Budapest','https://www.eszkulap.hu/index.php/vedenceink/gazdikereso-allatok','='],
+ ['Budapest','Macskamentők Alapítvány','Budapest','','https://www.macskamentok.hu/gazdikeresok/'],
+ ['Bács-Kiskun','Menhely az Állatokért','Kecskemét','https://menhely.eu/menhelyes-orokbefogadhato-allatok','='],
+ ['Bács-Kiskun','Állatvédelmi Centrum Alapítvány','Helvécia','https://allatvedelmi-centrum.hu/elementor-82/',''],
+ ['Bács-Kiskun','Kelebiai Kutyamentő Alapítvány','Kelebia','https://kelebiaikutyamentok.hu/gazdira-varunk',''],
+ ['Bács-Kiskun','Jeromos Állatmentő és Természetvédelmi Egyesület','Baja','https://bajaikutyak.hu/',''],
+ ['Baranya','Misina Természet- és Állatvédő Egyesület','Pécs','https://misina.hu/allataink/','='],
+ ['Baranya','Komlói Állatvédő Közhasznú Egyesület','Komló','https://komloiallatvedok.hu/allatok/orokbefogadhato','='],
+ ['Baranya','EBADTA Állat- és Természetvédők Egyesülete','Siklós','https://sosallatok.hu/gazdira-varnak/','='],
+ ['Baranya','Pécsi Morpheus Állatmentő Alapítvány','Pécs','https://morpheus-allatmentok.hu/','='],
+ ['Békés','Csabai Állatvédők','Békéscsaba','https://www.csabaiallatvedok.hu/orokbefogadhato/kutyak?category%5B%5D=24','https://www.csabaiallatvedok.hu/orokbefogadhato/macskak?category%5B%5D=25'],
+ ['Békés','Battonyai Állatmentők Alapítványa','Battonya','https://kutyamento.hu/orokbefogadhato',''],
+ ['Békés','Békési Állatvédők (Esély Állatvédő Egyesület)','Békés','http://www.bekesiallatvedok.hu/',''],
+ ['Békés','Szarvas Kóbor és Elveszett Kutyáiért Egyesület','Szarvas','http://szkek.eu/orokbe-fogadhato-kutyak/',''],
+ ['Borsod-Abaúj-Zemplén','Miskolci Állatsegítő Alapítvány (MÁSA)','Miskolc','https://www.allatsegito.hu/gazdikereso/kutyak',''],
+ ['Borsod-Abaúj-Zemplén','Miskolci Kóborkák Állatvédő Alapítvány','Miskolc','https://miskolcikoborkak.hu/','='],
+ ['Borsod-Abaúj-Zemplén','Zemplén Gazdátlan Állataiért Alapítvány','Sátoraljaújhely','https://www.gazdatlankutya.hu/orokbe-fogadhato.html',''],
+ ['Borsod-Abaúj-Zemplén','Angyalok a Cicákért Alapítvány','Kazincbarcika','','https://angyalokacicakert.hu/gazdikereso'],
+ ['Csongrád-Csanád','Tappancs Állatvédő Alapítvány','Szeged','https://tappancs.hu/gazdit-keresunk/orokbefogadhato-kutyak','https://tappancs.hu/gazdit-keresunk/orokbefogadhato-cicak'],
+ ['Csongrád-Csanád','Orpheus Állatvédő Egyesület','Szeged','https://ebangyal.hu/gazdikereso-kutya-cica-allatmenhely/','='],
+ ['Csongrád-Csanád','Konrad Lorenz Természetvédő és Állatvédő Egyesület','Hódmezővásárhely','http://www.konradlorenz.hu/',''],
+ ['Csongrád-Csanád','Mogyoró Menedék','Szentes','http://www.mogyoro-haselnuss-szentes.hu/liste',''],
+ ['Fejér','Fehérvári Állatotthon (HEROSZ)','Székesfehérvár','https://fehervariallatotthon.hu/gazdikereso.html','='],
+ ['Fejér','Etyeki Állatvédők Egyesülete','Etyek','https://etyekimenhely.hu/kutyaink/',''],
+ ['Fejér','Kutyasegélyszolgálat Alapítvány','Ercsi','https://wegera.hu/wp/orokbefogadhato-kutyak/',''],
+ ['Fejér','Fema Állatmentők','Lovasberény','https://femaallatmentok.hu/gazdikereso-kutyak-2/',''],
+ ['Győr-Moson-Sopron','Győri Állatmenhely (Emberek az Állatokért Alapítvány)','Győr','https://menhelygyor.hu/kutyak/','https://menhelygyor.hu/macskak/'],
+ ['Győr-Moson-Sopron','Menedék Állatvédő Alapítvány','Mosonmagyaróvár','https://menedekmovar.hu/gazdikereso-kutyak/','https://menedekmovar.hu/gazdikereso-cicak/'],
+ ['Hajdú-Bihar','„Együtt az Állatokért” Állatvédő Közhasznú Egyesület','Debrecen','https://debrecenikutyahaz.hu/orokbefogadhato-faj-szerint/kutyak/','https://debrecenikutyahaz.hu/orokbefogadhato-faj-szerint/macskak/'],
+ ['Hajdú-Bihar','Hajdúszoboszlói Kutyabarátok Egyesület','Hajdúszoboszló','https://szoboszloimentes.hu/',''],
+ ['Hajdú-Bihar','Puli Állatvédő Egyesület','Debrecen','http://debrecendog.com/',''],
+ ['Heves','Állatokat Védjük Együtt Alapítvány','Eger','https://egri-menhely.hu/','='],
+ ['Heves','Füzesabonyi Állatvédő Alapítvány','Füzesabony','https://fuzallatvedelem.hu/index.php?option=com_content&task=view&id=16&Itemid=36','='],
+ ['Heves','Papamaci Árvái Alapítvány','Kál','https://www.papamaciarvai.hu/index.php?pageid=query',''],
+ ['Heves','Gyöngyösi gyepmesteri telep','Gyöngyös','https://www.gyepmesteritelepgyongyos.hu/gazdikereso/','='],
+ ['Jász-Nagykun-Szolnok','Szolnok Városi Állatotthon','Szolnok','https://szolnokvarosiallatotthon.hu/orokbe-fogadhato-kutyusaink/',''],
+ ['Jász-Nagykun-Szolnok','Kóbor Szívek Állatmentő és Környezetvédő Alapítvány','Karcag','https://koborszivek.hu/gazdat-keres.php',''],
+ ['Komárom-Esztergom','Bogáncs Kutya- és Kisállatotthon Alapítvány','Esztergom','https://www.bogancsotthon.hu/kutyaink','https://www.bogancsotthon.hu/macskak/macska-orokbefogadas/'],
+ ['Komárom-Esztergom','Rex Komáromi Állatvédő Egyesület','Komárom','https://rexkomarom.hu/gazdikereso-kutyak/','https://rexkomarom.hu/gazdikereso-cicak/'],
+ ['Komárom-Esztergom','Tappancs Állatotthon Alapítvány','Tatabánya','https://tappancsotthon.hu/gazditkeresunk',''],
+ ['Nógrád','Mancs a Szívben Állatvédő Egyesület','Salgótarján','https://www.mancsaszivben.hu/gazdikeresok/',''],
+ ['Nógrád','Lassie Állatmenhely','Salgótarján','https://www.lassieallatmenhely.hu/ebrendeszeti-telep/gazdit-keresunk',''],
+ ['Nógrád','Segítő Kezek az Állatokért Alapítvány','Tereske','https://segitokezekazallatokert.hu/','='],
+ ['Pest','Szentendrei Árvácska Állatvédő Egyesület','Szentendre','https://arvacska.hu/fogadj-orokbe/orokbefogadhato-kutyak/','https://arvacska.hu/fogadj-orokbe/orokbefogadhato-cicak/'],
+ ['Pest','Zöld Menedék Állatvédő Alapítvány','Vác','https://zoldmenedek.hu/kutya_macska/Gazdira_varo_kutyak.html','https://zoldmenedek.hu/kutya_macska/Macskak.html'],
+ ['Pest','Elek-Ágh Állatmenhely Alapítvány','Tököl','https://www.elek-agh.hu/gazdikereso',''],
+ ['Pest','Lelenc Kutyamentő Egyesület','Őrbottyán','https://www.lelenc.hu/kutyaink/gazdara-varo-kutyak/',''],
+ ['Somogy','Kutyatár Természet- és Állatvédő Egyesület','Kaposvár','https://kutyatarkaposvar.hu/orokbefogadhato-kutyak/','https://kutyatarkaposvar.hu/orokbefogadhato-macskak/'],
+ ['Somogy','Siófoki Állatvédő Alapítvány','Siófok','https://siofokiallatvedo.hu/orokbefogadas/',''],
+ ['Szabolcs-Szatmár-Bereg','Állatbarát Alapítvány','Nyíregyháza','https://www.allatbarat.com/fogadj-orokbe-nyiregyhaza','='],
+ ['Szabolcs-Szatmár-Bereg','Ugatlak Alapítvány','Kisvárda','https://ugatlakalapitvany.com/adopt.html',''],
+ ['Szabolcs-Szatmár-Bereg','A Hangtalanokért Állatvédő Egyesület','Ibrány','https://a-hangtalanokert-allatvedo-egyesulet.webnode.hu/fotogaleria/',''],
+ ['Tolna','Szekszárdi Kutyamenhely','Szekszárd','https://kutyamenhely.info/kutyatar',''],
+ ['Tolna','Tamási Állatvédő Egyesület','Tamási','https://www.tamasiallatvedok.hu/gazdikeresok',''],
+ ['Vas','Fekete István Állatvédő Egyesület','Szombathely','https://kutyamentok.hu/hu/gazdira-varunk/','='],
+ ['Vas','Állatvédők Vasi Egyesülete','Szombathely','https://aveanimals.com/category/gazdikereso-kutyak/','https://aveanimals.com/category/gazdikereso-cicak/'],
+ ['Vas','Meggyeserdei Menedék Alapítvány','Celldömölk','https://www.kemenesaljakutyai.hu/gazdikeresoink/',''],
+ ['Veszprém','Állatvédő Egyesület Veszprém','Veszprém','https://veszpremiallatvedok.hu/menhelyunk-lakoi',''],
+ ['Veszprém','Assisi Szent Ferenc Állatmenhely Alapítvány','Tapolca','https://www.menhely-tapolca.hu/hu/orokbeadhato-kutyak/',''],
+ ['Veszprém','Pápai Humán Állatvédő Egyesület','Pápa','http://www.papaikutyak.hu/hirdetes/2',''],
+ ['Veszprém','Északbalatoni Ebmentő Egyesület','Balatonfüred','https://www.ebmenhely.eu/','','német nyelvű oldal'],
+ ['Zala','Élettér Állat- és Természetvédő Egyesület','Nagykanizsa','https://eletter-kanizsa.hu/gazdit-keresunk/kutyak/','https://eletter-kanizsa.hu/gazdit-keresunk/cicak/'],
+ ['Zala','Bogáncs Zalaegerszegi Állatvédő Egyesület','Zalaegerszeg','https://bogancsmenhely.hu/orokbe-fogadhato-kutyaink',''],
+ ['Zala','Szimat Állatvédő Egyesület','Zalaszentgrót','http://www.szimat-ave.hu/','']];
+let npSp='kutya',npMegye='';
+const megyeHU=m=>m==='Budapest'?m:m+' megye';
+const shOf=(m,sp)=>SHELTERS.filter(s=>s[0]===m&&(sp==='kutya'?s[3]:s[4])).map(s=>({n:s[1],t:s[2],u:sp==='kutya'||s[4]==='='?s[3]:s[4],x:s[5]||''}));
+function vNoPet(){
+  const has=S.pets.length>0,c=S.settings.city||'',l=npMegye?shOf(npMegye,npSp):[],mit=npSp==='kutya'?'kutyát':'macskát';
+  const a=(q,t,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${t}</a>`;
+  return`<button class="btn text back" data-act="tab" data-tab="${has?'more':'home'}">‹ ${has?'Beállítások':'Vissza'}</button><h1>Még nincs állatom</h1>
+  <p class="sub" style="margin-top:6px">Örökbe fogadnál? Válaszd ki, mit keresel és melyik megyében. A szervezet nevére koppintva az az oldala nyílik meg, ahol a gazdit kereső állatait bemutatja.</p>
+  <div class="seg2" role="group" aria-label="Milyen állatot keresel?">${[['kutya','Kutya'],['macska','Macska']].map(([v,n])=>`<button data-act="npSp" data-v="${v}" aria-pressed="${npSp===v}">${n}</button>`).join('')}</div>
+  <h2>Menhelyek és állatvédő szervezetek</h2>
+  <label class="f"><span>Megye</span><select id="npMegye"><option value="">Válassz megyét…</option>${MEGYEK.map(m=>`<option value="${m}"${m===npMegye?' selected':''}>${megyeHU(m)}</option>`).join('')}</select></label>
+  ${!npMegye?'':l.length?`<ul class="tasks" id="npList">${l.map(s=>`<li><a class="plink" ${ext(s.u)}><b>${esc(s.n)}</b><span class="when">${esc(s.t)}${s.x?', '+esc(s.x):''}</span></a></li>`).join('')}</ul><p class="sub" style="margin-top:8px">${l.length} szervezet. A link új lapon nyílik meg.</p>`
+    :`<p class="sub" id="npNone">Itt most nincs a listánkon olyan szervezet, amelyik ${mit} ad örökbe. Nézz körül a szomszédos megyékben, vagy keress lent a térképen.</p>`}
+  <h2>Keresés a térképen</h2><p class="sub">Írd be a településed, és a Google Térkép megmutatja a közeli menhelyeket. Ezeket a találatokat a PetVia nem nézte át.</p>
+  <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
+  <div id="mapBtns">${a('állatmenhely','Állatmenhely keresése a térképen','')}<div style="height:10px"></div>${a('állatvédő egyesület','Állatvédő szervezet keresése a térképen','ghost')}</div>
+  <p class="note">A listán csak létező szervezet szerepel, az oldalukat 2026 októberében néztük át; az elérhetőségük és az oldaluk címe változhat. A linkek nem fizetett hirdetések, a PetVia nem áll kapcsolatban a szervezetekkel, és nem tartja nyilván az örökbe fogadható állatokat. Örökbefogadás előtt mindig egyeztess a szervezettel.</p>
+  <h2>Megvan az új családtag?</h2><p class="sub">Vedd fel, és a PetVia végigkíséri az életét.</p><button class="btn" data-act="petNew">Állat felvétele</button>`}
 function vHub(p){
   const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
   return`<h1>Gondozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}</p>
@@ -1894,7 +1991,7 @@ function vMore(){
     :{sync:'Szinkronizálás a fiókoddal…',cloud:'Az adataid a fiókodhoz mentve, így a többi eszközödön is megjelennek.',error:`A fiókba mentés most nem sikerült. Az eszközön megvannak az adatok, kapcsolat esetén újra megpróbálom.${cloud.err?` (hibakód: ${esc(cloud.err)})`:''}`}[cloud.state]||'Mentés ellenőrzése…';
   return`<h1>Beállítások</h1><h2>Állataim</h2>
   ${S.pets.length?`<ul class="list">${S.pets.map(p=>{const st=stageOf(p);return`<li>${ava(p)}<button class="grow" data-act="petUse" data-id="${p.id}"><b>${esc(petName(p))}</b>${cur&&cur.id===p.id?' ✓':''}<span class="when">${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</span></button><button class="btn ghost small" data-act="petEdit" data-id="${p.id}">Szerkesztés</button></li>`}).join('')}</ul>`:'<p class="sub">Még nincs felvett állat.</p>'}
-  <p style="margin-top:10px"><button class="btn" data-act="petNew">Új állat felvétele</button></p>
+  <p style="margin-top:10px"><button class="btn" data-act="petNew">Új állat felvétele</button></p><p><button class="btn ghost" data-act="tab" data-tab="nopet">${S.pets.length?'Újabb állatot keresek':'Még nincs állatom'}</button></p>
   <h2>Fiók</h2>${accountHtml()}
   <h2>Megjelenés</h2><div class="chips">${[['auto','Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,n])=>`<label><input type="radio" name="theme" value="${v}"${th===v?' checked':''}><span>${n}</span></label>`).join('')}</div>
   <h2>Telepítés</h2>${installHtml()}
@@ -1938,6 +2035,7 @@ function render(opt={}){
   renderTop();v.className='';
   if(tab==='more')v.innerHTML=vMore();
   else if(tab==='vets')v.innerHTML=vVets();
+  else if(tab==='nopet')v.innerHTML=vNoPet();
   else if(!p)v.innerHTML=vEmpty();
   else if(tab==='hub')v.innerHTML=vHub(p);
   else if(tab==='home')v.innerHTML=vHome(p);
@@ -2123,6 +2221,7 @@ const ACT={
   close:closeSheet,
   pets(){openSheet(`<h2>Állataim</h2><ul class="list">${S.pets.map(p=>`<li>${ava(p)}<button class="grow" data-act="petUse" data-id="${p.id}"><b>${esc(petName(p))}</b>${pet().id===p.id?' ✓':''}<span class="when">${fmtAge(p)}</span></button></li>`).join('')}</ul><button class="btn" data-act="petNew">Új állat felvétele</button><button class="btn ghost" data-act="close">Bezárás</button>`)},
   petNew(){wizard()},petEdit(el){wizard(el.dataset.id)},
+  npSp(el){npSp=el.dataset.v;render()},
   petUse(el){S.settings.activePetId=el.dataset.id;chatNote='';careSt=null;save();closeSheet();if(tab==='more')tab='home';render({top:true,toToday:true})},
   petDelAsk(el){const p=S.pets.find(x=>x.id===el.dataset.id);confirmSheet('Biztosan törlöd?',`${esc(petName(p))} profilja, eseményei és beszélgetései véglegesen törlődnek.`,'Igen, törlöm','petDel',p.id)},
   petDel(el){const id=el.dataset.id;S.pets=S.pets.filter(p=>p.id!==id);S.events=S.events.filter(e=>e.petId!==id);delete S.chat[id];delete S.ai[id];if(S.settings.activePetId===id)S.settings.activePetId=null;save('chat','photo_'+id);closeSheet();tab='home';render({top:true});toast('Állat törölve')},
@@ -2170,6 +2269,7 @@ document.addEventListener('change',e=>{const t=e.target;
   else if(t.id==='wzBreed'||t.name==='mode'){readWizard();W.err='';drawWizard()}
   else if(t.name==='theme'){S.settings.theme=t.value;applyTheme();save()}
   else if(t.id==='cityIn')save();
+  else if(t.id==='npMegye'){npMegye=t.value;render();const s=$('#npMegye');s&&s.focus({preventScroll:true})}
   else if(t.id==='kcalIn'){const v=parseFloat(t.value.replace(',','.')),p=pet();if(t.value.trim()&&!(v>=30&&v<=700))return toast('30 és 700 közötti értéket írj be (kcal / 100 g).');p.kcal100=v||null;save();render()}});
 document.addEventListener('input',e=>{const t=e.target;
   if(t.id==='chatIn'){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'}
