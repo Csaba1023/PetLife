@@ -2040,14 +2040,27 @@ function npBreedHtml(){
   ${res}
   <h2>Miről ismered fel a felelős tenyésztőt?</h2>${dog?'':'<p class="sub">A Felis Hungarica tagjaira vonatkozó tenyésztési szabályzat szerint:</p>'}
   <ul class="steps2" id="npSigns" style="margin-top:8px">${BRSIGN[sp].map(x=>`<li>${x}</li>`).join('')}</ul>
-  <details class="acc" style="margin-top:14px"><summary>Források</summary><ul class="srcs">${BRSRC[sp].map(([n,u])=>`<li><a ${ext(u)}>${esc(n)}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">A felsorolás tájékoztató jellegű, a pontjai ezekből a forrásokból származnak.</p></details>
+  <details class="acc" id="npSrc" style="margin-top:14px"><summary>Források</summary><ul class="srcs">${BRSRC[sp].map(([n,u])=>`<li><a ${ext(u)}>${esc(n)}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">A felsorolás tájékoztató jellegű, a pontjai ezekből a forrásokból származnak.</p></details>
   <p class="note">A linkek nem fizetett hirdetések. A PetVia egyes tenyésztőket nem ajánl és nem ellenőriz: a listákat a szervezetek vezetik, és az oldaluk címe változhat. A klubok oldalát 2026 októberében néztük át.</p>`}
+/* „Mielőtt döntesz": felelős állatvállalás. A számok és az állítások az NPRSRC forrásaiból vannak
+   (élettartam: PDSA; a visszaadások 70 százaléka, a kiadások fajtái, az ajándékozás, a nagykorúság: Nébih, „Fogadj örökbe!"). */
+const NPRESP={kutya:['Egy állat befogadása életre szóló döntés. A kutyák fajtától függően átlagosan 5,5–14 évig élnek (a kis testűek 7–14, a közepesek 8–13,5, a nagy testűek 5,5–13 évig): ennyi időre vállalod az etetését, az állatorvosi ellátását, a nevelését és a napi törődést.',
+  'Rendszeres kiadás a táp, az oltások, a féregtelenítés és az állatorvos, ehhez jön a felszerelés, a kutyaiskola és az elhelyezés, amikor elutazol. A menhelyre visszavitt kutyáknál legtöbbször megváltozott körülményekre hivatkoznak, pedig ezek mintegy 70 százaléka előre látható, például a költözés vagy a megnövekvő kiadások. Ne dönts első felindulásból, és ne vegyél állatot ajándékba.'],
+ macska:['Egy állat befogadása életre szóló döntés. A macskák átlagosan 12–14 évig élnek: ennyi időre vállalod az etetését, az állatorvosi ellátását és a napi törődést.',
+  'Rendszeres kiadás a táp, az alom, az oltások, az élősködők elleni kezelés és az állatorvos. Gondold végig, mi lesz vele, ha költözöl, gyereked születik, vagy megnőnek a kiadásaid. Ne dönts első felindulásból, és ne vegyél állatot ajándékba.']};
+const NPRESP_TAB={adopt:'A menhelyi állatnak múltja van, és idő kellhet, mire megbízik benned. Kérdezd meg a gondozóit a természetéről és az igényeiről. Örökbefogadási szerződést csak nagykorú köthet, és a döntés legyen az egész család közös döntése.',
+ breed:'A fajtát az életmódodhoz válaszd, ne a külseje alapján: nézz utána a mozgásigényének, a gondozásának és a fajtára jellemző betegségeknek. Ha a tartás körülményei rosszak, sajnálatból se vásárolj.'};
+const NPR_NEBIH=['Nébih: Fogadj örökbe! Útmutató kutyák örökbefogadásához','https://portal.nebih.gov.hu/documents/10182/886114/nebih_orokbefogadasi_kiadvany_A4_web.pdf/b58e5020-ac07-009a-3d40-dc27b2001e71'];
+const NPRSRC={kutya:[NPR_NEBIH,['PDSA: The cost of owning a dog (élettartam)','https://www.pdsa.org.uk/pet-help-and-advice/looking-after-your-pet/puppies-dogs/the-cost-of-owning-a-dog']],
+ macska:[['PDSA: The cost of owning a cat (élettartam, kiadások)','https://www.pdsa.org.uk/pet-help-and-advice/looking-after-your-pet/kittens-cats/the-cost-of-owning-a-cat'],NPR_NEBIH]};
+const npRespHtml=()=>`<div class="card" id="npResp" style="margin-top:16px"><b>Mielőtt döntesz</b>${[...NPRESP[npSp],NPRESP_TAB[npTab]].map(x=>`<p style="margin:8px 0 0">${x}</p>`).join('')}
+  <details class="acc" id="npRespSrc" style="margin:10px 0 0;padding:0;border:0;background:none"><summary style="min-height:44px">Források</summary><ul class="srcs">${NPRSRC[npSp].map(([n,u])=>`<li><a ${ext(u)}>${esc(n)}</a></li>`).join('')}</ul></details></div>`;
 function vNoPet(){
   const has=S.pets.length>0,seg=(act,cur,l,lab)=>`<div class="seg2" role="group" aria-label="${lab}">${l.map(([v,n])=>`<button data-act="${act}" data-v="${v}" aria-pressed="${cur===v}">${n}</button>`).join('')}</div>`;
   return`<button class="btn text back" data-act="tab" data-tab="${has?'more':'home'}">‹ ${has?'Beállítások':'Vissza'}</button><h1>Még nincs állatom</h1>
   <p class="sub" style="margin-top:6px">Válaszd ki, kutyát vagy macskát keresel, és hogy örökbe fogadnál, vagy fajtatiszta állatot szeretnél.</p>
   ${seg('npSp',npSp,[['kutya','Kutya'],['macska','Macska']],'Milyen állatot keresel?')}${seg('npTab',npTab,[['adopt','Örökbefogadás'],['breed','Fajtatiszta']],'Honnan szeretnéd?')}
-  ${npTab==='breed'?npBreedHtml():npAdoptHtml()}
+  ${npRespHtml()}${npTab==='breed'?npBreedHtml():npAdoptHtml()}
   <h2>Megvan az új családtag?</h2><p class="sub">Vedd fel, és a PetVia végigkíséri az életét.</p><button class="btn" data-act="petNew">Állat felvétele</button>`}
 function vHub(p){
   const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
