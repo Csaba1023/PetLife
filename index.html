@@ -517,7 +517,7 @@ const TIPS={
 /* új fajok: all = minden életszakaszban érvényes, mellette szakaszfüggő kiegészítés */
 const BIRD_SICK='A felborzolt toll, az aluszékonyság vagy az étvágytalanság madárnál sürgős jel: mielőbb vidd állatorvoshoz.';
 const BIRD_FOOD='A magkeverék mellé adj friss zöldeket és kalciumforrást (pl. szépiacsontot). Avokádót soha ne kapjon.';
-const PREY='A zsákmányállat ne legyen vastagabb a kígyó legvastagabb pontjánál.';
+const PREY='A zsákmányállat méretét a kígyó vastagságához igazítsd: a részletek a Táplálkozás lapon vannak.';
 Object.assign(TIPS,{
  csincsilla:{kolyok:['Lassan szoktasd kézhez: ülj a ketrec mellé, és kínálj falatot a tenyeredből.'],
   all:['Hűvös, száraz helyen tartsd: a meleget és a párát rosszul tűri.','Naponta kínálj homokfürdőt csincsillahomokkal, kb. 10–20 percre; vízzel ne fürdesd.','Az étrend alapja a széna és a csincsillatáp; cukros, zsíros csemegét ne adj.'],
@@ -538,9 +538,9 @@ Object.assign(TIPS,{
   all:['Erős UVB-fényre és meleg sütkérezőhelyre van szüksége; a hőmérsékletet hőmérővel ellenőrizd.','Felnőttként az étrendje nagyobb része zöld levél és zöldség, kisebb része rovar.','Az eleséget kalciumporral szórd be; a vitaminozás rendjét egzotikus állatorvossal egyeztesd.','Egyedül tartsd: a szakállas agáma nem társas állat.'],
   idos:['Idős korban lassabb, és kevesebbet eszik; a tartós étvágytalanságot vizsgáltasd ki.']},
  kiralypiton:{kolyok:[PREY],
-  all:['Szűk, sötét búvóhely kell a meleg és a hűvös oldalon is: enélkül stresszes lesz, és nem eszik.','Biztonságosan zárható terráriumban tartsd, mert ügyesen megszökik.','Előre leölt (fagyasztott, felengedett) zsákmányt adj: az élő rágcsáló megsebesítheti. Etetés után 1–2 napig ne vedd kézbe.','Vedlés előtt a szeme elkékül, és gyakran nem eszik: ez természetes. Ilyenkor emeld a páratartalmat.']},
+  all:['Szűk, sötét búvóhely kell a meleg és a hűvös oldalon is: enélkül stresszes lesz, és nem eszik.','Biztonságosan zárható terráriumban tartsd, mert ügyesen megszökik.','Előre leölt (fagyasztott, felengedett) zsákmányt adj: az élő rágcsáló megsebesítheti. Etetés után 48 óráig ne vedd kézbe.','Vedlés előtt a szeme elkékül, és gyakran nem eszik: ez természetes. Ilyenkor emeld a páratartalmat.']},
  kukoricasiklo:{kolyok:[PREY],
-  all:['Biztonságosan zárható terráriumban tartsd: a kukoricasikló kis résen is kifér.','Meleg és hűvös oldal kell neki, mindkettőn búvóhellyel.','Előre leölt (fagyasztott, felengedett) zsákmányt adj. Etetés után 1–2 napig ne vedd kézbe.','Vedlés előtt a szeme elkékül; ha a bőr darabokban jön le, kevés a pára.']},
+  all:['Biztonságosan zárható terráriumban tartsd: a kukoricasikló kis résen is kifér.','Meleg és hűvös oldal kell neki, mindkettőn búvóhellyel.','Előre leölt (fagyasztott, felengedett) zsákmányt adj. Etetés után 48 óráig ne vedd kézbe.','Vedlés előtt a szeme elkékül; ha a bőr darabokban jön le, kevés a pára.']},
  gorogteknos:{kolyok:['A fiatal teknős páncélja még puha: UVB-fény és kalciumban gazdag étrend kell az egészséges növekedéséhez.'],
   all:['Növényevő: vadon termő zöldek (pl. pitypang, útifű) és levelek legyenek az étrend alapja; gyümölcsöt csak ritkán, húst ne adj.','Napfény vagy UVB-lámpa nélkül nem tudja hasznosítani a kalciumot.','Nyáron a legjobb neki a szökésbiztos kerti kifutó, árnyékkal és búvóhellyel.','A téli pihenő (hibernáció) előkészítését előre egyeztesd egzotikus állatorvossal: beteg vagy sovány teknőst teleltetni veszélyes.']},
  mocsariteknos:{all:['Vízi teknős: nagy úszótér, szűrt víz és száraz napozóhely kell neki UVB-fénnyel.','Főleg állati eredetű táplálékot eszik, például halat, gilisztát, vízi rovarokat.','A vizet tartsd tisztán: erős szűrő és rendszeres részleges vízcsere kell.']},
@@ -556,7 +556,7 @@ const T_GRAD='Meleg és hűvös oldal is kell a terráriumban, hogy maga szabál
  T_CALC='Az eleségrovarokat kalciumporral szórd be; a vitaminozás rendjét egzotikus állatorvossal egyeztesd.',
  T_UVB='UVB-fényre van szüksége a kalcium hasznosításához; a hőmérsékletet hőmérővel ellenőrizd.',
  S_LOCK='Biztonságosan zárható terráriumban tartsd: a kígyók kis résen is kiférnek.',S_HIDE='Meleg és hűvös oldal kell neki, mindkettőn búvóhellyel.',
- S_FOOD='Előre leölt (fagyasztott, felengedett) zsákmányt adj. Etetés után 1–2 napig ne vedd kézbe.',S_SHED='Vedlés előtt a szeme elkékül; ha a bőr darabokban jön le, kevés a pára.',
+ S_FOOD='Előre leölt (fagyasztott, felengedett) zsákmányt adj. Etetés után 48 óráig ne vedd kézbe.',S_SHED='Vedlés előtt a szeme elkékül; ha a bőr darabokban jön le, kevés a pára.',
  K_HERB='Növényevő: vadon termő zöldek (pl. pitypang, útifű) és levelek legyenek az étrend alapja; gyümölcsöt csak ritkán, húst ne adj.',K_SUN='Napfény vagy UVB-lámpa nélkül nem tudja hasznosítani a kalciumot.',
  K_OUT='Nyáron a legjobb neki a szökésbiztos kerti kifutó, árnyékkal és búvóhellyel.',K_HIB='A téli pihenő (hibernáció) előkészítését előre egyeztesd egzotikus állatorvossal: beteg vagy sovány teknőst teleltetni veszélyes.',
  K_YOUNG='A fiatal teknős páncélja még puha: UVB-fény és kalciumban gazdag étrend kell az egészséges növekedéséhez.',
@@ -570,15 +570,15 @@ Object.assign(TIPS,{
  keknyelvuszkink:{all:['Talajlakó gyík: nagy alapterületű terrárium kell neki búvóhellyel.','Mindenevő: növényi és állati eredetű táplálékot is eszik.',T_UVB,'Egyedül tartsd: a fajtársak megsebesíthetik egymást.']},
  zoldleguan:{all:['Növényevő: leveles zöldek legyenek az étrend alapja; állati eredetű táplálék nem való neki.','UVB-fény nélkül nem tudja hasznosítani a kalciumot.','Felnőttként 1–1,8 méteresre nő: szobányi, magas, fűtött helyet igényel.','Az ivarérett hím agresszívvé válhat; a farkával és a karmaival sérülést okozhat.']},
  viziagama:{all:['Nagy, magas, párás terrárium kell neki mászóágakkal és akkora vízrésszel, amelyben el tud merülni.',T_UVB,T_CALC,'Az üvegnek ugorva megsértheti az orrát: adj neki elég helyet, és takard el a terrárium alsó részét.']},
- kiralyboa:{kolyok:[PREY],all:['Felnőttként kb. 1,8–2,4 méteresre nő, és 20 évnél tovább él: a terráriumot ehhez méretezd.',S_LOCK,S_HIDE,S_FOOD]},
+ kiralyboa:{kolyok:[PREY],all:['Felnőttként kb. 1,5–2,4 méteresre nő, és 20 évnél tovább él: a terráriumot ehhez méretezd.',S_LOCK,S_HIDE,S_FOOD]},
  szivarvanyosboa:{kolyok:[PREY],all:['Magas páratartalmat igényel: párás búvóhely és rendszeres permetezés kell neki.',S_LOCK,S_HIDE,S_FOOD]},
- homokiboa:{kolyok:[PREY],all:['Ásó életmódú: vastag, laza aljzat kell neki, amelybe be tudja ásni magát.','A nőstény kb. 80 cm-re nő, a hím jóval kisebb marad.',S_LOCK,S_FOOD]},
+ homokiboa:{kolyok:[PREY],all:['Ásó életmódú: vastag, laza aljzat kell neki, amelybe be tudja ásni magát.','A nőstény kb. 60 cm-re nő (kivételesen 90 cm-ig), a hím kisebb marad.',S_LOCK,S_FOOD]},
  tejsiklo:{kolyok:[PREY],all:['Egyedül tartsd: a tejsiklók és a királysiklók más kígyót is megesznek.',S_LOCK,S_HIDE,S_FOOD]},
  patkanysiklo:{kolyok:[PREY],all:['Jól mászik: magas terrárium kell neki erős ágakkal.',S_LOCK,S_HIDE,S_FOOD]},
  szalagossiklo:{all:['Mozgékony, nappal aktív sikló: tágas terrárium kell neki nagy vizestállal.','A természetben főleg gilisztát, kétéltűeket és kisebb halakat eszik; az étrendjét a fajhoz értő állatorvossal vagy tenyésztővel egyeztesd.',S_LOCK,'Meleg és hűvös oldal kell neki, búvóhellyel.']},
  hazikigyo:{kolyok:[PREY],all:[S_LOCK,S_HIDE,S_FOOD,S_SHED]},
- torpepiton:{kolyok:[PREY],all:['Kis termetű piton: felnőttként kb. 90–120 cm.',S_LOCK,S_HIDE,S_FOOD]},
- zoldfapiton:{kolyok:['A fiatal állat sárga vagy vörösesbarna, a zöld színét később kapja meg.',PREY],all:['Fán élő piton: vízszintes ágak kellenek neki, amelyeken összetekeredve pihen.','Magas páratartalmat igényel, jó szellőzés mellett.',S_LOCK,S_FOOD,'Megfigyelni való kígyó: a kézbevételt rosszul tűri.']},
+ torpepiton:{kolyok:[PREY],all:['Kis termetű piton: a források szerint felnőttként 60–120 cm.',S_LOCK,S_HIDE,S_FOOD]},
+ zoldfapiton:{kolyok:['A fiatal állat sárga vagy vörösesbarna, a zöld színét később kapja meg.',PREY],all:['Fán élő piton: vízszintes ágak kellenek neki, amelyeken összetekeredve pihen.','Esti permetezést igényel, jó szellőzés mellett.',S_LOCK,S_FOOD,'Megfigyelni való kígyó: a kézbevételt rosszul tűri.']},
  morteknos:{kolyok:[K_YOUNG],all:[K_HERB,K_SUN,K_OUT,K_HIB]},
  szegelyesteknos:{all:[K_HERB,K_SUN,K_OUT,K_HIB,'Felnőttként 25–35 cm-re nő: a kifutót ehhez méretezd.']},
  sarkantyusteknos:{kolyok:[K_YOUNG],all:['Óriásira nő: a kifejlett állat 35–50 kg vagy több, ezért kerti tartást és fűthető házat igényel.','Fű, széna és rostos növények legyenek az étrend alapja; gyümölcsöt ne adj rendszeresen.',K_SUN,'Nem alszik téli álmot: télen is melegben kell tartani.','Erős ásó: a kifutót mélyen megalapozott kerítéssel védd.']},
@@ -698,10 +698,10 @@ const PROD={
 const BIRD_ALOM=[['Vitakraft','madárhomok','k'],['Versele-Laga','kagylóhomok','k'],['Trixie','homokpapír, fürdőház','k']],BIRD_EQ=[['Ferplast','kalitka','p'],['Savic','kalitka','p'],['Kerbl','kalitka, röpde','k'],['Trixie','ülőrúd, etető, itató, hordozó','k']],BIRD_TOY=[['Trixie','hinta, létra, rágójáték','k'],['Kerbl','madárjáték','k']];
 const birdProd=(a,b,c)=>({tap:[[`Versele-Laga Prestige ${a}`,'k'],['Versele-Laga NutriBird granulált táp','p'],[`Beaphar XtraVital ${b}`,'p'],[`Vitakraft Menü ${c||a}`,'k'],['Vitakraft Kräcker rúd','k']],alom:BIRD_ALOM,felsz:BIRD_EQ,jatek:BIRD_TOY});
 Object.assign(PROD,{
- csincsilla:{tap:[['Versele-Laga csincsillatáp (Nature vagy Complete)','p'],['Beaphar Care+ csincsillatáp','p'],['Bunny csincsillatáp','p'],['JR Farm csincsilla pellet','k'],['Vitakraft csincsillaeleség','k'],['Széna: JR Farm, Vitakraft Vita Verde vagy Bunny','k']],
+ csincsilla:{tap:[['Versele-Laga csincsillatáp (Nature vagy Complete)','p'],['Beaphar Care+ csincsillatáp','p'],['Bunny csincsillatáp','p'],['JR Farm csincsilla pellet','k'],['Széna: JR Farm, Vitakraft Vita Verde vagy Bunny','k']],
   alom:[["Cat's Best",'Universal növényi alom kisállatoknak','p'],['JR Farm','csincsillahomok a homokfürdőhöz','k'],['Versele-Laga','fürdőhomok csincsillának','k']],
   felsz:[['Ferplast','többszintes ketrec','p'],['Savic','ketrec','p'],['Trixie','házikó, futókerék, itató','k'],['Kerbl','ketrec, kifutó','k']],jatek:[['Trixie','fa rágójáték, alagút','k'],['JR Farm','rágnivaló','k']]},
- goreny:{tap:[['Versele-Laga Ferret Complete','p'],['Brit Animals Ferret','k'],['Vitakraft görényeledel','k']],
+ goreny:{tap:[['Versele-Laga Ferret Complete','p'],['Brit Animals Ferret','k']],
   alom:[["Cat's Best",'Universal nem csomósodó növényi alom','p'],['Chipsi','kukoricapellet alom','k']],
   felsz:[['Ferplast','görényketrec, hordozó','p'],['Savic','ketrec, saroktálca','p'],['Trixie','függőágy, hám és póráz, hordozó','k'],['Kerbl','ketrec','k']],jatek:[['Trixie','játszóalagút, függőágy','k']]},
  hullamos:birdProd('hullámospapagáj-eleség','hullámospapagáj-eleség'),nimfa:birdProd('nimfapapagáj-eleség','nagypapagáj-eleség','nimfapapagáj-eleség'),
@@ -815,8 +815,6 @@ const ROWL={'Arcadia EarthPro gekkótáp (gyümölcsös táppor)':TM+'kereses?se
  'Vitakraft Menu Vital nyúltáp':VK+'?minden-allat=ragcsalo',
  'Vitakraft Menu Vital tengerimalactáp':VK+'?minden-allat=ragcsalo',
  'Vitakraft Menu Vital hörcsögeleség':VK+'?minden-allat=ragcsalo',
- 'Vitakraft csincsillaeleség':VK+'?minden-allat=ragcsalo',
- 'Vitakraft görényeledel':VK+'?minden-allat=ragcsalo',
  'Vitakraft Menü hullámospapagáj-eleség':VK+'/menu-pearl',
  'Vitakraft Menü nimfapapagáj-eleség':VK+'/menu-pearl',
  'Vitakraft Menü kanárieleség':VK+'/menu-pearl',
@@ -1504,6 +1502,211 @@ Object.assign(GSRC,{
   eq=et=>[['Arcadia','UVB-fénycső és -lámpa','p'],['Exo Terra',et,'p'],['Zoo Med','hőlámpa, UVB-fényforrás, termosztát','p'],['Trixie','hő- és páramérő','k'],['JBL','UV- és melegítőlámpa','k']],
   T={tap:GPROD.teknos.tap,alom:sub,felsz:eq('hőlámpa, UVB-fényforrás, hőmérő'),jatek:dec};
  Object.assign(PROD,{gorogteknos:T,morteknos:T,szegelyesteknos:T,sarkantyusteknos:T,szenesteknos:{...T,felsz:eq('hőlámpa, UVB-fényforrás, hő- és páramérő, párásító')}})}
+/* ---------- útmutatók, 3/a kör: kígyók ----------
+   Minden számadat forrásból van (lásd SRC és GSRC); ahol a források eltérnek, a szöveg a tartományt adja meg.
+   Az útmutatók csak előre leölt (fagyasztott, felengedett) zsákmány etetéséről szólnak. */
+const SN_FT='Előre leölt, fagyasztott zsákmányt adj: hűtőben engedd fel, majd etetés előtt zárt zacskóban, meleg vízben melegítsd testmelegre. Hosszú csipesszel kínáld, a terráriumban.';
+const SN_LIVE='Élő rágcsálót ne adj: megharaphatja a kígyót, és már egy kis harapás is súlyos fertőzést okozhat.';
+const SN_WEIGH='Mérd rendszeresen a súlyát: így veszed észre időben a fogyást és az elhízást.';
+const SN_XTRA=SN_LIVE+' Vadon fogott állatot se adj neki: betegséget és élősködőt hordozhat. Jó minőségű, egész zsákmány mellé általában nem kell vitamin vagy kalcium.';
+const SN_W='A hűvös végen mindig legyen friss víz akkora tálban, amelyben meg is tud mártózni; naponta cseréld.';
+const snFood=(base,freq,extra)=>({h:'Az étrend alapja',base,freq,sw:false,bad:[],extra:extra||SN_XTRA});
+const snF2=(young,adult)=>({kolyok:young,novendek:young,felnott:adult,idos:adult});
+Object.assign(FOOD,{
+ kiralypiton:snFood(['Húsevő: egész zsákmányt eszik, főleg egeret és patkányt; változatosságnak kb. havonta fürj is adható.','A zsákmány kicsit szélesebb legyen, mint a kígyó teste a legszélesebb pontján; súlyra a kígyó testsúlyának kb. 10–15%-a.',SN_FT,'A királypiton gyakran koplal, főleg a hűvösebb hónapokban. Amíg nem fogy, ez nem baj; ha a testsúlya több mint tizedét elveszti, vagy hirtelen hagyja abba az evést, vidd hüllőkhöz értő állatorvoshoz.',SN_W],
+  {kolyok:'A fiatal királypitont 5–6 naponta etesd.',novendek:'Eleinte 5–6 naponta, majd ahogy nő, egyre ritkábban etesd.',felnott:'A felnőttet 7–14 naponta etesd, a súlyától függően. '+SN_WEIGH,idos:'7–14 naponta etesd, a súlyától függően. '+SN_WEIGH}),
+ kukoricasiklo:snFood(['Húsevő: egész zsákmányt eszik, főleg egeret; változatosságnak kb. havonta fürj vagy kis patkány is adható.','A zsákmány a kígyó legszélesebb pontjánál kicsit szélesebb, legfeljebb másfélszer olyan széles legyen.',SN_FT,SN_W],
+  {kolyok:'A kikelt siklónak 5–7 naponta adj egy szopósegeret.',novendek:'7–10 naponta etesd, majd ahogy nő, 10–12 naponta.',felnott:'A források 7–14, illetve 14–21 napot írnak: 1–3 hetente etesd, a kondíciójától függően. '+SN_WEIGH,idos:'A források 7–14, illetve 14–21 napot írnak: 1–3 hetente etesd, a kondíciójától függően. '+SN_WEIGH}),
+ kiralyboa:snFood(['Húsevő: egész zsákmányt eszik, pl. patkányt, egeret, csibét, fürjet; a nagy felnőtt fiatal nyulat is.','Egy adag legfeljebb a kígyó testsúlyának tizede legyen, és ne legyen szélesebb a teste legszélesebb pontjánál: nyelés után csak enyhe dudor látsszon.','A túletetés a boáknál nagyon gyakori hiba: elhízáshoz és visszaöklendezéshez vezet. Az egészséges boa teste szögletes, izmos; ha kerek és zsírpárnás, túl sokat kap.',SN_FT,'Mindig legyen friss víz akkora tálban, amelyben az egész teste elfér; naponta cseréld.'],
+  {kolyok:'10–12 naponta etesd. Az első etetéssel várj legalább egy hetet a hazahozatal után.',novendek:'Egyéves korig 10–12 naponta, másfél éves korig 12–14 naponta, két és fél éves korig 2–3 hetente, utána 3–4 hetente etesd.',felnott:'Négyéves korig 4–6 hetente, utána 4–8 hetente etesd. '+SN_WEIGH,idos:'4–8 hetente etesd. '+SN_WEIGH}),
+ szivarvanyosboa:snFood(['Húsevő: egész zsákmányt eszik, pl. egeret, patkányt, fürjet, csibét.','Egy adag a testsúlya kb. tizede legyen, és ne legyen szélesebb a teste legszélesebb pontjánál.',SN_FT,'Akkora vizeskád kell neki, amelyben teljesen elmerülhet; a vizet tartsd tisztán, a kádat hetente fertőtlenítsd.'],
+  snF2('A fiatal boát 1–2 hetente etesd.','A felnőttet 2–4 hetente etesd. '+SN_WEIGH)),
+ homokiboa:snFood(['Húsevő: egész zsákmányt eszik, főleg egeret; a nagyobb nőstény fiatal patkányt vagy fürjet is.','A zsákmány kb. olyan széles legyen, mint a kígyó teste a legszélesebb pontján.',SN_FT,'A hím a párzási időszakban hónapokig is koplalhat: ez természetes, amíg nem fogy.','Kis tálban mindig legyen friss víz; naponta cseréld.'],
+  {kolyok:'A források 5–7 napot, illetve 1–2 hetet írnak: kb. hetente etesd.',novendek:'1–2 hetente etesd.',felnott:'2–4 hetente etesd. '+SN_WEIGH,idos:'2–4 hetente etesd. '+SN_WEIGH}),
+ tejsiklo:snFood(['Húsevő: egész zsákmányt eszik, főleg egeret; a nagyobb példány fiatal patkányt, fürjet vagy csibét is.','A zsákmány legfeljebb másfélszer olyan széles legyen, mint a kígyó teste, vagy a testsúlya kb. tizede.',SN_FT,'Nagy tálban mindig legyen friss víz, amelyben meg is tud mártózni.'],
+  {kolyok:'5–7 naponta etesd.',novendek:'7–10 naponta etesd.',felnott:'10–14 naponta etesd; ha hízik, adj ritkábban vagy kisebb zsákmányt.',idos:'10–14 naponta etesd; ha hízik, adj ritkábban vagy kisebb zsákmányt.'}),
+ patkanysiklo:snFood(['Húsevő: egész zsákmányt eszik, főleg egeret és patkányt.','A zsákmány legfeljebb másfélszer olyan széles legyen, mint a kígyó teste; ha egyszerre többet adsz, együtt se legyen több a testsúlya tizedénél.',SN_FT,'Nagy tálban mindig legyen friss víz, amelyben össze is tud tekeredni.'],
+  snF2('5–7 naponta etesd.','7–14 naponta etesd. '+SN_WEIGH)),
+ szalagossiklo:snFood(['Húsevő, változatos étrenddel: felengedett egér, friss vagy felengedett hal és tenyésztett giliszta.','Az étrend fő része egész gerinces zsákmány legyen (egér vagy egész hal): a halfilé önmagában kalciumszegény.','Olyan halat adj, amelyben nincs tiamináz (pl. lazac, pisztráng): a tiaminázt tartalmazó halak B1-vitamin-hiányt okoznak. Ha bizonytalan vagy egy halfajban, kérdezd meg a hüllőkhöz értő állatorvost.','Gilisztából és halból egyszerre többet is adhatsz; a zsákmány legfeljebb másfélszer olyan széles legyen, mint a kígyó teste.','A halat és a gilisztát szórd meg kalciumporral.','Akkora vizestál vagy medence kell, amelyben teljesen elmerülhet.'],
+  {kolyok:'Az újszülöttet másnaponta etesd.',novendek:'3–5 naponta etesd.',felnott:'4–7 naponta etesd: a gilisztán élő kígyó gyakrabban, az egeret evő ritkábban eszik.',idos:'4–7 naponta etesd: a gilisztán élő kígyó gyakrabban, az egeret evő ritkábban eszik.'},
+  'Vadon gyűjtött gilisztát és halat ne adj: élősködőt hordozhat. Csipesszel kínáld az ételt. A D3-vitaminos készítményt csak a gyártó útmutatója szerint add: a túladagolás is árt.'),
+ hazikigyo:snFood(['Húsevő: egész zsákmányt eszik, főleg egeret.','A zsákmány a testsúlya kb. tizede legyen, és legfeljebb másfélszer olyan széles, mint a teste.',SN_FT,'Mohón eszik, és etetéskor bármire rákaphat, ami mozog: mindig csipesszel etesd.','Mindig legyen friss víz akkora tálban, amelyben meg is tud mártózni; naponta cseréld.'],
+  snF2('A fiatal kígyót hetente etesd.','A felnőttet kéthetente etesd. '+SN_WEIGH)),
+ torpepiton:snFood(['Húsevő: egész zsákmányt eszik, főleg egeret; fürj vagy csibe is adható.','A zsákmány a testsúlya kb. tizede legyen, és legfeljebb másfélszer olyan széles, mint a teste.',SN_FT,'Hajlamos az elhízásra: ne etesd gyakrabban a szükségesnél.','Nagy tálban mindig legyen friss víz; naponta cseréld.'],
+  {kolyok:'A kikelt pitont hetente etesd.',novendek:'Kb. kéthetente etesd.',felnott:'A források 10–14 napot, illetve egy hónapot írnak: 2–4 hetente etesd, a kondíciójától függően. '+SN_WEIGH,idos:'A források 10–14 napot, illetve egy hónapot írnak: 2–4 hetente etesd, a kondíciójától függően. '+SN_WEIGH}),
+ zoldfapiton:snFood(['Húsevő: egész zsákmányt eszik, főleg egeret és fiatal patkányt.','A zsákmány súlya kétéves korig a kígyó testsúlyának kb. 15%-a, 2–5 éves korban 5–10%-a, idősebb korban kb. 5%-a legyen.','Csak fagyasztott, felengedett zsákmányt adj, testmelegre melegítve, hosszú, puha végű csipesszel: a kéz melegére is rákaphat.','Minden este permetezd be a terráriumot, és nagy tálban mindig legyen friss víz.'],
+  {kolyok:'5–7 naponta etesd.',novendek:'1–2 hetente etesd.',felnott:'2–4 hetente etesd; a tenyésztői forrás 10–12 napot ír. '+SN_WEIGH,idos:'2–4 hetente etesd; a tenyésztői forrás 10–12 napot ír. '+SN_WEIGH})});
+const SN_ARR=['Megérkezés','A terráriumot már egy héttel a kígyó érkezése előtt állítsd be és járasd. Az első egy-két hétben ne vedd kézbe, és csak akkor kezdd el szoktatni, ha már rendszeresen eszik.'];
+const SN_YFEED=['Etetés fiatalon','A fiatal kígyó gyakrabban eszik, mint a felnőtt, és gyorsan nő: a zsákmány méretét mindig a teste vastagságához igazítsd.'];
+const SN_SHED=['Vedlés','Vedlés előtt a bőre fakó, a szeme kékesszürke lesz; ilyenkor ne vedd kézbe, és gyakran nem is eszik. Az egészséges kígyó egy darabban vedlik, a fiatal gyakrabban, mint a felnőtt. Minden levedlett bőrön ellenőrizd, megvan-e a két szemfedő.'];
+const SN_HAND=m=>['Kézbevétel',`Soha ne ragadd meg, és ne a farkánál fogd: alulról emeld fel, két kézzel, az egész testét megtámasztva. Etetés után 48 óráig ne vedd kézbe, mert visszaöklendezheti az ételt. Egy alkalom kb. ${m} perc legyen; előtte és utána moss kezet. Ha a nyakát S alakba húzza, hagyd békén.`];
+const SN_HAND5=['Kézbevétel','Eleinte legfeljebb 5 percre vedd kézbe, néhány naponta; pár hét után fokozatosan növelheted 10–15 percre. Alulról emeld, az egész testét megtámasztva; a farkánál soha ne fogd. Etetés után 48 óráig hagyd békén.'];
+const SN_ALONE=['Egyedül tartsd','Magányos állat: nincs szüksége társra, és az együtt tartás stresszt, versengést okozhat.'];
+const SN_ALONEC=['Egyedül tartsd',SN_ALONE[1]+' Az együtt tartott kígyóknál kannibalizmust is leírtak.'];
+const SN_BRUM=['Hűvösebb hónapok','A hűvösebb hónapokban kevesebbet ehet és kevesebbet mozoghat (brumáció). Ez természetes, de közben nem fogyhat: mérd rendszeresen a súlyát, és ha fogy, vidd hüllőkhöz értő állatorvoshoz.'];
+const SN_CHECK=['Ellenőrzés','Érdemes rendszeresen megmutatni hüllőkhöz értő állatorvosnak, és ürülékmintát vizsgáltatni élősködőkre. A hüllők szalmonellát hordozhatnak: minden érintés és takarítás után moss kezet.'];
+const SN_LOCKC=['Szökés','A kígyók ügyes szökők: a terrárium ajtaját és tetejét mindig zárd, és ragasztószalagot ne használj a rögzítéshez.'];
+const SN_QEAT=['Nem eszik','Új helyen, vedlés előtt, a hűvösebb hónapokban és a párzási időszakban a kígyó egészségesen is kihagyhat etetéseket. Ellenőrizd a hőmérsékletet és azt, hogy van-e elég búvóhelye. Ha fogy, levert, vagy hirtelen hagyja abba az evést, vidd hüllőkhöz értő állatorvoshoz.'];
+const SN_QSHED=['Darabokban vedlik, rajta maradt a bőr','Többnyire az alacsony páratartalom okozza. Ne húzd le a bőrt: áztasd a kígyót sekély, langyos vízben, és tegyél be párás búvóhelyet. Ha a szemén maradt a régi szemfedő, ne próbáld levenni: hüllőkhöz értő állatorvos távolítsa el, mert maradandó szemkárosodást okozhat.'];
+const SN_QMITE=['Sokat ül a vízben, fekete pöttyök vannak rajta','Atkákra utalhat: apró fekete pontok a kígyón és a vizestál körül. Vért szívnak, és betegséget terjeszthetnek: vidd hüllőkhöz értő állatorvoshoz.'];
+const SN_QRESP=['Sípol, tátog, nehezen lélegzik','Légúti fertőzés jele lehet; gyakran a rossz szellőzés és a tartósan túl magas páratartalom áll mögötte. Sürgősen vidd hüllőkhöz értő állatorvoshoz.'];
+const SN_QMOUTH=['Elváltozás a szájában','Ha a szájában vagy a szája körül elváltozást látsz, szájgyulladás lehet: fertőzés, amelynek több oka lehet. Vidd hüllőkhöz értő állatorvoshoz.'];
+const SN_QPOOP=['Hasmenése van vagy fogy','Belső élősködőkre utalhat: vidd hüllőkhöz értő állatorvoshoz, és vigyél friss ürülékmintát. Székrekedést okozhat a kevés víz és a túl alacsony hőmérséklet is.'];
+const SN_QBLIS=['Hólyagok a bőrén','Többnyire azt jelzi, hogy túl nedves a terrárium. Szárítsd ki az aljzatot, javítsd a szellőzést, és mutasd meg hüllőkhöz értő állatorvosnak.'];
+const SN_QBITE=['Megharapott','Ne rántsd el a kezed: a fogai hátrafelé állnak. Ha nem enged el, folyass hideg vizet a fejére. A sebet mosd ki szappannal és vízzel.'];
+const SN_P=[SN_QEAT,SN_QSHED,SN_QMITE,SN_QRESP,SN_QMOUTH,SN_QPOOP];
+Object.assign(CARE,{
+ kiralypiton:{g:{kolyok:[SN_ARR,SN_YFEED,SN_SHED],
+   novendek:[SN_HAND('10–15'),['Ha labdává gömbölyödik','A királypiton ijedtében összegömbölyödik, és a fejét a teste közé rejti. Ilyenkor stresszes: tedd vissza a terráriumba, és próbáld újra máskor.'],SN_LOCKC],
+   felnott:[SN_ALONEC,['Koplalás','A királypiton hetekig, akár hónapokig is koplalhat, főleg a hűvösebb hónapokban és a párzási időszakban. Amíg nem veszít többet a testsúlya tizedénél, ez nem baj: mérd hetente.'],SN_CHECK],
+   idos:[LZ_OLD,SN_CHECK]},
+  i:['Szoros búvóhely a meleg és a hűvös végen is.','Párás búvóhely nedves mohával.','Erős mászóágak: a királypiton is szívesen mászik.','Akkora vizestál, amelyben megmártózhat.'],p:[...SN_P,SN_QBITE]},
+ kukoricasiklo:{g:{kolyok:[SN_ARR,SN_YFEED,SN_SHED],novendek:[SN_HAND('10–15'),SN_LOCKC],felnott:[SN_ALONE,SN_BRUM,SN_CHECK],idos:[LZ_OLD,SN_CHECK]},
+  i:['Mászóágak: a kukoricasikló jól és szívesen mászik.','Búvóhely a meleg és a hűvös végen is.','Párás búvóhely nedves mohával a vedléshez.','Akkora vizestál, amelyben megmártózhat.'],p:[...SN_P,SN_QBLIS,SN_QBITE]},
+ kiralyboa:{g:{kolyok:[SN_ARR,['Etetés fiatalon','Az első etetéssel várj legalább egy hetet a hazahozatal után. Ha nem fogadja el, ellenőrizd a hőmérsékletet és a búvóhelyeket, és próbáld újra egy hét múlva.'],SN_SHED],
+   novendek:[SN_HAND5,['Növekedés','A növekedés nagy része az első hat évben zajlik. A terráriumot időben cseréld nagyobbra: a boa felnőttként 1,5–2,4 méteres.']],
+   felnott:[SN_ALONEC,['Biztonság','Az 1,8 méternél hosszabb boát csak akkor vedd kézbe, ha van veled még egy felnőtt. Soha ne tedd a nyakad köré, és gyerek ne foglalkozzon vele felügyelet nélkül.'],['Kondíció','Fogságban a boák könnyen elhíznak. Az egészséges boa teste szögletes és izmos; ha kerek, zsírpárnás, ritkábban vagy kisebb zsákmánnyal etesd.'],SN_CHECK],
+   idos:[LZ_OLD,SN_CHECK]},
+  i:['Erős, biztosan rögzített ágak: a boa mászni is szeret.','Búvóhely a meleg és a hűvös végen is.','Párás búvóhely a hűvös végen, főleg vedlés előtt.','Akkora vizestál, amelyben az egész teste elfér.'],p:[...SN_P,SN_QBITE]},
+ szivarvanyosboa:{g:{kolyok:[SN_ARR,['Pára fiatalon','Egyéves kor alatt 90–100% páratartalom kell: a fiatal boa nagyon gyorsan kiszárad.'],['Csíphet','A fiatal ideges, és az első hónapokban csíphet; ahogy megszokja a helyét és rendszeresen eszik, megnyugszik.']],
+   novendek:[SN_HAND5,SN_SHED],
+   felnott:[SN_ALONE,['Túlmelegedés','Tartósan 32 °C fölött ne tartsd: a túlmelegedés és a kiszáradás a szivárványos boák két leggyakoribb pusztulási oka.'],SN_CHECK],
+   idos:[LZ_OLD,SN_CHECK]},
+  i:['Párás búvóhely nedves mohával.','Akkora vizeskád, amelyben teljesen elmerülhet.','Avar az aljzat tetején: tartja a nedvességet.','Éjszaka aktív: este foglalkozz vele.'],
+  p:[SN_QEAT,SN_QSHED,['Ráncos, száraz a bőre','A kiszáradás jele, ahogy a hiányos vedlés és a visszaöklendezés is. Emeld a páratartalmat, tegyél be párás búvóhelyet és vizeskádat, és mutasd meg hüllőkhöz értő állatorvosnak.'],SN_QMITE,['Sípol, tátog, nehezen lélegzik','Légúti fertőzés jele lehet. Sürgősen vidd hüllőkhöz értő állatorvoshoz.'],SN_QMOUTH,SN_QPOOP,SN_QBITE]},
+ homokiboa:{g:{kolyok:[SN_ARR,SN_YFEED,SN_SHED],
+   novendek:[['Kézbevétel','Mielőtt kiveszed, jelezz neki: az aljzatba ásott kígyó zsákmánynak nézheti a kezed. Hagyd, hogy a tenyeredre másszon, és a teste közepénél, alulról emeld. Eleinte legfeljebb 5 perc legyen egy alkalom; etetés után 48 óráig hagyd békén.'],SN_LOCKC],
+   felnott:[SN_ALONE,['Hím és nőstény','A nőstény kb. 60 cm-re nő (kivételesen 90 cm-ig), a hím kisebb, kb. 50 cm. A hím a párzási időszakban hónapokig koplalhat. Elevenszülő: nem tojást rak.'],SN_CHECK],
+   idos:[LZ_OLD,SN_CHECK]},
+  i:['Legalább 8–10 cm mély aljzat, hogy beáshassa magát.','Párás búvóhely a hűvös oldalon.','Ideje nagy részét az aljzatban tölti: ez természetes.'],p:[...SN_P,SN_QBITE]},
+ tejsiklo:{g:{kolyok:[SN_ARR,SN_YFEED,SN_SHED],novendek:[SN_HAND('10–15'),SN_LOCKC],
+   felnott:[['Egyedül tartsd','A tejsikló más kígyót is megeszik: soha ne tartsd együtt másik kígyóval.'],SN_BRUM,SN_CHECK],idos:[LZ_OLD,SN_CHECK]},
+  i:['Búvóhely a meleg és a hűvös oldalon is.','Párás búvóhely a hűvös oldalon.','Kb. 10 cm mély, földszerű aljzat.','Akkora vizestál, amelyben megmártózhat.'],p:[...SN_P,SN_QBLIS,SN_QBITE]},
+ patkanysiklo:{g:{kolyok:[SN_ARR,SN_YFEED,SN_SHED],novendek:[SN_HAND('10–15'),SN_LOCKC],
+   felnott:[SN_ALONE,['Mozgásigény','Élénk, mozgékony, felfedező kígyó: nagy terrárium és sok mászási lehetőség kell neki.'],SN_CHECK],idos:[LZ_OLD,SN_CHECK]},
+  i:['Erős ágak különböző magasságban: jól mászik.','Legalább két szoros búvóhely.','Akkora vizestál, amelyben össze tud tekeredni.','Kb. 10 cm mély, földszerű aljzat.'],p:[...SN_P,SN_QBLIS,SN_QBITE]},
+ szalagossiklo:{g:{kolyok:[SN_ARR,['Etetés fiatalon','Az újszülött sikló másnaponta eszik. A zsákmány méretét mindig a teste vastagságához igazítsd.'],SN_SHED],
+   novendek:[SN_HAND('5–10'),['Bűzös váladék','Ha megijed, bűzös váladékot bocsát ki, vergődhet és haraphat: ez védekezés, nem támadás.'],SN_LOCKC],
+   felnott:[['Társak','Egyedül és csoportban is tartható, ha mindegyiknek jut sütkérezőhely és búvóhely. A hímeket és a nőstényeket tartsd külön: elevenszülő faj. Csoportban külön etesd őket.'],SN_BRUM,SN_CHECK],idos:[LZ_OLD,SN_CHECK]},
+  i:['Akkora vizes medence, amelyben teljesen elmerülhet.','Száraz szárazulat és több búvóhely.','Az ételt több helyre is elrejtheted, hogy keresnie kelljen.','Ágak, kövek, moha a terráriumban.'],p:[...SN_P,SN_QBLIS]},
+ hazikigyo:{g:{kolyok:[SN_ARR,SN_YFEED,['Csíphet','A fiatal csíphet, de a harapása gyenge, és rendszeres, nyugodt foglalkozással megszelídül.']],
+   novendek:[SN_HAND('10–15'),SN_SHED,['Szökés','A fiatal a legkisebb résen is kiszökik: a terrárium ajtaját és tetejét mindig zárd.']],
+   felnott:[['Egyedül tartsd','A házikígyókat külön kell tartani: megehetik egymást.'],SN_CHECK],idos:[LZ_OLD,SN_CHECK]},
+  i:['Búvóhely a meleg és a hűvös végen is.','Párás búvóhely nedves mohával a vedléshez.','Akkora vizestál, amelyben megmártózhat.'],p:[...SN_P,SN_QBITE]},
+ torpepiton:{g:{kolyok:[SN_ARR,SN_YFEED,SN_SHED],
+   novendek:[SN_HAND('10–15'),['Félénk','Gyakran félénk: ne húzd ki a búvóhelyéről, hagyd, hogy magától jöjjön elő, és másszon a kezedre.']],
+   felnott:[['Egyedül tartsd','Nincs szüksége társra: a legegyszerűbb és a legbiztonságosabb egyedül tartani.'],['Elhízás','Hajlamos az elhízásra. Mérd rendszeresen a súlyát, és ne etesd gyakrabban a szükségesnél.'],SN_CHECK],idos:[LZ_OLD,SN_CHECK]},
+  i:['Ágak és polcok: szívesen mászik.','Több búvóhely a meleg és a hűvös végen.','Párás búvóhely nedves mohával.','Nagy vizestál, amelyben megmártózhat.'],p:[...SN_P,SN_QBITE]},
+ zoldfapiton:{g:{kolyok:[SN_ARR,['Ne vedd kézbe','Az egy évnél fiatalabb fapiton törékeny: csak akkor vedd kézbe, ha feltétlenül szükséges.'],['Színváltás','A fiatal fapiton sárga vagy vörös, és felnőttként színeződik zöldre. Ez természetes.']],
+   novendek:[['Kézbevétel','Eleinte legfeljebb 5 percre vedd kézbe, néhány naponta; később fokozatosan 10–15 percre. Alulról támaszd meg, a farkánál soha ne fogd. Jó, ha az ágak kivehetők: így könnyebb kiemelni. Gyerek felügyelet nélkül ne foglalkozzon vele.'],SN_SHED],
+   felnott:[SN_ALONE,['Fogságban tenyésztett állat','A vadon befogott fapitonok gyakran harapósak, és többnyire két éven belül elpusztulnak; a befogásuk a vadon élő állományt is károsítja.'],SN_CHECK],idos:[LZ_OLD,SN_CHECK]},
+  i:['Legalább két, biztosan rögzített ág a terrárium felső részén.','Egy alacsony ág a talaj közelében: innen vadászik.','Esti permetezés a megfelelő páratartalomért.','Avar az aljzat tetején.'],p:[SN_QEAT,SN_QSHED,SN_QMITE,SN_QRESP,SN_QMOUTH,SN_QPOOP,SN_QBITE]}});
+const SN_THERMO='Minden hőforrás termosztátról menjen, a lámpát védőrács takarja, és mindkét végen mérj naponta hőmérővel. Fűtőkövet ne használj: égési sérülést okozhat.';
+const SN_LOCK='A terrárium legyen biztosan zárható: a kígyók ügyes szökők.';
+const SN_HIDES='Legalább két búvóhely kell, egy a meleg és egy a hűvös végen, akkora, hogy összetekeredve a teste hozzáérjen a falához; legyen egy párás búvóhely is nedves mohával.';
+const SN_CLEAN='Az ürüléket azonnal szedd ki, és havonta fertőtlenítsd a terráriumot hüllőknek való szerrel.';
+const SN_BADSUB='Cédrus- és fenyőforgács ne kerüljön a terráriumba, és tiszta homokot se használj: irritálhatja a bőrét.';
+const SN_SUB34='Az ürüléket naponta szedd ki, az aljzatot 3–4 havonta cseréld.';
+const SN_UVB=x=>['UVB-fény',`UVB-fény nélkül is megél, de a források ajánlják: gyenge UVB-fénycső a meleg oldalra, napi kb. 12 órára. ${x?x+' ':''}Éjszaka ne égjen fény. ${LZ_UVB_CHG}`,'Arcadia, Zoo Med, Exo Terra'];
+const SN_UV13='A sütkérezőhelyen az UV-index a források szerint 1–3 legyen, az árnyékban nulla; albínó változatnál legfeljebb 0,7.',SN_UV23='A sütkérezőhelyen az UV-index kb. 2–3 legyen.';
+Object.assign(HOME,{
+ kiralypiton:[['Terrárium','A terrárium legalább olyan hosszú legyen, mint a kígyó, a szélessége és a magassága pedig legalább a hossza harmada (120 cm-es kígyónak 120 × 40 × 40 cm). A 90 cm-nél hosszabb királypitonnak a források 120 × 60 × 60 cm-es vagy nagyobb terráriumot ajánlanak. '+SN_LOCK,'Exo Terra, Trixie'],
+  ['Hőmérséklet','A sütkérezőhelyen 30–32 °C, a hűvös végen 22–27 °C legyen; éjszaka 21–26 °C, 21 °C alatt fényt nem adó fűtés kell. '+SN_THERMO,'Exo Terra, Zoo Med, Trixie'],
+  ['Páratartalom és búvóhelyek','A források 50–60%-ot, illetve 60–80%-ot írnak: tartsd 50–80% között, éjszaka lehet magasabb. Ha tartósan túl magas, szellőztess jobban. '+SN_HIDES,'Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV13),
+  ['Aljzat','Nedvességtartó, földszerű aljzat való neki (hüllőföld, kókuszrost, tőzegmoha), legalább 10 cm vastagon. '+SN_BADSUB,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság',SN_W+' '+SN_CLEAN]],
+ kukoricasiklo:[['Terrárium','A terrárium legalább olyan hosszú legyen, mint a kígyó, a szélessége és a magassága pedig legalább a hossza harmada (150 cm-es kígyónak 150 × 50 × 50 cm). Felnőttnek a források legalább 120 × 60 × 60 cm-t ajánlanak; jól mászik, ezért a magasság is számít. '+SN_LOCK,'Exo Terra, Trixie'],
+  ['Hőmérséklet','A sütkérezőhelyen 28–32 °C, a hűvös végen 20–27 °C legyen. Éjszaka kikapcsolhatod a fűtést: 16–20 °C-ra is lehűlhet; ha a szoba ennél hidegebb, fényt nem adó fűtés kell. '+SN_THERMO,'Exo Terra, Zoo Med, Trixie'],
+  ['Páratartalom és búvóhelyek','A források 40–50%-ot, illetve 65–75%-ot írnak: tartsd 40–75% között, és figyeld a vedlést. '+SN_HIDES,'Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV13),
+  ['Aljzat','Föld vagy föld és homok keveréke való neki (pl. 60% föld, 30% homok, 10% avar). '+SN_BADSUB,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság',SN_W+' '+SN_CLEAN]],
+ kiralyboa:[['Terrárium','A boa nagyra nő, a terráriumot ehhez kell méretezni: 60 cm alatti bébinek 60 × 45 × 30 cm, 1,5 méterig 120 × 60 × 60 cm, 1,8–2,4 méteres felnőttnek legalább 180 × 90 × 90 cm, ennél nagyobbnak 240 × 120 × 120 cm. Ökölszabály: a kígyó hossza × a hossza fele × a hossza fele. Mászik is, ezért a magasság is számít. '+SN_LOCK,'Exo Terra'],
+  ['Hőmérséklet','A sütkérezőhelyen a levegő 30–32 °C, a hűvös végen 24–26 °C legyen; éjszaka 20–24 °C, 20 °C alatt fényt nem adó fűtés kell. '+SN_THERMO,'Exo Terra, Zoo Med'],
+  ['Páratartalom és búvóhelyek','A páratartalom 55–75% legyen, vedlés előtt 75–85%. A terrárium időnként száradjon ki: a tartósan nedves környezet megbetegíti. '+SN_HIDES,'Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV23),
+  ['Aljzat','Nedvességtartó, földszerű aljzat való neki, vastag rétegben. '+SN_BADSUB,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság','Mindig legyen friss víz akkora tálban, amelyben az egész teste elfér; naponta cseréld, a tálat hetente fertőtlenítsd. '+SN_CLEAN]],
+ szivarvanyosboa:[['Terrárium','Egy felnőttnek legalább 1,8 × 0,9 × 0,9 méteres terrárium kell; a nagyobb jobb. '+SN_LOCK,'Exo Terra'],
+  ['Hőmérséklet','A sütkérezőhelyen 30–32 °C, a terrárium többi részén nappal kb. 26–29 °C, éjszaka 21–24 °C legyen. Tartósan 32 °C fölött ne tartsd. '+SN_THERMO,'Exo Terra, Zoo Med'],
+  ['Páratartalom','Nagyon párás környezetet igényel: nappal 70–90%, éjszaka közel 100%; egyéves kor alatt végig 90–100%. Az aljzat közben ne ázzon. Kell párás búvóhely is nedves mohával.','Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV23),
+  ['Aljzat','Kb. 10 cm vastag, nedvességtartó aljzat kell (pl. 60% termőföld és 40% kókuszrost), a tetején avarral. '+SN_SUB34,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság','Akkora vizeskád kell, amelyben teljesen elmerülhet; a vizet tartsd tisztán, a kádat hetente fertőtlenítsd.']],
+ homokiboa:[['Terrárium','Kis termetű, ásó életmódú kígyó: egy felnőttnek legalább 60 × 30 × 30 cm-es terrárium kell, az ajánlott méret 90 × 45 × 45 cm, főleg a nagyobb nősténynek. Az alapterület számít. '+SN_LOCK,'Exo Terra, Trixie'],
+  ['Hőmérséklet','A meleg ponton a felület 34–35 °C, a hűvös oldalon 26–28 °C legyen. Éjszakára kikapcsolhatod a fűtést. '+SN_THERMO,'Exo Terra, Zoo Med, Trixie'],
+  ['Páratartalom','Száraz környezetet igényel, de a hűvös oldalon legyen párás búvóhelye enyhén nedves mohával vagy aljzattal; időnként permetezhetsz is.','Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV23),
+  ['Aljzat','Homok vagy homokos föld (pl. 60% föld és 40% homok) való neki, legalább 8–10 cm vastagon, hogy be tudja ásni magát. '+SN_SUB34,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság','Kis tálban mindig legyen friss víz; naponta cseréld, a tálat hetente fertőtlenítsd.']],
+ tejsiklo:[['Terrárium','Egy átlagos méretű tejsiklónak legalább 122 × 61 × 61 cm-es terrárium kell. Az alapterület legalább a kígyó hossza × a hossza fele legyen. '+SN_LOCK,'Exo Terra, Trixie'],
+  ['Hőmérséklet','A sütkérezőhely felülete 29–32 °C, a hűvös oldal 23–27 °C, éjszaka 21–23 °C legyen; a fűtést éjszakára kikapcsolhatod. '+SN_THERMO,'Exo Terra, Zoo Med, Trixie'],
+  ['Páratartalom és búvóhelyek','A páratartalom 40–60% legyen. '+SN_HIDES,'Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV23),
+  ['Aljzat','Föld és homok keveréke való neki, kb. 10 cm vastagon. '+SN_BADSUB+' '+SN_SUB34,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság','Nagy tálban mindig legyen friss víz, amelyben meg is tud mártózni; a tálat hetente fertőtlenítsd.']],
+ patkanysiklo:[['Terrárium','Nagyra növő, mozgékony kígyó: egy felnőttnek legalább 183 × 91 × 91 cm-es terrárium kell. Jól mászik, ezért a magasság is fontos: tegyél be erős ágakat. '+SN_LOCK,'Exo Terra'],
+  ['Hőmérséklet','A sütkérezőhely felülete 29–32 °C, a hűvös oldal 22–25 °C legyen. Éjszakára kapcsold ki a fűtést. '+SN_THERMO,'Exo Terra, Zoo Med'],
+  ['Páratartalom és búvóhelyek','A páratartalom 50–70% legyen. '+SN_HIDES,'Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV23),
+  ['Aljzat','Földszerű aljzat való neki, kb. 10 cm vastagon. '+SN_BADSUB+' '+SN_SUB34,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság','Nagy tálban mindig legyen friss víz, amelyben össze is tud tekeredni; a tálat hetente fertőtlenítsd.']],
+ szalagossiklo:[['Terrárium','A terrárium legalább olyan hosszú legyen, mint a kígyó, a szélessége és a magassága pedig legalább a hossza harmada (100 cm-es kígyónak 100 × 33 × 33 cm); egy felnőttnek a források 120 × 60 × 60 cm-t ajánlanak. Több kígyónak ennél nagyobb kell. '+SN_LOCK,'Exo Terra, Trixie'],
+  ['Hőmérséklet','A sütkérezőhelyen 28–32 °C, a hűvös végen 22–27 °C legyen; éjszaka 16–24 °C-ra hűlhet, a fűtést kikapcsolhatod. '+SN_THERMO,'Exo Terra, Zoo Med, Trixie'],
+  ['Páratartalom és búvóhelyek','A páratartalom 35–60% legyen. A szárazulat maradjon száraz: a tartósan nedves aljzat bőrbetegséget okoz. '+SN_HIDES,'Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV13),
+  ['Aljzat','Föld vagy föld és homok keveréke való neki, legalább 5 cm vastagon, a tetején avarral. '+SN_BADSUB,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság','Akkora vizestál vagy medence kell, amelyben teljesen elmerülhet; naponta, de szennyeződéskor azonnal cseréld. '+SN_CLEAN]],
+ hazikigyo:[['Terrárium','Egy felnőttnek legalább 91 × 46 × 41 cm-es terrárium kell; a nagyobb jobb. A fiatal a legkisebb résen is kiszökik: a terrárium legyen biztosan zárható.','Exo Terra, Trixie'],
+  ['Hőmérséklet','A meleg végen kb. 32 °C, a hűvös végen 21–24 °C legyen. '+SN_THERMO,'Exo Terra, Zoo Med, Trixie'],
+  ['Páratartalom és búvóhelyek','A páratartalom 40–60% legyen; naponta egyszer permetezhetsz. '+SN_HIDES,'Exo Terra, Zoo Med'],
+  SN_UVB(''),
+  ['Aljzat','Legalább 5 cm vastag aljzat kell. '+SN_BADSUB+' '+SN_SUB34,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság','Mindig legyen friss víz akkora tálban, amelyben meg is tud mártózni; naponta cseréld, a tálat hetente fertőtlenítsd.']],
+ torpepiton:[['Terrárium','Egy felnőttnek legalább 90 × 45 × 40 cm-es terrárium kell; a nagyobb jobb. Tegyél be ágakat, polcokat és több búvóhelyet. '+SN_LOCK,'Exo Terra, Trixie'],
+  ['Hőmérséklet','A meleg végen a források 29–32, illetve 32–38 °C-ot írnak; a hűvös végen 24–27 °C legyen. '+SN_THERMO,'Exo Terra, Zoo Med, Trixie'],
+  ['Páratartalom','Tág határok között, 20–80% páratartalmon tartható; legyen párás búvóhelye nedves mohával.','Exo Terra, Zoo Med'],
+  SN_UVB(''),
+  ['Aljzat','Az állatorvosi forrás nyárfaforgácsot ajánl a tetején tiszta avarral, más forrás kb. 10 cm vastag, földszerű aljzatot. '+SN_SUB34,'Exo Terra, Zoo Med'],
+  ['Víz és tisztaság','Nagy tálban mindig legyen friss víz, amelyben meg is tud mártózni; naponta cseréld.']],
+ zoldfapiton:[['Terrárium','Fán élő kígyó. Egy felnőttnek legalább 90 × 60 × 60 cm-es terrárium kell, inkább hosszabb, mint magas. '+SN_LOCK,'Exo Terra'],
+  ['Ágak','Legalább két, biztosan rögzített ág kell, kb. a kígyó testvastagságában, a terrárium felső harmadában; egy további ág legfeljebb 30 cm-re legyen a talajtól. Jó, ha az ágak kivehetők.','Exo Terra'],
+  ['Hőmérséklet','A sütkérezőágon 27–31 °C, a hűvös végen 21–26 °C, éjszaka 20–22 °C legyen. '+SN_THERMO,'Exo Terra, Zoo Med'],
+  ['Páratartalom','A páratartalom 40–70% között ingadozzon: permetezz minden este (ha kell, reggel is), és két permetezés között hagyd kb. 40%-ra száradni. A vedlés előtt álló kígyót ne permetezd le. A fiatal könnyebben kiszárad.','Exo Terra, Zoo Med'],
+  SN_UVB(SN_UV23),
+  ['Aljzat és víz','5–10 cm vastag, nedvességtartó aljzat kell (föld, kókuszrost és homok keveréke), a tetején avarral. Nagy tálban mindig legyen friss víz; naponta cseréld. '+SN_SUB34,'Exo Terra, Zoo Med']]});
+const SN_TAME={k:'kez',t:'Kézhez szoktatás',s:['Az első egy-két hétben ne vedd kézbe; várd meg, amíg rendszeresen eszik.','Előtte moss kezet, hogy ne legyen zsákmányszagú a kezed.','Jelezz neki, mielőtt hozzáérsz (pl. érintsd meg óvatosan egy papírhengerrel), és várd meg, amíg nyugodtan öltögeti a nyelvét.','Alulról emeld fel, két kézzel, az egész testét megtámasztva. Soha ne ragadd meg.','Kezdd legfeljebb 5 perces alkalmakkal néhány naponta, és fokozatosan növeld 10–15 percre.','Etetés után 48 óráig, vedlés előtt, és ha a nyakát S alakba húzza, hagyd békén.'],tip:'A farkánál soha ne emeld fel: megsérülhet a gerince.'};
+Object.assign(LESSONS,Object.fromEntries(['kiralypiton','kukoricasiklo','kiralyboa','szivarvanyosboa','homokiboa','tejsiklo','patkanysiklo','hazikigyo','torpepiton'].map(k=>[k,[SN_TAME]])),{szalagossiklo:[{...SN_TAME,s:SN_TAME.s.map(x=>x.replace('10–15 percre','5–10 percre'))}]});
+const TR_SN=cites=>{const r=TR_REP(0,cites);r[0]=['Állatorvoshoz','A kis kígyót jól szellőző, zárható műanyag dobozban vidd, puha, nedvszívó papírral kibélelve; a felnőttet szorosan bekötött vászonzsákban, amelyet jól szellőző, zárható műanyag ládába teszel.'];return r};
+Object.assign(TRIP,{kiralypiton:TR_SN(1),kukoricasiklo:TR_SN(),kiralyboa:TR_SN(1),szivarvanyosboa:TR_SN(1),homokiboa:TR_SN(1),tejsiklo:TR_SN(),patkanysiklo:TR_SN(),szalagossiklo:TR_SN(),hazikigyo:TR_SN(),torpepiton:TR_SN(1),zoldfapiton:TR_SN(1)});
+Object.assign(SRC,{
+ rspcaRoyal:['RSPCA: Royal Python Care','https://www.rspca.org.uk/adviceandwelfare/pets/other/royalpython'],rfBall:['ReptiFiles: Ball Python Care Guide','https://reptifiles.com/ball-python-care-guide/'],
+ rspcaCorn:['RSPCA: Corn Snake Care','https://www.rspca.org.uk/adviceandwelfare/pets/other/cornsnake'],rfCorn:['ReptiFiles: Corn Snake Care Guide','https://reptifiles.com/corn-snake-care-guide/'],
+ lvCorn:['LafeberVet: Basic Information Sheet – Corn Snake','https://lafeber.com/vet/basic-information-for-corn-snakes/'],
+ rfBoa:['ReptiFiles: Boa Constrictor Care Guide','https://reptifiles.com/boa-constrictor-care/'],lvBoas:['LafeberVet: Basic Information Sheet – Boas and Pythons','https://lafeber.com/vet/basic-information-boas-and-pythons/'],
+ rfRainbow:['ReptiFiles: Brazilian Rainbow Boa Care Sheet','https://reptifiles.com/brazilian-rainbow-boa-care-sheet/'],rmRainbow:['Reptiles Magazine: Rainbow Boa Care Sheet','https://reptilesmagazine.com/rainbow-boa-care-sheet/'],
+ rfSand:['ReptiFiles: Kenyan Sand Boa Care Sheet','https://reptifiles.com/kenyan-sand-boa-care-sheet/'],rmSand:['Reptiles Magazine: Kenyan Sand Boa Information and Care','https://reptilesmagazine.com/kenyan-sand-boa-information-and-care/'],
+ rfMilk:['ReptiFiles: Milksnake Care Sheet','https://reptifiles.com/milksnake-care-sheet/'],lvKing:['LafeberVet: Basic Information Sheet – Kingsnakes','https://lafeber.com/vet/basic-information-for-kingsnakes/'],
+ rspcaKing:['RSPCA: Kingsnake Care','https://www.rspca.org.uk/adviceandwelfare/pets/other/kingsnake'],
+ rfRat:['ReptiFiles: Black Ratsnake Care Sheet','https://reptifiles.com/black-ratsnake-care-sheet'],
+ rspcaGarter:['RSPCA: Garter Snake Care','https://www.rspca.org.uk/adviceandwelfare/pets/other/gartersnake'],rfGarter:['ReptiFiles: Garter Snake Care Sheet','https://reptifiles.com/garter-snake-care-sheet/'],
+ dubHouse:['Dubia.com: African House Snake Care Sheet','https://dubiaroaches.com/blogs/snake-care/african-house-snake-care-sheet'],ksHouse:['kingsnake.com: African House Snakes in Captivity (Chris Harrison)','https://kingsnake.com/housesnake/captive.html'],
+ cvChild:['Currumbin Valley Vet Services: Children’s Pythons as Pets','https://currumbinvetservices.com.au/?p=2128'],dubChild:['Dubia.com: Children’s Python Care Sheet','https://dubiaroaches.com/blogs/snake-care/children-s-python-care-sheet'],
+ rfGtp:['ReptiFiles: Green Tree Python Care Sheet','https://reptifiles.com/green-tree-python-care-sheet/'],rmGtp:['Reptiles Magazine: Green Tree Python Information and Care','https://reptilesmagazine.com/green-tree-python-information-and-care/'],
+ vcaSnF:['VCA Animal Hospitals: Snakes – Feeding','https://vcahospitals.com/know-your-pet/snakes-feeding'],vcaSnP:['VCA Animal Hospitals: Snakes – Problems','https://vcahospitals.com/know-your-pet/snakes-problems'],vcaSnH:['VCA Animal Hospitals: Snakes – Housing','https://vcahospitals.com/know-your-pet/snakes-housing']});
+Object.assign(GSRC,{
+ kiralypiton:{food:['rspcaRoyal','rfBall','vcaSnF'],care:['rspcaRoyal','rfBall','lvBoas','vcaSnP','vcaSnH'],trip:['rspcaRoyal','citesII']},
+ kukoricasiklo:{food:['rspcaCorn','rfCorn','vcaSnF'],care:['rspcaCorn','rfCorn','lvCorn','vcaSnP','vcaSnH'],trip:['rspcaCorn']},
+ kiralyboa:{food:['rfBoa','lvBoas','vcaSnF'],care:['rfBoa','lvBoas','vcaSnP','vcaSnH'],trip:['rspcaRoyal','citesII']},
+ szivarvanyosboa:{food:['rfRainbow','rmRainbow','vcaSnF'],care:['rfRainbow','rmRainbow','vcaSnP','vcaSnH'],trip:['rspcaRoyal','citesII']},
+ homokiboa:{food:['rfSand','rmSand','vcaSnF'],care:['rfSand','rmSand','vcaSnP','vcaSnH'],trip:['rspcaRoyal','citesII']},
+ tejsiklo:{food:['rfMilk','vcaSnF'],care:['rfMilk','lvKing','rspcaKing','vcaSnP','vcaSnH'],trip:['rspcaKing']},
+ patkanysiklo:{food:['rfRat','vcaSnF'],care:['rfRat','rspcaCorn','vcaSnP','vcaSnH'],trip:['rspcaCorn']},
+ szalagossiklo:{food:['rspcaGarter','rfGarter','vcaSnF'],care:['rspcaGarter','rfGarter','vcaSnP','vcaSnH'],trip:['rspcaGarter']},
+ hazikigyo:{food:['dubHouse','vcaSnF'],care:['dubHouse','ksHouse','rspcaCorn','vcaSnP','vcaSnH'],trip:['rspcaCorn']},
+ torpepiton:{food:['cvChild','dubChild','vcaSnF'],care:['cvChild','dubChild','lvBoas','vcaSnP','vcaSnH'],trip:['rspcaRoyal','citesII']},
+ zoldfapiton:{food:['rfGtp','rmGtp','vcaSnF'],care:['rfGtp','rmGtp','vcaSnP','vcaSnH'],trip:['rspcaRoyal','citesII']}});
 const CT={guide:'Útmutató',home:'Otthon',les:'Leckék',play:'Játék és mozgás',prob:'Problémák',trip:'Utazás'};
 const TOPIC={path:'az életút, a mérföldkövek és az oltások',health:'az egészség, a tünetek és a megelőzés',food:'a táplálkozás és a tápválasztás',care:'a tartás, az otthoni felszerelés, a tanítás, a játék és a mozgás',prod:'a termékek és a felszerelés',vets:'az állatorvosi vizsgálatok és az állatorvos-választás'};
 const TOPIC_HU={home:'Általános',hub:'Gondozás',path:'Életút',health:'Egészség',food:'Táplálkozás',care:'Tartás és nevelés',prod:'Termékek',vets:'Állatorvosok',more:'Általános'};
@@ -1752,7 +1955,18 @@ const TERRA={
  szenesteknos:{hot:[32,35],cool:[24,29],hum:[70,90],night:[20,null]},
  diszteknos:{hot:[30,40],water:[22,26],nwater:[20,null]},
  'diszteknos:hiero':{hot:[29],water:[22,26]},
- 'diszteknos:pezsma':{hot:[29,32],water:[22,26]}};
+ 'diszteknos:pezsma':{hot:[29,32],water:[22,26]},
+ kiralypiton:{hot:[30,32],cool:[22,27],hum:[50,80],night:[21,26]},
+ kukoricasiklo:{hot:[28,32],cool:[20,27],hum:[40,75],night:[16,24]},
+ kiralyboa:{hot:[30,32],cool:[24,26],hum:[55,75],night:[20,24]},
+ szivarvanyosboa:{hot:[30,32],cool:[26,29],hum:[70,90],night:[21,24]},
+ homokiboa:{hot:[34,35],cool:[26,28]},
+ tejsiklo:{hot:[29,32],cool:[23,27],hum:[40,60],night:[21,23]},
+ patkanysiklo:{hot:[29,32],cool:[22,25],hum:[50,70]},
+ szalagossiklo:{hot:[28,32],cool:[22,27],hum:[35,60],night:[16,24]},
+ hazikigyo:{hot:[32],cool:[21,24],hum:[40,60]},
+ torpepiton:{hot:[29,38],cool:[24,27],hum:[20,80]},
+ zoldfapiton:{hot:[27,31],cool:[21,26],hum:[40,70],night:[20,22]}};
 const TF={hot:['Meleg pont','°C'],cool:['Hűvös oldal','°C'],water:['Víz','°C'],hum:['Páratartalom','%']};
 const hasTerra=p=>['hullo','keteltu','gerinctelen'].includes(grp(p));
 const terraKind=p=>({vizi:'viz',viziteknos:'vt'})[kitOf(p)]||'sz';
