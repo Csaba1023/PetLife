@@ -162,7 +162,7 @@ button{cursor:pointer}
 .short{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .num{font:600 30px/1.1 Fraunces,Georgia,serif}
 .tv{display:flex;flex-wrap:wrap;gap:10px}.tv>div{flex:1 1 130px;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px}.tv .num{font-size:26px;margin:2px 0}
-.tag.bad{background:none;border:1px solid var(--alert);color:var(--alert)}.tag.ok{background:var(--soft);color:var(--brand)}
+.tag.off{background:none;border:1px solid var(--alert);color:var(--alert);padding:0 6px}.tag.ok{background:var(--soft);color:var(--brand)}.tbad{color:var(--alert);font-weight:600}
 .leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin-top:6px}.leg i{display:inline-block;width:22px;border-top:2.5px solid var(--brand);vertical-align:middle;margin-right:6px}.leg i.b{border-top:2.5px dashed var(--muted)}
 .chart{display:block;width:100%;height:auto;margin-top:12px}
 .bad{list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0}
@@ -1760,10 +1760,14 @@ const terraFields=p=>({viz:['water'],vt:['hot','water'],sz:['hot','cool','hum']}
 const tLabel=(p,f)=>f==='hot'&&terraKind(p)==='vt'?'Napozóhely':TF[f][0];
 const htName=(p,k)=>k==='terra'&&terraKind(p)==='viz'?'Vízhőmérséklet':HT[k];
 const tNum=v=>String(Math.round(v*10)/10).replace('.',',');
-const tRange=(T,f,tod)=>!T?null:tod==='n'?(f==='hum'?T.nhum:f==='water'?T.nwater||T.water:T.night)||null:T[f]||null;
+const tNight=(T,f)=>{const r=f==='hum'?T.nhum:f==='water'?T.nwater||T.water:T.night;if(!r)return null;const d=T[f];return r.length===2&&r[1]==null&&d&&d.length===2&&d[1]!=null&&d[1]>r[0]?[r[0],d[1]]:r}; /* csak alsó határú éjszakai célnál a felső határ a nappali felső érték (következtetés, nem forrásadat) */
+const tRange=(T,f,tod)=>!T?null:tod==='n'?tNight(T,f):T[f]||null;
+const tCapped=T=>!!T&&['hot','cool','water'].some(f=>{const r=f==='water'?T.nwater:T.night,n=tNight(T,f);return r&&r[1]==null&&n&&n[1]!=null&&T[f]});
+const tSwap=e=>e.hot!=null&&e.cool!=null&&(e.tod==='n'?e.cool-e.hot>=2:e.cool>e.hot); /* éjjel, kikapcsolt fűtésnél a két oldal közel azonos lehet */
+const TBAD={lo:'alacsony',hi:'magas'};
 const tGoal=r=>!r?'':r.length===1?`kb. ${tNum(r[0])}`:r[1]==null?`legalább ${tNum(r[0])}`:`${tNum(r[0])}–${tNum(r[1])}`;
 const tStat=(v,r)=>!r||r.length===1||v==null?'':v<r[0]?'lo':r[1]!=null&&v>r[1]?'hi':'ok';
-const TSTAT={ok:'<span class="tag ok">célon belül</span>',lo:'<span class="tag bad">alacsony</span>',hi:'<span class="tag bad">magas</span>'};
+const TSTAT={ok:'<span class="tag ok">célon belül</span>',lo:'<span class="tag off">alacsony</span>',hi:'<span class="tag off">magas</span>'};
 function tChart(l,ser,unit){ /* l: régi → új; ser: [[kulcs, felirat], …], legfeljebb két vonal */
   const use=l.filter(e=>ser.some(([k])=>e[k]!=null)),vals=ser.flatMap(([k])=>use.map(e=>e[k]).filter(v=>v!=null));
   if(use.length<2||!ser.some(([k])=>use.filter(e=>e[k]!=null).length>1))return'';
@@ -1786,16 +1790,20 @@ function uvbHtml(p){
   ${done.length?`<ul class="list" style="margin-top:8px">${done.slice(0,6).map(i=>`<li><div style="flex:1;min-width:0">${fmtDate(i.date)}${i.done.note?`<span class="when">${esc(i.done.note)}</span>`:''}</div><button class="btn text" data-act="untick" data-id="${i.done.id}">Törlés</button></li>`).join('')}</ul>`:''}</div>
   <p class="sub" style="margin-top:10px">Az UVB-kibocsátás akkor is csökken, ha a lámpa még világít. Az időközt a gyártó ajánlása szerint állítsd be.${def?'':' <button class="btn text" style="padding:0;min-height:0" data-act="uvbOff">Követés kikapcsolása</button>'}</p>`}
 function terraHtml(p){
-  const T=TERRA[gkey(p)],F=terraFields(p),l=recs(p,'terra'),last=l[0],tod=last?last.tod||'d':'d',day=[...l].filter(e=>(e.tod||'d')==='d').reverse();
-  const cell=f=>{const v=last?last[f]:null,r=tRange(T,f,tod),u=TF[f][1];return`<div><span class="when">${tLabel(p,f)}</span><div class="num">${v==null?'–':tNum(v)+' '+u}</div>${r?`<span class="when">cél: ${tGoal(r)} ${u}</span>`:''}${TSTAT[tStat(v,r)]||''}</div>`};
-  const goals=T?`<h2>Célértékek</h2><ul class="list" id="tGoals">${F.filter(f=>T[f]).map(f=>`<li><div style="flex:1"><b>${tLabel(p,f)}</b><span class="when">nappal ${tGoal(T[f])} ${TF[f][1]}${tRange(T,f,'n')&&tRange(T,f,'n')!==T[f]?`, éjjel ${tGoal(tRange(T,f,'n'))} ${TF[f][1]}`:''}</span></div></li>`).join('')}</ul>${T.note?`<p class="sub" style="margin-top:8px">${T.note}</p>`:''}<p class="sub" style="margin-top:8px">${terraKind(p)==='vt'?'A napozóhely':'A meleg pont (a sütkérezőhely)'} célértéke a levegő és a felület hőmérsékletét együtt fedi le; a részletek az útmutatóban vannak (Gondozás → Tartás és nevelés → Otthon).</p>`
+  const T=TERRA[gkey(p)],F=terraFields(p),tod=e=>e.tod||'d',l=recs(p,'terra').sort((a,c)=>a.date<c.date?1:a.date>c.date?-1:tod(a)===tod(c)?0:tod(a)==='n'?-1:1),day=[...l].filter(e=>tod(e)==='d').reverse();
+  const cell=(e,f)=>{const v=e[f],r=tRange(T,f,tod(e)),u=TF[f][1];return`<div><span class="when">${tLabel(p,f)}</span><div class="num">${v==null?'–':tNum(v)+' '+u}</div>${r?`<span class="when">cél: ${tGoal(r)} ${u}</span>`:''}${TSTAT[tStat(v,r)]||''}</div>`};
+  const SWAP='A hűvös oldal melegebb a meleg pontnál. Ellenőrizd a mérést, és azt, hogy nem cserélted-e fel a két értéket.';
+  const block=(e,id,n)=>e?`<div id="${id}"><span class="when">Utolsó ${n} mérés: ${fmtDate(D(e.date))}</span><div class="tv" style="margin:8px 0 4px">${F.map(f=>cell(e,f)).join('')}</div>${tSwap(e)?`<p class="err">${SWAP}</p>`:''}</div>`:'';
+  const lastD=l.find(e=>tod(e)==='d'),lastN=l.find(e=>tod(e)==='n');
+  const ngoal=f=>{const n=tRange(T,f,'n');return n&&n!==T[f]?`, éjjel ${tGoal(n)} ${TF[f][1]}`:''};
+  const goals=T?`<h2>Célértékek</h2><ul class="list" id="tGoals">${F.filter(f=>T[f]).map(f=>`<li><div style="flex:1"><b>${tLabel(p,f)}</b><span class="when">nappal ${tGoal(T[f])} ${TF[f][1]}${ngoal(f)}</span></div></li>`).join('')}</ul>${T.note?`<p class="sub" style="margin-top:8px">${T.note}</p>`:''}<p class="sub" style="margin-top:8px">${terraKind(p)==='vt'?'A napozóhely':'A meleg pont (a sütkérezőhely)'} célértéke a levegő és a felület hőmérsékletét együtt fedi le; a részletek az útmutatóban vannak (Gondozás → Tartás és nevelés → Otthon).${tCapped(T)?' Éjszakára a források csak alsó határt adnak; a felső határ itt a nappali érték.':''}</p>`
     :'<p class="sub" id="tNoGoal" style="margin-top:14px">Ehhez a fajhoz az appban még nincs célérték. A méréseidet így is rögzítheted, és a változásukat a grafikonon követheted.</p>';
-  const row=e=>F.filter(f=>e[f]!=null).map(f=>`${tLabel(p,f).toLowerCase()} ${tNum(e[f])} ${TF[f][1]}`).join(', ');
-  return`<div class="card" style="margin-top:14px" id="tLast">${last?`<span class="when">Utolsó mérés: ${fmtDate(D(last.date))}, ${tod==='n'?'éjjel':'nappal'}</span><div class="tv" style="margin-top:8px">${F.map(cell).join('')}</div>`:'<p class="sub" style="margin:0">Még nincs rögzített mérés.</p>'}</div>
+  const row=e=>F.filter(f=>e[f]!=null).map(f=>{const st=TBAD[tStat(e[f],tRange(T,f,tod(e)))];return`${tLabel(p,f).toLowerCase()} ${tNum(e[f])} ${TF[f][1]}${st?` <span class="tbad">(${st})</span>`:''}`}).join(', ')+(tSwap(e)?' <span class="tbad">– ellenőrizd a mérést</span>':'');
+  return`<div class="card" style="margin-top:14px" id="tLast">${l.length?block(lastD,'tLastD','nappali')+(lastD&&lastN?'<div style="height:10px"></div>':'')+block(lastN,'tLastN','éjszakai'):'<p class="sub" style="margin:0">Még nincs rögzített mérés.</p>'}</div>
   <p style="margin-top:12px"><button class="btn" data-act="terraNew">Mérés rögzítése</button></p>
   ${day.length>1?`<h2>Nappali mérések</h2><div class="card" id="tCharts">${tChart(day,F.filter(f=>f!=='hum').map(f=>[f,tLabel(p,f)]),'°C')}${F.includes('hum')?tChart(day,[['hum',TF.hum[0]]],'%'):''}</div>`:''}
   ${goals}
-  ${l.length?`<h2>Mérések</h2><ul class="list" id="tList">${l.slice(0,14).map(e=>`<li><div style="flex:1;min-width:0"><b>${fmtDate(D(e.date))}, ${(e.tod||'d')==='n'?'éjjel':'nappal'}</b><span class="when">${row(e)}</span></div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}
+  ${l.length?`<h2>Mérések</h2><ul class="list" id="tList">${l.slice(0,14).map(e=>`<li><div style="flex:1;min-width:0"><b>${fmtDate(D(e.date))}, ${tod(e)==='n'?'éjjel':'nappal'}</b><span class="when">${row(e)}</span></div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}
   ${uvbHtml(p)}${T?srcBox(p,'care'):''}
   <p class="sub" style="margin-top:14px">A célértékek tájékoztató jellegűek. Ha az értékek tartósan a célon kívül vannak, vagy az állat viselkedése megváltozik, kérj tanácsot a fajhoz értő állatorvostól.</p>`}
 function vHealth(p){
