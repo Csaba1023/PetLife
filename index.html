@@ -198,6 +198,13 @@ a.btn{text-decoration:none}
 input,select,textarea{width:100%;min-height:52px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);padding:0 14px;font-size:16px}
 textarea{padding:12px 14px}
 .err{color:var(--alert);font-weight:600;font-size:14px;margin:8px 0}
+.ck{display:flex;gap:10px;align-items:flex-start;margin:14px 0 6px;font-size:14px;line-height:1.45;cursor:pointer}
+.ck input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--brand)}
+.lnk{background:none;border:0;padding:0;font:inherit;color:var(--brand);text-decoration:underline;cursor:pointer}
+.priv h3{font-size:16px;margin:20px 0 6px}
+.priv p,.priv li{font-size:14px;line-height:1.5}
+.priv ul{padding-left:18px;margin:6px 0}
+.priv a{color:var(--brand);overflow-wrap:anywhere}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips label{position:relative}
 .chips input{position:absolute;opacity:0;inset:0;min-height:0}
@@ -2686,7 +2693,7 @@ function onAuth(ev,sess){
     else if(ev==='SIGNED_IN'&&hashType==='signup'&&!cloud.greeted){cloud.greeted=true;toast('E-mail-cím megerősítve, beléptél')}
   }else{
     const left=cloud.leaving;cloud.uid=null;cloud.email='';cloud.ok=false;cloud.leaving=false;cloud.state='out';cloud.err='';cloud.dirty.clear();clearTimeout(cloud.timer);
-    if(left){const th=S.settings.theme;S=blank();S.settings.theme=th;saveLocal();tab='home';closeSheet();render({top:true});toast('Kiléptél');return}
+    if(left){const th=S.settings.theme,gone=cloud.deleted;cloud.deleted=false;S=blank();S.settings.theme=th;saveLocal();tab='home';closeSheet();render({top:true});toast(gone?'A fiókodat és az adataidat töröltük':'Kiléptél');return}
     soft();
   }
 }
@@ -3285,11 +3292,11 @@ function chatLogHtml(p){
   if(!log.length&&chatBusy!==p.id){
     const q=chatSheet&&TOPIC_Q[chatTopic]?[...TOPIC_Q[chatTopic]]:[`Mire figyeljek most${st?' '+stHU(p,st).toLowerCase()+' korban':''}?`,...({hal:['Milyen vízértékekre figyeljek?','Mivel és milyen gyakran etessem?'],hullo:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?'],keteltu:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?'],gerinctelen:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?']}[grp(p)]||['Mit ne adjak neki enni?','Mennyi mozgásra és játékra van szüksége?'])];
     if(p.species==='kutya'&&st==='kolyok')q.push('Hogyan szoktassam szobatisztaságra?');
-    if(!aiGate()&&!S.settings.aiConsent)return consentCard(p)+(chatNote?`<div class="msg e">${esc(chatNote)}</div>`:'')+`<small class="disc">${DISC}</small>`;
+    if(!aiGate()&&!aiAgreed())return consentCard(p)+(chatNote?`<div class="msg e">${esc(chatNote)}</div>`:'')+`<small class="disc">${DISC}</small>`;
     if(aiGate())return`<p class="sub">A Tanácsadó ${esc(petName(p))} profilja alapján válaszol a kérdéseidre. A használatához lépj be a fiókodba.</p><p><button class="btn" data-act="auOpen" data-m="in">Belépés</button></p><p><button class="btn ghost" data-act="auOpen" data-m="up">Regisztráció</button></p><small class="disc">${DISC}</small>`;
     return`<p class="sub">Kérdezz bármit ${esc(petName(p))} táplálásáról, egészségéről, tartásáról vagy neveléséről. A válasz a profiljához és az életszakaszához igazodik.</p>
     <div class="sugs">${q.map(x=>`<button data-act="chatSug">${esc(x)}</button>`).join('')}</div>${chatNote?`<div class="msg e">${esc(chatNote)}</div>`:''}<small class="disc">${DISC}</small>`}
-  return(!aiGate()&&!S.settings.aiConsent?consentCard(p):'')+log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}<small class="disc">${DISC}</small></div>`).join('')
+  return(!aiGate()&&!aiAgreed()?consentCard(p):'')+log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}<small class="disc">${DISC}</small></div>`).join('')
    +(chatBusy===p.id?`<div class="msg a"><div class="bubble" id="pending">${esc(streamText)||'Gondolkodom…'}</div></div>`:'')+(chatNote?`<div class="msg e">${esc(chatNote)}</div>`:'')}
 function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p></div>
   ${chatLog(p).length&&!chatBusy?'<button class="btn ghost small" data-act="chatClear">Törlés</button>':''}</div>
@@ -3314,13 +3321,99 @@ function vMore(){
   <h2>Fiók</h2>${accountHtml()}
   <h2>Megjelenés</h2><div class="chips">${[['auto','Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,n])=>`<label><input type="radio" name="theme" value="${v}"${th===v?' checked':''}><span>${n}</span></label>`).join('')}</div>
   <h2>Telepítés</h2>${installHtml()}
+  <h2>Adatvédelem</h2><p class="sub">Mit tárol a PetVia, hol, meddig, és milyen jogaid vannak.</p><button class="btn ghost" data-act="tab" data-tab="privacy">Adatkezelési tájékoztató</button><button class="btn ghost" style="margin-top:10px" data-act="exportData">Adataim letöltése</button>
   <h2>Adatok</h2><p class="sub">${store}</p><button class="btn danger" data-act="wipeAsk">Adatok törlése</button>
   <p class="note">A mérföldkövek és a szakaszhatárok tájékoztató jellegűek. Kutyánál a veszettség elleni oltást a 164/2008. (XII. 20.) FVM rendelet, a mikrochipet a 41/2010. (II. 26.) Korm. rendelet írja elő. ${DISC}</p>`}
 function accountHtml(){
   if(cloud.state==='off')return`<p class="sub">${cloud.err==='lib'?'A fiókkezelést most nem sikerült betölteni. Ellenőrizd az internetkapcsolatot, majd nyisd meg újra az appot.':'A fiók ebben a változatban nincs beállítva.'}</p>`;
   if(cloud.state==='pending')return'<p class="sub">Fiók ellenőrzése…</p>';
   if(!cloud.uid)return`<p class="sub">Fiókkal az adataid biztonsági mentést kapnak, és a többi eszközödön is megjelennek. Fiók nélkül is használhatod az appot.</p><button class="btn" data-act="auOpen" data-m="in">Belépés</button><button class="btn ghost" style="margin-top:10px" data-act="auOpen" data-m="up">Regisztráció</button>`;
-  return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button>`}
+  return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button><button class="btn text" style="margin-top:6px;color:var(--alert)" data-act="delAsk">Fiók törlése</button>`}
+/* ---------- adatvédelem: tájékoztató, adatletöltés, fióktörlés (GDPR-kör, 2026. október) ----------
+   A szolgáltatókról szóló állítások forrásai a tájékoztató végén; a linkek letöltéssel ellenőrizve (2026. 10. 12.). */
+const PRIV={name:'Molnár Csaba',mail:'petvia@csabastudio.com',date:'2026. október 12.'};
+const xa=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
+function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 16 éves, vagy a szülőm hozzájárult.</span></label>`}
+function privHtml(){return`<div class="priv">
+<p class="sub">Hatályos: ${PRIV.date}</p>
+<h3>Ki kezeli az adataidat?</h3>
+<p>${PRIV.name} (magánszemély), a PetVia fejlesztője. Kapcsolat: <a href="mailto:${PRIV.mail}">${PRIV.mail}</a></p>
+<h3>Fiók nélkül</h3>
+<p>Minden, amit felveszel (állatok, fotók, események, naplók, beszélgetések), csak ezen az eszközön, a böngésző tárhelyén marad. Ezekhez mi nem férünk hozzá. A Beállításokban bármikor törölheted őket.</p>
+<h3>Fiókkal</h3>
+<ul><li><b>Mit:</b> az e-mail-címed, a jelszavad (mi nem látjuk), és az adataid másolata (állatok, fotók, események, beszélgetések).</li>
+<li><b>Miért:</b> hogy belépés után minden eszközödön megjelenjenek, és legyen biztonsági mentésed. Ez a szolgáltatás nyújtásához szükséges.</li>
+<li><b>Meddig:</b> amíg a fiókodat nem törlöd.</li>
+<li><b>Levelek:</b> csak a regisztráció megerősítéséhez és az új jelszó kéréséhez küldünk levelet. Hírlevelet nem küldünk.</li></ul>
+<h3>Tanácsadó (mesterséges intelligencia)</h3>
+<ul><li><b>Mit:</b> a kérdésed, az előző néhány üzenet és az állat adatai (név, faj, fajta, kor, ivar, súly, rögzített mérföldkövek, kezelések, naplóbejegyzések rövidített szövege), valamint az app útmutatójának részlete.</li>
+<li><b>Miért:</b> hogy az állatodra szabott választ kapj. Csak a hozzájárulásoddal, amit bármikor visszavonhatsz ezen az oldalon.</li>
+<li><b>Hová:</b> a PetVia szerverén át az OpenAI-hoz. Az OpenAI ezeket nem használja modelltanításra, és visszaélések kiszűrése miatt legfeljebb 30 napig őrzi meg.</li>
+<li><b>Visszaélés elleni védelem:</b> a fiókodhoz számoljuk a napi kérdések számát (60 napig őrizzük), és ha többször tiltott kérést küldesz, néhány percre letiltjuk a Tanácsadót.</li></ul>
+<h3>Technikai adatok</h3>
+<p>Amikor megnyitod az appot, az IP-címed és a kérés technikai adatai a tárhelyszolgáltatóhoz (Cloudflare) kerülnek. A betűtípusok a Google Fonts szolgáltatásból, a fiókkezelő programrész a jsDelivr szolgáltatásból töltődik be, így ezek is látják az IP-címedet. Hirdetést, követő sütit és látogatottságmérést nem használunk.</p>
+<p>Ha az appból külső oldalt nyitsz meg (térkép, webshop, forrás), ott annak az oldalnak a szabályai érvényesek.</p>
+<h3>Szolgáltatók, akik az adatokat nekünk kezelik</h3>
+<ul><li><b>Supabase</b> (fiók, mentés, szerver): az adatbázis az EU-ban, Írországban van, a naplók EU-s adatközpontban. ${xa('https://supabase.com/privacy','Adatvédelem')}</li>
+<li><b>OpenAI</b> (Tanácsadó): USA. ${xa('https://developers.openai.com/api/docs/guides/your-data','Adatkezelés az API-ban')}</li>
+<li><b>Resend</b> (e-mail-küldés): a levelek az EU-ból mennek ki, a küldési naplók az USA-ban tárolódnak. ${xa('https://resend.com/legal/privacy-policy','Adatvédelem')}</li>
+<li><b>Cloudflare</b> (tárhely): ${xa('https://www.cloudflare.com/privacypolicy/','Adatvédelem')}</li>
+<li><b>Google Fonts</b> (betűtípus) és <b>jsDelivr</b> (programrész): ${xa('https://www.jsdelivr.com/blog/how-the-german-courts-ruling-on-google-fonts-affects-jsdelivr-and-why-it-is-safe-to-use/','jsDelivr és az IP-címek')}</li></ul>
+<h3>Korhatár</h3>
+<p>A Tanácsadót és a fiókot 16 éves kortól használhatod. Ha még nem vagy 16, a szülőd hozzájárulása kell.</p>
+<h3>A jogaid</h3>
+<ul><li>Tájékoztatást kérhetsz arról, milyen adatot kezelünk rólad, és kérheted a helyesbítését.</li>
+<li>Letöltheted az adataidat: Beállítások → Adataim letöltése.</li>
+<li>Törölheted őket: Beállítások → Adatok törlése, illetve fiókkal Fiók törlése (a fiókot és minden hozzá mentett adatot töröl).</li>
+<li>Visszavonhatod a Tanácsadóhoz adott hozzájárulást, és tiltakozhatsz az adatkezelés ellen, vagy kérheted a korlátozását.</li>
+<li>Kérdéssel, kéréssel írj: <a href="mailto:${PRIV.mail}">${PRIV.mail}</a>.</li></ul>
+<h3>Panasz</h3>
+<p>Ha úgy érzed, megsértettük a jogaidat, a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH) fordulhatsz: 1055 Budapest, Falk Miksa utca 9–11.; postacím: 1363 Budapest, Pf.: 9.; telefon: +36 (1) 391 1400; e-mail: ugyfelszolgalat@naih.hu. ${xa('https://www.naih.hu/ugyfelszolgalat-kapcsolat','NAIH ügyfélszolgálat')}</p>
+</div>`}
+let privBack=null;
+function privSheet(back){privBack=back||null;openSheet(`<h2>Adatkezelési tájékoztató</h2>${privHtml()}<button class="btn" data-act="privBack">${back?'Vissza':'Bezárás'}</button>`)}
+function vPrivacy(){
+  const ok=aiAgreed();
+  return`<button class="btn text back" data-act="tab" data-tab="more">‹ Beállítások</button><h1>Adatkezelési tájékoztató</h1>
+  <div class="card" style="margin-top:12px"><b>A te adataid</b>
+  <p class="sub" style="margin:6px 0 12px">Tanácsadó: ${ok?`hozzájárultál (${esc(S.settings.aiConsent)}).`:'nem adtál hozzájárulást.'}</p>
+  <button class="btn ghost" data-act="exportData">Adataim letöltése</button>
+  ${ok?'<button class="btn ghost" style="margin-top:10px" data-act="aiRevoke">Hozzájárulás visszavonása</button>':''}</div>
+  ${privHtml()}`}
+/* adathordozhatóság: minden adat egy JSON-fájlban (a fotók is, ahogy az eszközön vannak) */
+function exportData(){
+  const out={app:'PetVia',format:1,exportedAt:new Date().toISOString(),account:cloud.uid?cloud.email:null,pets:S.pets,events:S.events,chat:S.chat,ai:S.ai,settings:S.settings};
+  try{const url=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'})),a=document.createElement('a');
+    a.href=url;a.download=`petvia-adatok-${iso(today())}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Az adataid letöltése elindult')}
+  catch(e){toast('A letöltés most nem sikerült.')}}
+/* fióktörlés: jelszó újra + „TÖRLÉS” szó, utána a szerveroldali account-delete függvény töröl mindent */
+const DEL_URL=SB_URL.replace(/\/$/,'')+'/functions/v1/account-delete';
+let delBusy=false;
+function delSheet(){delBusy=false;openSheet(`<form id="auForm" novalidate><h2>Fiók törlése</h2>
+  <p>Véglegesen törlöd a fiókodat (${esc(cloud.email)}) és minden hozzá mentett adatot: állatok, fotók, események, beszélgetések, a Tanácsadó használati adatai. Erről az eszközről is törlődnek. Ezt nem lehet visszavonni.</p>
+  <p class="sub">Ha meg szeretnéd tartani őket, előbb töltsd le: Beállítások → Adataim letöltése.</p>
+  <label class="f"><span>Jelszó</span><input id="delPw" type="password" autocomplete="current-password" maxlength="72"></label>
+  <label class="f"><span>Írd be: TÖRLÉS</span><input id="delTxt" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10"></label>
+  <p class="err" id="delErr" role="alert" hidden></p>
+  <button class="btn danger" id="delBtn" data-act="delGo">Fiók végleges törlése</button><button type="button" class="btn ghost" data-act="close">Mégse</button></form>`)}
+async function delGo(){
+  if(delBusy||!cloud.sb||!cloud.uid)return;
+  const pw=$('#delPw').value,tx=$('#delTxt').value.trim().toUpperCase();
+  if(!pw)return showErr('#delErr','Írd be a jelszavad.');
+  if(tx!=='TÖRLÉS')return showErr('#delErr','A megerősítéshez írd be: TÖRLÉS');
+  if(navigator.onLine===false)return showErr('#delErr','Nincs internetkapcsolat. A törléshez kapcsolat kell.');
+  delBusy=true;$('#delErr').hidden=true;const b=$('#delBtn');b.disabled=true;b.textContent='Törlés…';
+  const fail=m=>{delBusy=false;const x=$('#delBtn');if(x){x.disabled=false;x.textContent='Fiók végleges törlése';showErr('#delErr',m)}};
+  let r;try{r=await cloud.sb.auth.signInWithPassword({email:cloud.email,password:pw})}catch(e){r={error:e}}
+  if(r.error)return fail(auErr(r.error));
+  const tok=r.data&&r.data.session&&r.data.session.access_token;if(!tok)return fail('Most nem sikerült. Próbáld újra kicsit később.');
+  clearTimeout(cloud.timer);for(let i=0;i<40&&cloud.busy;i++)await sleep(100);
+  let res;try{res=await fetch(DEL_URL,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({confirm:'TÖRLÉS'})})}catch(e){res=null}
+  if(!res||!res.ok){let c='';try{c=String(((await res.json())||{}).code||'')}catch(e){}return fail(`A törlés most nem sikerült. Próbáld újra később.${c?` (hibakód: ${esc(c.slice(0,30))})`:res?` (hibakód: ${res.status})`:''}`)}
+  /* a szerveren minden törölve: helyben is takarítunk, és nem töltünk fel semmit */
+  cloud.dirty.clear();cloud.ok=false;cloud.deleted=true;cloud.leaving=true;
+  try{await cloud.sb.auth.signOut({scope:'local'})}catch(e){}
+  if(cloud.uid){onAuth('SIGNED_OUT',null)}}
 /* ---------- fiók: belépés, regisztráció, jelszócsere ---------- */
 let auMode='in',auBusy=false;
 const AU={in:{h:'Belépés',b:'Belépés'},up:{h:'Regisztráció',b:'Fiók létrehozása'},reset:{h:'Új jelszó kérése',b:'Levél küldése'}};
@@ -3329,6 +3422,7 @@ function authSheet(m,mail=''){auMode=AU[m]?m:'in';auBusy=false;const a=AU[auMode
   ${auMode==='reset'?'<p class="sub">Írd be az e-mail-címed, és küldünk egy linket, amivel új jelszót adhatsz meg.</p>':auMode==='up'?'<p class="sub">A regisztráció után megerősítő levelet kapsz. A benne lévő linkre kattintva válik használhatóvá a fiókod.</p>':''}
   <label class="f"><span>E-mail-cím</span><input id="auMail" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="200" value="${esc(mail)}"></label>
   ${auMode==='reset'?'':`<label class="f"><span>Jelszó${auMode==='up'?' (legalább 8 karakter)':''}</span><input id="auPw" type="password" name="password" autocomplete="${auMode==='up'?'new-password':'current-password'}" maxlength="72"></label>`}
+  ${auMode==='up'?agreeHtml('auAgree','privFromAuth'):''}
   <p class="err" id="auErr" role="alert" hidden></p>
   <button class="btn" id="auBtn" data-act="auGo">${a.b}</button>
   ${auMode==='in'?'<button type="button" class="btn ghost" data-act="auMode" data-m="up">Nincs még fiókom</button><button type="button" class="btn text" style="width:100%" data-act="auMode" data-m="reset">Elfelejtettem a jelszavam</button>':'<button type="button" class="btn ghost" data-act="auMode" data-m="in">Van már fiókom</button>'}
@@ -3355,6 +3449,7 @@ function render(opt={}){
   if(tab==='more')v.innerHTML=vMore();
   else if(tab==='vets')v.innerHTML=vVets();
   else if(tab==='nopet')v.innerHTML=vNoPet();
+  else if(tab==='privacy')v.innerHTML=vPrivacy();
   else if(!p)v.innerHTML=vEmpty();
   else if(tab==='hub')v.innerHTML=vHub(p);
   else if(tab==='home')v.innerHTML=vHome(p);
@@ -3563,12 +3658,14 @@ async function aiCall(body,{signal}={}){
   return{text:j.t,truncated:!!j.cut,sig:typeof j.sig==='string'?j.sig:'',qsig:typeof j.qsig==='string'?j.qsig:''}}
 /* hozzájárulás: az első AI-kérés előtt egyszer (a chatben a beszélgetés tetején, máshol felugró lapon) */
 let aiPending=null;
-const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed és ${esc(petName(p))} adatai (faj, fajta, kor, életszakasz, a naplóbejegyzések rövidített szövege) a PetVia szerverén át az OpenAI-hoz kerülnek.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot).</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
+/* hozzájárulás a Tanácsadóhoz (2. változat, 2026. október: korhatár és tájékoztató; a korábbi elfogadás nem elég) */
+const aiAgreed=()=>(S.settings.aiConsentV|0)>=2&&!!S.settings.aiConsent;
+const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a PetVia szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot). A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${agreeHtml('','privFromAi','aiAge')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be a négyzetet a folytatáshoz.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
 const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom</button></div>`;
-function aiConsent(fn){if(S.settings.aiConsent){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom</button><button class="btn ghost" data-act="close">Mégse</button>`)}
+function aiConsent(fn){if(aiAgreed()){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom</button><button class="btn ghost" data-act="close">Mégse</button>`)}
 async function sendChat(raw){
   const p=pet();if(!p||chatBusy)return;const text=aiClean(raw,AI_Q);if(!text)return;
-  if(!S.settings.aiConsent){chatNote=ERR.consent;redrawChat();return}
+  if(!aiAgreed()){chatNote=ERR.consent;redrawChat();return}
   const log=S.chat[p.id]=S.chat[p.id]||[],lastU=[...log].reverse().find(m=>m.r==='u');
   if(lastU&&lastU.sig&&lastU.t===text){chatNote=ERR.dup;redrawChat();return}
   const lim=aiLimit();if(lim){chatNote=aiErrText(lim);redrawChat();return}
@@ -3622,7 +3719,8 @@ const ACT={
     const e={id:newId(),petId:pet().id,kind:'sym',date:d,text,sev:($('input[name=sySev]:checked')||{}).value||''};S.events.push(e);save();closeSheet();render();toast('Tünet mentve');if(ai)symAsk(e)},
   symAi(el){const e=S.events.find(x=>x.id===el.dataset.id);e&&symAsk(e)},
   aiGo(el){const p=pet(),key=el.dataset.key;aiConsent(()=>runAi(key,aiPayload(p,key.startsWith('prod_')?'prod':key,aiTaskData(p,key)),t=>{(S.ai[p.id]=S.ai[p.id]||{})[key]={t,ts:Date.now()}}))},
-  aiOk(){S.settings.aiConsent=iso(today());save();const fn=aiPending;aiPending=null;if(fn){closeSheet();fn()}else redrawChat()},
+  aiOk(el){const box=el&&el.parentElement.querySelector('.aiAge');if(!box||!box.checked){const e=el&&el.parentElement.querySelector('.aiAgeErr');if(e)e.hidden=false;return}
+    S.settings.aiConsent=iso(today());S.settings.aiConsentV=2;save();const fn=aiPending;aiPending=null;if(fn){closeSheet();fn()}else redrawChat()},
   aiStop(){aiRun&&aiRun.ctl.abort()},
   tier(el){tier=el.dataset.v;render()},pCat(el){pCat=el.dataset.v;render()},careSt(el){careSt=el.dataset.v;render()},
   cTab(el){cTab=el.dataset.v;render()},
@@ -3666,6 +3764,7 @@ Object.assign(ACT,{
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail))return showErr('#auErr','Írd be az e-mail-címed.');
     if(m!=='reset'&&!pw)return showErr('#auErr','Írd be a jelszavad.');
     if(m==='up'&&pw.length<8)return showErr('#auErr','A jelszó legalább 8 karakter legyen.');
+    if(m==='up'&&!($('#auAgree')&&$('#auAgree').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elolvastad a tájékoztatót, és elmúltál 16 éves (vagy a szülőd hozzájárult).');
     auBusy=true;$('#auErr').hidden=true;const b=$('#auBtn');b.disabled=true;b.textContent='Egy pillanat…';
     let r;try{r=m==='in'?await cloud.sb.auth.signInWithPassword({email:mail,password:pw})
       :m==='up'?await cloud.sb.auth.signUp({email:mail,password:pw,options:{emailRedirectTo:APP_URL}})
@@ -3687,6 +3786,16 @@ Object.assign(ACT,{
   async out(){
     if(!cloud.sb||cloud.leaving)return;cloud.leaving=true;let r;try{r=await cloud.sb.auth.signOut({scope:'local'})}catch(e){r={error:e}}
     if(r&&r.error){cloud.leaving=false;closeSheet();toast('A kilépés most nem sikerült. Ellenőrizd az internetkapcsolatot.')}}
+});
+/* adatvédelem: tájékoztató, letöltés, hozzájárulás visszavonása, fióktörlés */
+Object.assign(ACT,{
+  privBack(){const f=privBack;privBack=null;if(f)f();else closeSheet()},
+  privFromAuth(){const m=$('#auMail')?$('#auMail').value.trim():'';privSheet(()=>authSheet('up',m))},
+  privFromAi(el){const fn=aiPending;if(el.closest('#sheet'))privSheet(()=>aiConsent(fn));else privSheet()},
+  exportData,
+  aiRevoke(){delete S.settings.aiConsent;delete S.settings.aiConsentV;save();render();toast('A Tanácsadóhoz adott hozzájárulást visszavontad')},
+  delAsk(){delSheet()},
+  delGo
 });
 document.addEventListener('submit',e=>{if(e.target.id==='auForm')e.preventDefault()});
 document.addEventListener('visibilitychange',recheck);
