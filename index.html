@@ -3000,22 +3000,21 @@ function aiBox(p,key,label){
     :r?`<div class="aitext">${esc(r.t)}</div><small class="disc">${DISC}</small><p style="margin:10px 0 0"><button class="btn ghost small" data-act="aiGo" data-key="${key}"${aiRun?' disabled':''}>Új ajánlás kérése</button></p>`
     :aiGate()?`<p class="sub" style="margin:0 0 10px">Személyre szabott ajánláshoz lépj be a fiókodba.</p><button class="btn ghost" data-act="auOpen" data-m="in">Belépés</button>`
     :`<button class="btn" data-act="aiGo" data-key="${key}"${aiRun?' disabled':''}>${label}</button>`}${aiErr&&aiErr.key===k?`<p class="err" style="margin-bottom:0">${esc(aiErr.t)}</p>`:''}</div>`}
-function aiTask(p,key){
-  if(key==='vit')return`Feladat: ajánlj ennek az állatnak vitaminokat és táplálékkiegészítőket. Írd le, mely típusok lehetnek hasznosak a faja, fajtája, mérete, életszakasza és a naplózott adatai alapján, és melyek fölöslegesek. Adagolást ne írj. Jelezd, hogy teljes értékű táp mellett egészséges állatnak többnyire nincs szüksége külön vitaminra, a túladagolás ártalmas lehet, és a kiegészítőt az állatorvossal kell egyeztetni. Márkát csak ezek közül említs: ${SUPP.join(', ')}. Árat ne írj. Legfeljebb 150 szó.`;
-  if(key==='food')return`Feladat: ajánlj ennek az állatnak 3 konkrét tápot az alábbi listából, és egy-egy mondatban indokold, miért illik a korához, méretéhez és adataihoz. Ha a naplóban van ide tartozó tünet vagy súlyváltozás, vedd figyelembe. Lista: ${foods(p).map(x=>x[0]).join('; ')}. Árat ne írj. Legfeljebb 130 szó.`;
-  const pl=c=>((prodOf(p)||{})[c]||[]).map(x=>`${x[0]} (${x[1]})`).join('; ');
-  if(key==='home')return`Feladat: írd le konkrétan, mire van szüksége otthon ennek az állatnak a faja, fajtája, mérete és életszakasza alapján: alom, fekhely, ház, ketrec vagy terrárium, tálak, hordozó – ami ennél a fajnál értelmezhető. Adj méretre és típusra vonatkozó gyakorlati tanácsot (ha a súlya vagy a mérete ismert, ahhoz igazítva), ${pl('alom')||pl('felsz')?`és mindegyikhez nevezz meg egy márkát ebből a listából: ${pl('alom')}; ${pl('felsz')}`:'márkát ne említs'}. Árat ne írj. Legfeljebb 170 szó.`;
-  if(key==='play')return`Feladat: állíts össze rövid napi mozgás- és foglalkozási tervet ennek az állatnak a faja, fajtája, mérete, életszakasza és súlya alapján: mennyi és milyen mozgás kell neki (kutyánál a séták száma és hossza), milyen játékok valók neki, és hogyan foglalkozzon vele a gazdája. Jelezd, mire kell vigyázni ebben a korban. ${pl('jatek')?`Játékmárkát csak ebből a listából említs: ${pl('jatek')}.`:'Márkát ne említs.'} Árat ne írj. Legfeljebb 170 szó.`;
-  const c=key.slice(5),l=c==='tap'?foods(p):(prodOf(p)||{})[c]||[];
-  return`Feladat: a(z) „${pcat(p)[c]}" kategóriából ajánlj ennek az állatnak 3 terméket vagy terméktípust márkával, a faja, mérete és életszakasza alapján. Röviden indokold, és írd meg, mire figyeljen a választásnál. Csak ebből a listából válassz: ${l.map(x=>x.slice(0,-1).join(' – ')+(x[x.length-1]==='p'?' (prémium)':' (közép)')).join('; ')}.${tier==='all'?'':` Csak a ${tier==='p'?'prémium':'közép'} kategóriából ajánlj.`} Árat ne írj. Legfeljebb 130 szó.`}
-async function runAi(key,task,store){
-  const p=pet();if(!p||aiRun)return;aiErr=null;const k=p.id+':'+key;aiRun={key:k,text:'',ctl:new AbortController()};render();
-  try{const sample=aiSample;
-    const res=await sample(chatContext(p,task),{signal:aiRun.ctl.signal,onText:({text})=>{aiRun.text=text;const o=$('#aiOut');if(o)o.textContent=text}});
-    store(res.text)}
-  catch(e){if(e&&e.text)store(e.text);if(!e||e.code!=='cancelled')aiErr={key:k,t:aiErrText(e)}}
+/* feladatgombok (táp, vitamin, otthon, játék, termék): a feladat szövege a szerveren van, innen csak a neve és a listák mennek */
+function aiTaskData(p,key){const pl=c=>((prodOf(p)||{})[c]||[]).map(x=>`${x[0]} (${x[1]})`),it=l=>({items:l.map(s=>aiClean(s,160)).filter(Boolean).slice(0,40)});
+  if(key==='food')return it(foods(p).map(x=>x[0]));
+  if(key==='home')return it([...pl('alom'),...pl('felsz')]);
+  if(key==='play')return it(pl('jatek'));
+  if(key.startsWith('prod_')){const c=key.slice(5),l=c==='tap'?foods(p):(prodOf(p)||{})[c]||[];return{task:'prod',cat:aiClean(pcat(p)[c],40),tier,...it(l.map(x=>x.slice(0,-1).join(' – ')+(x[x.length-1]==='p'?' (prémium)':' (közép)')))}}
+  return{}}
+async function runAi(key,body,store){
+  const p=pet();if(!p||aiRun)return;aiErr=null;const k=p.id+':'+key;
+  const lim=aiLimit();if(lim){aiErr={key:k,t:aiErrText(lim)};render();return}
+  aiRun={key:k,text:'',ctl:new AbortController()};render();
+  try{const res=await aiCall(body,{signal:aiRun.ctl.signal});store(res.text)}
+  catch(e){if(!e||e.code!=='cancelled')aiErr={key:k,t:aiErrText(e)}}
   aiRun=null;save('chat');render()}
-const symAsk=e=>{symOpen=e.id;runAi('sym:'+e.id,`Feladat: a felhasználó ezt a tünetet rögzítette az állatnál: „${e.text}" (${e.date}, a saját megítélése szerint ${SEV[e.sev]||'nem besorolt'}). Sorold fel röviden a 3–5 leggyakoribb lehetséges okot ennél a fajnál és életkorban, a valószínűbbtől haladva. Mondd ki, hogy ezek lehetőségek, nem diagnózis. Írd le, mit érdemes otthon megfigyelni, és milyen jelek esetén kell azonnal vagy 24 órán belül állatorvoshoz fordulni. Gyógyszert és adagolást ne javasolj. Legfeljebb 170 szó.`,t=>{e.ai=t})};
+const symAsk=e=>{symOpen=e.id;const p=pet();aiConsent(()=>runAi('sym:'+e.id,aiPayload(p,'sym',{sym:noteClean(e.text),symDate:e.date,symSev:e.sev||''}),t=>{e.ai=t}))};
 let cTab='guide',lesOpen='';
 function vCare(p){
   const k=gkey(p),C=CARE[k],cur=stageOf(p);
@@ -3286,17 +3285,18 @@ function chatLogHtml(p){
   if(!log.length&&chatBusy!==p.id){
     const q=chatSheet&&TOPIC_Q[chatTopic]?[...TOPIC_Q[chatTopic]]:[`Mire figyeljek most${st?' '+stHU(p,st).toLowerCase()+' korban':''}?`,...({hal:['Milyen vízértékekre figyeljek?','Mivel és milyen gyakran etessem?'],hullo:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?'],keteltu:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?'],gerinctelen:['Milyen hőmérséklet és páratartalom kell neki?','Mivel és milyen gyakran etessem?']}[grp(p)]||['Mit ne adjak neki enni?','Mennyi mozgásra és játékra van szüksége?'])];
     if(p.species==='kutya'&&st==='kolyok')q.push('Hogyan szoktassam szobatisztaságra?');
+    if(!aiGate()&&!S.settings.aiConsent)return consentCard(p)+(chatNote?`<div class="msg e">${esc(chatNote)}</div>`:'')+`<small class="disc">${DISC}</small>`;
     if(aiGate())return`<p class="sub">A Tanácsadó ${esc(petName(p))} profilja alapján válaszol a kérdéseidre. A használatához lépj be a fiókodba.</p><p><button class="btn" data-act="auOpen" data-m="in">Belépés</button></p><p><button class="btn ghost" data-act="auOpen" data-m="up">Regisztráció</button></p><small class="disc">${DISC}</small>`;
     return`<p class="sub">Kérdezz bármit ${esc(petName(p))} táplálásáról, egészségéről, tartásáról vagy neveléséről. A válasz a profiljához és az életszakaszához igazodik.</p>
     <div class="sugs">${q.map(x=>`<button data-act="chatSug">${esc(x)}</button>`).join('')}</div>${chatNote?`<div class="msg e">${esc(chatNote)}</div>`:''}<small class="disc">${DISC}</small>`}
-  return log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}<small class="disc">${DISC}</small></div>`).join('')
+  return(!aiGate()&&!S.settings.aiConsent?consentCard(p):'')+log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}<small class="disc">${DISC}</small></div>`).join('')
    +(chatBusy===p.id?`<div class="msg a"><div class="bubble" id="pending">${esc(streamText)||'Gondolkodom…'}</div></div>`:'')+(chatNote?`<div class="msg e">${esc(chatNote)}</div>`:'')}
 function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p></div>
   ${chatLog(p).length&&!chatBusy?'<button class="btn ghost small" data-act="chatClear">Törlés</button>':''}</div>
   <div id="msgs" aria-live="polite">${chatLogHtml(p)}</div>
-  <div class="composer"><textarea id="chatIn" rows="1" maxlength="2000" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
+  <div class="composer"><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
   <button class="send" data-act="${chatBusy?'chatStop':'chatSend'}" aria-label="${chatBusy?'Leállítás':'Küldés'}">${chatBusy?'■':'↑'}</button></div>`}
-const composer=()=>`<div class="composer"><textarea id="chatIn" rows="1" maxlength="2000" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
+const composer=()=>`<div class="composer"><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
   <button class="send" data-act="${chatBusy?'chatStop':'chatSend'}" aria-label="${chatBusy?'Leállítás':'Küldés'}">${chatBusy?'■':'↑'}</button></div>`;
 function drawChatSheet(clear){
   const p=pet(),old=$('#chatIn'),draft=old&&!clear?old.value:'',s=$('#sheet'),had=!!s.querySelector('.chatsheet');
@@ -3475,61 +3475,88 @@ function parSheet(k){openSheet(`<h2>${PAR_SHORT[k]}</h2>${dateF('hDate','Kezelé
 function confirmSheet(title,text,yes,act,id=''){openSheet(`<h2>${title}</h2><p>${text}</p><button class="btn danger" data-act="${act}" data-id="${id}">${yes}</button><button class="btn ghost" data-act="close">Mégse</button>`)}
 const showErr=(sel,t)=>{const el=$(sel);el.textContent=t;el.hidden=false};
 
-/* ---------- AI tanácsadó ---------- */
-const ERR={login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',daily_limit:'Mára elfogyott a kérdéskereted. Holnap újra kérdezhetsz.',rate_limited:'Túl sok kérdés érkezett rövid idő alatt. Várj egy percet, majd küldd el újra.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',prompt_too_large:'Túl hosszú lett a beszélgetés. Töröld az előzményeket a Törlés gombbal, és kérdezz újra.',refused:'Erre a kérdésre a Tanácsadó nem tud válaszolni. Fogalmazd meg másképp.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',setup:'A Tanácsadó beállítása még nem teljes.',none:'A Tanácsadó most nem érhető el.',def:'Most nem sikerült választ kapni. Küldd el újra a kérdést.'};
-const aiErrText=e=>{const c=e&&ERR[e.code]?e.code:'def';return ERR[c]+((c==='setup'||c==='def')&&e&&e.detail?` (hibakód: ${String(e.detail).slice(0,40)})`:'')};
-function chatContext(p,task){
-  const st=stageOf(p),items=buildItems(p),size=sizeOf(p);
-  const hist=[...items.filter(i=>i.done).map(i=>[i.done.date,`${i.m.t} (megtörtént)${i.done.note?' – '+i.done.note:''}`]),
-    ...S.events.filter(e=>e.petId===p.id&&e.kind==='own').map(e=>[e.date,`${e.title}${e.note?' – '+e.note:''}`])].sort((a,b)=>a[0]<b[0]?-1:1).slice(-25).map(x=>`- ${x[0]}: ${x[1]}`);
-  const due=dueList(p,items).map(i=>`- ${i.m.t}${i.unknown?'':' ('+iso(i.date)+')'}`);
-  const or=(a)=>a.length?a:['- nincs bejegyzés'];
-  const w=recs(p,'w').slice(0,5).map(e=>`- ${e.date}: ${wTxt(p,e.kg)}`),sy=recs(p,'sym').slice(0,5).map(e=>`- ${e.date}: ${e.text} (${SEV[e.sev]||'nincs besorolva'})`),
-    pa=recs(p,'par').slice(0,4).map(e=>`- ${e.date}: ${PAR_SHORT[e.ptype]}${e.product?' – '+e.product:''}`);
-  return[`Mai dátum: ${iso(today())}`,'','Az állat profilja:',`- Név: ${p.name||'nincs megadva'}`,`- Faj: ${speciesLabel(p)} (fajcsoport: ${GROUPS[grp(p)].n.toLowerCase()})`,`- Fajta: ${breedLabel(p)||'nincs megadva'}`,
+/* ---------- AI tanácsadó ----------
+   Rétegzett védelem (projektleírás, Biztonság):
+   A réteg (itt, az appban): 500 karakteres kérdés, 10 üzenet előzmény, láthatatlan és vezérlőkarakterek szűrése, sebességkorlát
+     (3 mp, óránként 20), ismétlődő kérdés tiltása, küldés közben tiltott gomb, nincs automatikus újrapróbálás, csak szöveg.
+   B–D réteg (a szerveren, az advisor függvényben): ellenőrző hívás, határoló jelek, standing utasítás, kimenet-ellenőrzés,
+     aláírt előzmény, keretek és 5 perces tiltás. Az app csak adatot küld: a feladatok szövege és a rendszerprompt a szerveren van.
+   D réteg (itt): a válasz mindig szövegként jelenik meg (esc / textContent), a hibaüzenet semleges, technikai részlet nélkül. */
+const AI_INVIS=/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F­͏؜ᅟᅠ឴឵᠋-᠏​-‏‪-‮⁠-⁯ㅤ︀-️﻿ﾠ￰-￿\u{E0000}-\u{E007F}\u{E0100}-\u{E01EF}]/gu;
+const aiClean=(s,n)=>String(s??'').normalize('NFC').replace(AI_INVIS,'').replace(/\s+/g,' ').trim().slice(0,n);
+/* a gazda szabad szövege (tünet, saját esemény, készítmény): csak betű, szám, szóköz és alapvető írásjel, legfeljebb 120 karakter */
+const noteClean=s=>aiClean(String(s??'').normalize('NFC').replace(AI_INVIS,'').replace(/[^\p{L}\p{N}\s.,!?:;'"()\-–%/+°]/gu,''),120);
+const AI_Q=500,AI_HIST=10,AI_GAP=3000,AI_HOUR=20;
+let aiRate=(()=>{try{const r=JSON.parse(localStorage.getItem('petvia.ai')||'{}');return r&&typeof r==='object'?r:{}}catch(e){return{}}})();
+const aiRateSave=()=>{try{localStorage.setItem('petvia.ai',JSON.stringify(aiRate))}catch(e){}};
+function aiLimit(){const now=Date.now();aiRate.t=(Array.isArray(aiRate.t)?aiRate.t:[]).filter(x=>now-x<36e5&&x<=now);
+  if(aiRate.until&&now<aiRate.until)return{code:'blocked',until:aiRate.until};
+  if(aiRate.t.length&&now-aiRate.t[aiRate.t.length-1]<AI_GAP)return{code:'too_fast'};
+  if(aiRate.t.length>=AI_HOUR)return{code:'hourly_limit'};return null}
+const aiMark=()=>{aiRate.t=[...(aiRate.t||[]),Date.now()].slice(-AI_HOUR);aiRateSave()};
+const AI_NEUTRAL='Most nem tudok válaszolni, próbáld újra később.';
+const ERR={login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
+  daily_limit:'Mára elfogyott a kérdéskereted. Holnap újra kérdezhetsz.',hourly_limit:'Ebben az órában elérted a kérdéskeretet. Próbáld újra később.',too_fast:'Várj néhány másodpercet a következő kérdéssel.',
+  refused:'Ebben nem tudok segíteni. Kisállattartásról kérdezz, például a táplálásáról, az egészségéről vagy a tartásáról.',blocked:'A Tanácsadó néhány percre szünetel. Próbáld újra később.',
+  dup:'Ezt a kérdést az előbb már elküldted.',consent:'A Tanácsadó használatához előbb fogadd el a fenti tájékoztatót.',rate_limited:AI_NEUTRAL,setup:AI_NEUTRAL,none:AI_NEUTRAL,output:AI_NEUTRAL,def:AI_NEUTRAL};
+const aiErrText=e=>{const c=e&&ERR[e.code]?e.code:'def';if(['def','setup','none','output','rate_limited'].includes(c))console.warn('[Tanácsadó]',e&&e.code,e&&e.detail||'');
+  return c==='blocked'&&e.until&&isFinite(new Date(e.until))?`A Tanácsadó ${new Date(e.until).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}-ig szünetel. Próbáld újra később.`:ERR[c]};
+/* az állat adatai: csak kiválasztott értékek és szűrt mezők; a gazda szabad szövege rövidítve, külön (notes) megy, és a szerveren ellenőrzés után kerül az AI elé */
+function aiPayload(p,task,x={}){
+  const st=stageOf(p),items=buildItems(p),size=sizeOf(p),done=items.filter(i=>i.done).sort((a,c)=>a.done.date<c.done.date?-1:1);
+  const due=dueList(p,items).map(i=>`- ${i.m.t}${i.unknown?'':' ('+iso(i.date)+')'}`),or=a=>a.length?a:['- nincs bejegyzés'];
+  const w=recs(p,'w').slice(0,5).map(e=>`- ${e.date}: ${wTxt(p,e.kg)}`),pa=recs(p,'par').slice(0,4).map(e=>`- ${e.date}: ${PAR_SHORT[e.ptype]||'kezelés'}`);
+  const profile=[`Mai dátum: ${iso(today())}`,'Az állat profilja:',`- Név: ${clean(p.name)||'nincs megadva'}`,`- Faj: ${clean(speciesLabel(p))} (fajcsoport: ${GROUPS[grp(p)].n.toLowerCase()})`,`- Fajta: ${clean(breedLabel(p))||'nincs megadva'}`,
     size?`- Méret: ${SIZE_HU[size]}`:null,`- Életkor: ${fmtAge(p)} (születési dátum: ${p.birth}${p.est?', becsült':''})`,`- Életszakasz: ${st?stHU(p,st):'ennél a fajnál nincs meghatározva'}`,
-    `- Ivar: ${{him:'hím',nosteny:'nőstény'}[p.sex]||'nincs megadva'}`,grp(p)==='emlos'||grp(p)==='egyeb'?`- Ivartalanított: ${p.neutered||'nincs megadva'}`:null,grp(p)==='hal'?`- Állomány: ${p.count||'?'} db, ${p.tankL?fmtKg(p.tankL):'?'} literes akvárium`:noWeight(p)?null:`- Súly: ${p.weight?wTxt(p,p.weight):'nincs megadva'}`,'',
-    'Előzmények az életútból:',...(hist.length?hist:['- nincs rögzített esemény']),'','Esedékes teendők:',...(due.length?due:['- nincs']),'','Súlymérések:',...or(w),'','Tünetnapló:',...or(sy),'','Parazita elleni kezelések:',...or(pa),'',
-    foods(p).length||prodOf(p)?`Ha márkát vagy terméket említesz, csak ezek közül válassz: ${brandList(p)}.`:'Konkrét márkát vagy terméknevet ne említs.','','Sima szöveggel válaszolj, markdown formázás nélkül.',task||'A felhasználó üzenetei következnek.'].filter(x=>x!==null).join('\n');
-}
-/* ---------- Tanácsadó: hívás a szerveroldali függvényen át ----------
+    `- Ivar: ${{him:'hím',nosteny:'nőstény'}[p.sex]||'nincs megadva'}`,grp(p)==='emlos'||grp(p)==='egyeb'?`- Ivartalanított: ${p.neutered||'nincs megadva'}`:null,
+    grp(p)==='hal'?`- Állomány: ${p.count||'?'} db, ${p.tankL?fmtKg(p.tankL):'?'} literes akvárium`:noWeight(p)?null:`- Súly: ${p.weight?wTxt(p,p.weight):'nincs megadva'}`,
+    'Megtörtént mérföldkövek:',...or(done.slice(-15).map(i=>`- ${i.done.date}: ${i.m.t}`)),'Esedékes teendők:',...(due.length?due.slice(0,8):['- nincs']),'Súlymérések:',...or(w),'Parazita elleni kezelések:',...or(pa)]
+    .filter(x=>x!==null).map(s=>aiClean(s,200)).filter(Boolean).slice(0,60);
+  const notes=[...done.filter(i=>i.done.note).slice(-3).map(i=>`${i.done.date} ${i.m.t}: ${i.done.note}`),
+    ...S.events.filter(e=>e.petId===p.id&&e.kind==='own').sort((a,c)=>a.date<c.date?-1:1).slice(-5).map(e=>`${e.date} saját esemény: ${e.title}${e.note?' – '+e.note:''}`),
+    ...recs(p,'sym').slice(0,5).reverse().map(e=>`${e.date} tünet: ${e.text} (${SEV[e.sev]||'nincs besorolva'})`),
+    ...recs(p,'par').filter(e=>e.product).slice(0,3).map(e=>`${e.date} készítmény: ${e.product}`)].map(noteClean).filter(Boolean).slice(-16);
+  const brands=foods(p).length||prodOf(p)?brandList(p).split('; ').map(s=>aiClean(s,60)).filter(Boolean).slice(0,80):[];
+  return Object.assign({task,profile,notes,brands},x)}
+/* ---------- hívás a szerveroldali függvényen át ----------
    A kérés a belépett felhasználó nevében megy; a rendszerprompt és az AI-kulcs a szerveren van.
-   Válasz: soronkénti JSON, {"t":"szöveg"} darabok, a végén {"done":true,"cut":false} vagy {"error":"…"}. */
+   Válasz: {"t":"szöveg","cut":false,"sig":"…","qsig":"…"}; az aláírás nélküli előzményt a szerver figyelmen kívül hagyja. */
 const AI_URL=SB_URL.replace(/\/$/,'')+'/functions/v1/advisor';
 const aiGate=()=>CFG_OK&&!cloud.uid&&cloud.state!=='pending';
-async function aiSample(input,{signal,onText}={}){
+async function aiCall(body,{signal}={}){
   if(!CFG_OK||!cloud.sb)throw{code:cloud.state==='pending'?'def':'none'};
   if(!cloud.uid)throw{code:'login'};
   if(navigator.onLine===false)throw{code:'offline'};
+  const lim=aiLimit();if(lim)throw lim;
   let tok='';try{const r=await cloud.sb.auth.getSession();tok=(r.data&&r.data.session&&r.data.session.access_token)||''}catch(e){}
   if(!tok)throw{code:'session_expired'};
-  const turns=typeof input==='string'?[{role:'user',content:input}]:input;
-  let res;try{res=await fetch(AI_URL,{method:'POST',signal,headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({context:turns[0].content,messages:turns.slice(1)})})}
+  aiMark();
+  let res;try{res=await fetch(AI_URL,{method:'POST',signal,headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify(body)})}
   catch(e){throw{code:e&&e.name==='AbortError'?'cancelled':'offline'}}
-  if(!res.ok){let j={};try{j=await res.json()}catch(e){}
-    throw{code:typeof j.code==='string'&&ERR[j.code]?j.code:res.status===401?'session_expired':res.status===404?'setup':'def',detail:typeof j.detail==='string'?j.detail:res.status===404?'advisor':String(res.status)}}
-  const rd=res.body.getReader(),dec=new TextDecoder();let buf='',text='',end=null;
-  try{for(;;){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
-    while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;let j;try{j=JSON.parse(line)}catch(e){continue}
-      if(typeof j.t==='string'){text+=j.t;onText&&onText({text})}
-      else if(j.error)throw{code:j.error==='refused'?'refused':'def',detail:String(j.error),text};
-      else if(j.done)end=j}}}
-  catch(e){if(e&&typeof e.code==='string')throw e;throw{code:e&&e.name==='AbortError'?'cancelled':'def',detail:'megszakadt',text}}
-  if(!end)throw{code:'def',detail:'megszakadt',text};
-  return{text,truncated:!!end.cut}}
-async function sendChat(text){
-  const p=pet();text=(text||'').trim();if(!p||chatBusy||!text)return;
-  const log=S.chat[p.id]=S.chat[p.id]||[];log.push({r:'u',t:text.slice(0,2000),ts:Date.now()});
+  let j={};try{j=await res.json()}catch(e){if(e&&e.name==='AbortError')throw{code:'cancelled'}}
+  if(!res.ok||!j||typeof j.t!=='string'){j=j||{};
+    if(j.code==='blocked'){aiRate.until=+new Date(j.until)||Date.now()+3e5;aiRateSave()}
+    throw{code:typeof j.code==='string'&&ERR[j.code]?j.code:res.status===401?'session_expired':'def',detail:typeof j.detail==='string'?j.detail:String(res.status),until:j.until}}
+  return{text:j.t,truncated:!!j.cut,sig:typeof j.sig==='string'?j.sig:'',qsig:typeof j.qsig==='string'?j.qsig:''}}
+/* hozzájárulás: az első AI-kérés előtt egyszer (a chatben a beszélgetés tetején, máshol felugró lapon) */
+let aiPending=null;
+const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed és ${esc(petName(p))} adatai (faj, fajta, kor, életszakasz, a naplóbejegyzések rövidített szövege) a PetVia szerverén át az OpenAI-hoz kerülnek.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot).</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
+const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom</button></div>`;
+function aiConsent(fn){if(S.settings.aiConsent){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom</button><button class="btn ghost" data-act="close">Mégse</button>`)}
+async function sendChat(raw){
+  const p=pet();if(!p||chatBusy)return;const text=aiClean(raw,AI_Q);if(!text)return;
+  if(!S.settings.aiConsent){chatNote=ERR.consent;redrawChat();return}
+  const log=S.chat[p.id]=S.chat[p.id]||[],lastU=[...log].reverse().find(m=>m.r==='u');
+  if(lastU&&lastU.sig&&lastU.t===text){chatNote=ERR.dup;redrawChat();return}
+  const lim=aiLimit();if(lim){chatNote=aiErrText(lim);redrawChat();return}
+  const hist=log.slice(-AI_HIST).map(m=>({role:m.r==='u'?'user':'assistant',content:m.t,...(m.sig?{sig:m.sig}:{})})),u={r:'u',t:text,ts:Date.now()};log.push(u);
   chatBusy=p.id;chatNote='';streamText='';save('chat');redrawChat(true);
-  const tp=chatSheet&&TOPIC[chatTopic]?`A felhasználó most a(z) „${TOPIC_HU[chatTopic]}" képernyőről kérdez: elsősorban erre a témára figyelj (${TOPIC[chatTopic]}). `:'';
   try{
-    const sample=aiSample;
-    const turns=[{role:'user',content:chatContext(p,tp+'A felhasználó üzenetei következnek.')},...log.slice(-13).map(m=>({role:m.r==='u'?'user':'assistant',content:m.t}))];
     chatCtl=new AbortController();
-    const res=await sample(turns,{signal:chatCtl.signal,onText:({text})=>{streamText=text;const b=$('#pending');if(b){b.textContent=text;scrollChat()}}});
-    log.push({r:'a',t:res.text,ts:Date.now(),...(res.truncated?{cut:1}:{})});
+    const res=await aiCall(aiPayload(p,'chat',{topic:chatSheet&&TOPIC[chatTopic]?chatTopic:'',messages:[...hist,{role:'user',content:text}]}),{signal:chatCtl.signal});
+    if(res.qsig)u.sig=res.qsig;
+    log.push({r:'a',t:res.text,ts:Date.now(),...(res.sig?{sig:res.sig}:{}),...(res.truncated?{cut:1}:{})});
   }catch(e){
-    if(e&&e.text)log.push({r:'a',t:e.text,ts:Date.now(),cut:1});
     if(!e||e.code!=='cancelled')chatNote=aiErrText(e);
   }
   chatBusy=null;chatCtl=null;streamText='';if(log.length>60)log.splice(0,log.length-60);save('chat');redrawChat();
@@ -3571,7 +3598,8 @@ const ACT={
   symSave(el){const text=$('#syText').value.trim(),d=$('#hDate').value,ai=el.dataset.ai;if(!text)return showErr('#hErr','Írd le röviden, mit vettél észre.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     const e={id:newId(),petId:pet().id,kind:'sym',date:d,text,sev:($('input[name=sySev]:checked')||{}).value||''};S.events.push(e);save();closeSheet();render();toast('Tünet mentve');if(ai)symAsk(e)},
   symAi(el){const e=S.events.find(x=>x.id===el.dataset.id);e&&symAsk(e)},
-  aiGo(el){const p=pet(),key=el.dataset.key;runAi(key,aiTask(p,key),t=>{(S.ai[p.id]=S.ai[p.id]||{})[key]={t,ts:Date.now()}})},
+  aiGo(el){const p=pet(),key=el.dataset.key;aiConsent(()=>runAi(key,aiPayload(p,key.startsWith('prod_')?'prod':key,aiTaskData(p,key)),t=>{(S.ai[p.id]=S.ai[p.id]||{})[key]={t,ts:Date.now()}}))},
+  aiOk(){S.settings.aiConsent=iso(today());save();const fn=aiPending;aiPending=null;if(fn){closeSheet();fn()}else redrawChat()},
   aiStop(){aiRun&&aiRun.ctl.abort()},
   tier(el){tier=el.dataset.v;render()},pCat(el){pCat=el.dataset.v;render()},careSt(el){careSt=el.dataset.v;render()},
   cTab(el){cTab=el.dataset.v;render()},
