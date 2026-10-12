@@ -200,6 +200,8 @@ textarea{padding:12px 14px}
 .err{color:var(--alert);font-weight:600;font-size:14px;margin:8px 0}
 .ck{display:flex;gap:10px;align-items:flex-start;margin:14px 0 6px;font-size:14px;line-height:1.45;cursor:pointer}
 .ck input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--brand)}
+.air summary .tag{margin:0 0 0 6px;vertical-align:1px}
+.tag.av-no{background:var(--line);color:var(--muted)}
 .lnk{background:none;border:0;padding:0;font:inherit;color:var(--brand);text-decoration:underline;cursor:pointer}
 .priv h3{font-size:16px;margin:20px 0 6px}
 .priv p,.priv li{font-size:14px;line-height:1.5}
@@ -1077,6 +1079,52 @@ const TRIP={
  nyul:TR_SMALL('Nyúlra'),tengerimalac:TR_SMALL('Rágcsálóra'),horcsog:TR_SMALL('Rágcsálóra'),
  csincsilla:[['Állatorvoshoz','Zárt, jól szellőző hordozóban vidd, szénával és búvóhellyel. Előre szoktasd a hordozóhoz.'],['Meleg','A meleget rosszul tűri, hőgutát kaphat: nyáron hűtött autóban, a legmelegebb órákat kerülve szállítsd, és soha ne hagyd az autóban.'],TR_HOME,TR_NOPASS('Rágcsálóra')],
  hullamos:TR_BIRD,nimfa:TR_BIRD,kanari:TR_BIRD,pinty:TR_BIRD};
+/* ---------- utazás modul: közlekedés, repülés, panzió, útra kész lista (2026. október) ----------
+   Csak a szolgáltatók saját oldaláról vett szabályok, ár nélkül (a díjak gyakran változnak). Átnézve: 2026. október 12.
+   A jegyzet és a források: a projekt petvia-utazas.md dokumentuma. */
+/* csak emlősöknél és madaraknál (hüllők, kétéltűek, halak, gerinctelenek: későbbi kör) */
+const TRIP_ON=k=>['emlos','madar'].includes(grp({species:k.split(':')[0]}));
+const TRIP_KIND=k=>k==='kutya'?'dog':['hullamos','nimfa','kanari','pinty'].includes(k)?'bird':'box';
+const TRANSPORT={
+ dog:[['Vonat (belföld)','Szájkosárral és pórázon utazhat, kutyajegy vagy kutya országbérlet kell hozzá. Egy utas legfeljebb két kutyát vihet, az ülésre nem ülhet. A 20 kg-nál nehezebb kutya csak a kocsi peronján vagy a motorvonat többcélú terében utazhat. Helyjegyes vonatra (pl. IC) csak egy, legfeljebb 20 kg-os kutya vihető, 2. osztályra. Vidd magaddal az egy évnél nem régebbi veszettség elleni oltás igazolását (3 hónaposnál fiatalabb kölyöknél nem kell, ha a kora egyértelmű). Országbérlettel, Pest megyebérlettel vagy Budapest-bérlettel egy kutya Budapesten belül díjmentesen utazik vonaton, buszon és HÉV-en.','mavBel'],
+  ['Távolsági busz (Volánbusz)','Szájkosárral és pórázon, a kísérő felelősségére utazhat, buszonként egyszerre egy kutya. Díjköteles. Az oltási könyvet vagy a kisállatútlevelet fel kell tudnod mutatni.','mavBel'],
+  ['Budapesten (BKK)','Hordozó nélkül pórázon és felcsatolt szájkosárral utazhat (a „halti” szájszíj nem elég). Kis kutya zárt hordozóban díjmentesen utazik. Budapesten belül érvényes bérlettel egy kutya ingyen utazik, egyébként jegyet kell váltani neki. Egy utas egy kutyát vihet, az ülésre nem ülhet, mozgólépcsőn vedd kézbe. Az oltási bizonyítványt tartsd magadnál.','bkkDog'],
+  ['Nemzetközi vonat','Hordozó nélkül pórázon és szájkosárral, díj ellenében utazhat, de nem minden országban és kocsiban. Első osztályra csak zárt hordozóban vihető. Háló- és fekvőhelyes kocsiba, étkező- és bisztrókocsiba nem vihető.','mavInt'],
+  ['Segítő kutya','A vakvezető és segítő kutya díjmentesen utazik vonaton és a BKK járatain, és a fenti korlátozások nagy része nem vonatkozik rá.','mavBel']],
+ box:[['Vonat','Zárt hordozóban utazhat, a kézipoggyász méretén belül, 1. és 2. osztályon is. Nem szabadulhat ki a hordozóból, és étkezőkocsiba nem vihető. Beteg állat nem szállítható. Nemzetközi vonaton megfelelően zárható hordozóban díjmentes, de háló- és fekvőhelyes kocsiba nem vihető.','mavBel'],
+  ['Távolsági busz (Volánbusz)','Zárt, a kézipoggyász méretét meg nem haladó hordozóban utazhat, utasonként egy. Díjköteles.','mavBel']]};
+TRANSPORT.bird=TRANSPORT.box;
+/* légitársaságok: [név, forrás, utastér fajai, raktér fajai, összefoglaló] */
+const AIR=[
+ ['Wizz Air','airWizz',[],[],'Állatot nem szállít, csak vakvezető kutyát: járatonként egyet, előzetes bejelentéssel, legalább 48 órával indulás előtt elküldött iratokkal.'],
+ ['Ryanair','airRyan',[],[],'Állatot nem szállít, csak vakvezető és segítő kutyát, bizonyos útvonalakon.'],
+ ['Lufthansa','airLH',['kutya','macska'],['kutya','macska'],'Utastérben kis kutya vagy macska utazhat: hordozóval együtt legfeljebb 8 kg, a hordozó legfeljebb 55 × 40 × 23 cm, az állat legalább 12 hetes (Németországba, onnan vagy rajta át 15 hetes). A nehezebb kutya és macska a légkondicionált raktérben utazik. Legkésőbb 72 órával indulás előtt be kell jelenteni. A rövid orrú fajtákra külön szabály vonatkozik.'],
+ ['KLM','airKLM',['kutya','macska'],['kutya','macska'],'Utastérben csak kutya és macska utazhat, utasonként egy: hordozóval együtt legfeljebb 8 kg, a hordozó legfeljebb 46 × 28 × 24 cm. Raktérben is szállítják, de nem minden géptípuson. Legalább 48 órával indulás előtt foglalni kell, a hely korlátozott.'],
+ ['Turkish Airlines','airTK',['kutya','macska','hullamos','kanari'],['kutya','macska','hullamos','kanari'],'Utastérben kutya, macska és kis énekesmadár (pl. hullámos papagáj, kanári) utazhat: hordozóval együtt legfeljebb 8 kg, a hordozó legfeljebb 40 × 30 × 23 cm. Raktérben is szállítják, hordozóval együtt legfeljebb 50 kg-ig. A foglaláshoz a weboldalon vagy az appban add hozzá.'],
+ ['LOT','airLOT',['kutya','macska','goreny'],['kutya','macska','goreny'],'Utastérben kutya, macska vagy görény utazhat: hordozóval együtt legfeljebb 8 kg, legalább 3 hónapos. A hordozó mérete a géptípustól függ (55 × 40 × 20 vagy 45 × 30 × 20 cm). Raktérben is szállítják, de rövid orrú kutya- és macskafajta (és ilyen keverék) nem utazhat a raktérben. Legkésőbb 12 órával indulás előtt foglalható, a hely korlátozott.']];
+const airVerdict=(a,k)=>!a[2].length&&!a[3].length?['Nem visz állatot','no']:a[2].includes(k)?['Utastérben is','ok']:a[3].includes(k)?['Csak raktérben','mid']:['Ezt a fajt nem viszi','no'];
+const TRIP_LIST={
+ dog:['Oltási könyv vagy kisállatútlevél, érvényes veszettség elleni oltással','Mikrochip (külföldre kötelező)','Póráz és nyakörv vagy hám, azonosító bilétával','Szájkosár a tömegközlekedéshez','Szállítóbox vagy autós biztonsági hám','Víz és itatótál','Eleség az útra és az ott töltött napokra','Megszokott takaró vagy játék','Rendszeresen szedett gyógyszerei','Zacskó az ürüléknek','A szállás és a közlekedés állatbarát (foglalás előtt ellenőrizve)','Állatorvos és ügyelet a célhelyen'],
+ box:['Zárt, jól szellőző hordozó, előre megszoktatva','Víz és eleség az útra','Megszokott takaró a hordozóba','Rendszeresen szedett gyógyszerei','Nyáron: hűtött autó, a legmelegebb órák kerülése','A szállás állatbarát (foglalás előtt ellenőrizve)','Állatorvos a célhelyen'],
+ bird:['Madaranként egy hordozó, előre megszoktatva','Friss víz és eleség a hordozóban','Nyáron: hűtött autó, a legmelegebb órák kerülése','Rendszeresen szedett gyógyszerei','A szállás állatbarát (foglalás előtt ellenőrizve)','Madarakhoz értő állatorvos a célhelyen']};
+/* a kutyás és macskás, görényes lista kiegészül az uniós iratokkal; a többi fajnál nincs uniós útlevél */
+TRIP_LIST.cat=['Oltási könyv vagy kisállatútlevél, érvényes veszettség elleni oltással','Mikrochip (külföldre kötelező)',...TRIP_LIST.box];
+/* az utazás modul forrásai az Utazás fül forráslistájához */
+const tripSrc=k=>[...(TRIP_KIND(k)==='dog'?['mavBel','mavInt','bkkDog']:['mavBel','mavInt']),'airWizz','airRyan','airLH','airLH2','airKLM','airTK','airLOT','airLOT2'];
+const tripListOf=k=>TRIP_LIST[['macska','goreny'].includes(k)?'cat':TRIP_KIND(k)];
+function tripMore(p,k){
+  const kind=TRIP_KIND(k),src=id=>`<p style="margin:8px 0 0"><a class="lnk" href="${esc(SRC[id][1])}" target="_blank" rel="noopener noreferrer">Szabályok: ${esc(SRC[id][0].split(':')[0])} ›</a></p>`;
+  const c=S.settings.city||'',q=kind==='dog'||k==='macska'?'állatpanzió':'kisállat panzió';
+  const done=p.tripChk||{},list=tripListOf(k),n=list.filter((_,i)=>done[i]).length;
+  return`<h2>Tömegközlekedéssel</h2>${TRANSPORT[kind].map(([t,d,id])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${src(id)}</div>`).join('')}
+  <h2>Repülővel</h2><p class="sub" style="margin:-4px 0 10px">A Budapestről induló nagy légitársaságok szabályai. A feltételek és a díjak gyakran változnak, foglalás előtt mindig nézd meg a légitársaság oldalán. Külföldi úthoz az uniós iratok is kellenek (lásd fent).</p>
+  ${AIR.map(a=>{const[v,cl]=airVerdict(a,k);return`<details class="acc air"><summary>${a[0]} <span class="tag av-${cl}">${v}</span></summary><p>${a[4]}</p>${src(a[1])}</details>`}).join('')}
+  <h2>Ha nem viheted magaddal</h2><p class="sub" style="margin:-4px 0 10px">Írd be a településed, és a Google Térkép megmutatja a közeli ${q===`állatpanzió`?'állatpanziókat':'kisállat-panziókat'}. A PetVia nem ajánl és nem tárol panziókat: nézd meg személyesen, és kérdezz rá az oltási feltételekre.</p>
+  <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
+  <div id="mapBtns"><a class="btn ghost" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>Panzió keresése a térképen</a></div>
+  <h2>Útra kész lista</h2><p class="sub" style="margin:-4px 0 6px" id="tripCnt">${n} / ${list.length} kész</p>
+  <div class="card" id="tripList">${list.map((t,i)=>`<label class="ck"><input type="checkbox" data-act="tripChk" data-i="${i}"${done[i]?' checked':''}><span>${t}</span></label>`).join('')}
+  <button class="btn text" style="margin-top:6px" data-act="tripReset">Lista ürítése</button></div>`}
 /* ---------- források: az útmutatók számadatai innen származnak ---------- */
 const SRC={
  vcaChinF:['VCA Animal Hospitals: Chinchillas – Feeding','https://vcahospitals.com/know-your-pet/chinchillas---feeding'],vcaChinO:['VCA Animal Hospitals: Chinchillas – Owning','https://vcahospitals.com/know-your-pet/chinchillas-owning'],
@@ -1092,7 +1140,13 @@ const SRC={
  lafCanary:['LafeberVet: Basic Information Sheet – Canary','https://lafeber.com/vet/basic-information-sheet-for-the-canary/'],lafFinch:['LafeberVet: Basic Information Sheet – Finch','https://lafeber.com/vet/basic-information-sheet-for-the-finch/'],lafFinch2:['Lafeber: Finch – Personality, Food & Care','https://lafeber.com/pet-birds/species/finch/'],
  lafHome:['Lafeber: Your Bird’s Home','https://lafeber.com/pet-birds/your-birds-home/'],lafTrain:['Lafeber: Small Bird Taming and Training Basics','https://lafeber.com/pet-birds/small-bird-taming-training-basics/'],lafSwitch:['Lafeber: Switching from Seeds to Pellets','https://lafeber.com/pet-birds/switching-from-seeds-to-pellets-or-to-nutri-berries/'],
  euPets:['Your Europe: utazás kedvtelésből tartott állattal az EU-ban','https://europa.eu/youreurope/citizens/travel/carry/pets-and-other-animals/index_en.htm'],nebihPets:['Nébih: Kedvtelésből tartott állatok utaztatása','https://portal.nebih.gov.hu/-/kedvtelesbol-tartott-allatok-utaztatasara-vonatkozo-tajekoztato'],
- nebihBirds:['Nébih: Fogságban tartott madarak szállításának feltételei','https://portal.nebih.gov.hu/-/fogsagban-tartott-madarak-szallitasanak-utaztatasanak-mozgatasanak-feltetelei']};
+ nebihBirds:['Nébih: Fogságban tartott madarak szállításának feltételei','https://portal.nebih.gov.hu/-/fogsagban-tartott-madarak-szallitasanak-utaztatasanak-mozgatasanak-feltetelei'],
+ mavBel:['MÁV-csoport: Állatok és csomagok szállítása belföldi járatainkon','https://www.mavcsoport.hu/node/147148'],mavInt:['MÁV-csoport: Állatok és csomagok szállítása nemzetközi járatainkon','https://www.mavcsoport.hu/node/52061'],
+ bkkDog:['BKK: Utazás kutyával','https://bkk.hu/utazasi-informaciok/kozossegi-kozlekedes/utazas-kutyaval/'],
+ airWizz:['Wizz Air: Special baggage','https://www.wizzair.com/en-gb/help-centre/booking-information-and-services/baggage/special-baggage'],airRyan:['Ryanair: Does Ryanair carry animals?','https://help.ryanair.com/hc/en-us/articles/12890968181521-Does-Ryanair-carry-animals'],
+ airLH:['Lufthansa: Animals as additional carry-on baggage','https://www.lufthansa.com/us/en/tiere-als-handgepaeck'],airLH2:['Lufthansa: Carriage of animals in the cargo hold','https://www.lufthansa.com/us/en/tiere-als-uebergepaeck'],
+ airKLM:['KLM: Flying with your pet in the cabin or hold','https://www.klm.com/information/pets/reservation'],airTK:['Turkish Airlines: Traveling with Pets','https://www.turkishairlines.com/en-us/any-questions/traveling-with-pets/'],
+ airLOT:['LOT: Animal in the cabin','https://www.lot.com/us/en/journey/special-services/traveling-with-pets/pet-in-cabin'],airLOT2:['LOT: Animal in the baggage hold','https://www.lot.com/us/en/journey/special-services/traveling-with-pets/animal-in-hold']};
 const BIRD_SRC_F=['merckBird','rspcaBirdF','lafSwitch','petmdBird'],BIRD_SRC_T=['lafHome','rspcaBirdT','nebihBirds','euPets'],EU_SRC=['euPets','nebihPets'];
 const GSRC={kutya:{trip:EU_SRC},macska:{trip:EU_SRC},nyul:{trip:['euPets']},tengerimalac:{trip:['euPets']},horcsog:{trip:['euPets']},
  csincsilla:{food:['vcaChinF','bcChin'],care:['rspcaChin','merckChin','bcChin','vcaChinO'],trip:['rspcaChin','bcChin','euPets']},
@@ -1102,7 +1156,7 @@ const GSRC={kutya:{trip:EU_SRC},macska:{trip:EU_SRC},nyul:{trip:['euPets']},teng
  kanari:{food:[...BIRD_SRC_F,'lafCanary'],care:['lafCanary','lafHome','vcaHaz','merckTox'],trip:BIRD_SRC_T},
  pinty:{food:[...BIRD_SRC_F,'lafFinch','lafFinch2'],care:['lafFinch','lafFinch2','lafHome','vcaHaz','merckTox'],trip:BIRD_SRC_T}};
 /* becsukható forráslista az útmutatók alján; a linkek új lapon nyílnak */
-const srcBox=(p,part)=>{const base=(GSRC[gkey(p)]||{})[part]||[],fx=part!=='trip'&&fishOf(p),ids=fx?[...new Set([...base,...fx.src])]:base;return ids.length?`<details class="acc" style="margin-top:18px"><summary>Források</summary><ul class="srcs">${ids.map(i=>`<li><a href="${esc(SRC[i][1])}" target="_blank" rel="noopener noreferrer">${esc(SRC[i][0])}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">Az útmutató tájékoztató jellegű, a számadatai ezekből a forrásokból származnak. A források többsége angol nyelvű, és új lapon nyílik meg.</p></details>`:''};
+const srcBox=(p,part)=>{const base=[...((GSRC[gkey(p)]||{})[part]||[]),...(part==='trip'&&TRIP_ON(gkey(p))?tripSrc(gkey(p)):[])],fx=part!=='trip'&&fishOf(p),ids=fx?[...new Set([...base,...fx.src])]:base;return ids.length?`<details class="acc" style="margin-top:18px"><summary>Források</summary><ul class="srcs">${ids.map(i=>`<li><a href="${esc(SRC[i][1])}" target="_blank" rel="noopener noreferrer">${esc(SRC[i][0])}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">Az útmutató tájékoztató jellegű, a számadatai ezekből a forrásokból származnak. A források többsége angol nyelvű, és új lapon nyílik meg.</p></details>`:''};
 /* ---------- útmutatók, 2/a kör: gyíkok ----------
    Minden számadat forrásból van (lásd SRC és GSRC); ahol a források eltérnek, a szöveg a tartományt adja meg. */
 const LZ_GUT='Az eleségrovarokat etetés előtt 24–48 órával tápláld fel jó minőségű eleséggel, és közvetlenül etetés előtt szórd meg kalciumporral.';
@@ -3047,7 +3101,7 @@ function vCare(p){
     ${P.games?`<h2>Játékok</h2><ul class="tips">${P.games.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${J&&J.length?`<p class="sub">Bevált játékmárkák: ${J.map(x=>`${blink(x[0],p)} (${parts(x[1]).map(t=>{const u=plGet(p,x[0],t);return u?`<a class="blink" ${ext(u)}>${esc(t)}</a>`:esc(t)}).join(', ')})`).join('; ')}.</p>`:''}
     <h2>Így foglalkozz vele</h2><p>${P.engage}</p><h2>Személyre szabott terv</h2>${aiBox(p,'play','Napi mozgás- és játékterv kérése')}`}
   if(ct==='prob')b=`<h2>Gyakori problémák</h2>${C.p.map(([q,a])=>`<details class="acc"><summary>${q}</summary><p>${a}</p><p>${ask(q+': mit tegyek?')}</p></details>`).join('')}<p class="note">${DISC}</p>`;
-  if(ct==='trip')b=`<h2>Utazás és szállítás</h2>${TRIP[k].map(card).join('')}
+  if(ct==='trip')b=`<h2>Utazás és szállítás</h2>${TRIP[k].map(card).join('')}${TRIP_ON(k)?tripMore(p,k):''}
     <p class="sub" style="margin-top:10px">Tájékoztató összefoglaló. A szabályok változhatnak: külföldi út előtt mindig ellenőrizd a hatályos feltételeket a Nébihnél és a célország hatóságánál.</p><p>${ask('Mire figyeljek, ha utazom vele, vagy szállítanom kell?')}</p>`;
   return`${BACK}<h1>Tartás és nevelés</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${cur?', '+stHU(p,cur).toLowerCase():''}</p>
   <div class="seg2" role="group" aria-label="A Tartás és nevelés részei">${tabs.map(x=>`<button data-act="cTab" data-v="${x}" aria-pressed="${ct===x}">${CT[x]}</button>`).join('')}</div>${b}${srcBox(p,ct==='trip'?'trip':'care')}`}
@@ -3786,6 +3840,12 @@ Object.assign(ACT,{
   async out(){
     if(!cloud.sb||cloud.leaving)return;cloud.leaving=true;let r;try{r=await cloud.sb.auth.signOut({scope:'local'})}catch(e){r={error:e}}
     if(r&&r.error){cloud.leaving=false;closeSheet();toast('A kilépés most nem sikerült. Ellenőrizd az internetkapcsolatot.')}}
+});
+/* utazás: útra kész lista */
+Object.assign(ACT,{
+  tripChk(el){const p=pet();if(!p)return;const i=+el.dataset.i,d=p.tripChk=p.tripChk||{};if(el.checked)d[i]=1;else delete d[i];save();
+    const l=tripListOf(gkey(p)),c=$('#tripCnt');if(c)c.textContent=`${l.filter((_,j)=>d[j]).length} / ${l.length} kész`},
+  tripReset(){const p=pet();if(!p)return;delete p.tripChk;save();render()}
 });
 /* adatvédelem: tájékoztató, letöltés, hozzájárulás visszavonása, fióktörlés */
 Object.assign(ACT,{
