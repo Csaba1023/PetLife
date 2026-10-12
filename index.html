@@ -3533,8 +3533,9 @@ function aiGuide(p){
     const n=[T.night&&`levegő ${tGoal(T.night)} °C`,T.nwater&&`víz ${tGoal(T.nwater)} °C`,T.nhum&&`páratartalom ${tGoal(T.nhum)} %`].filter(Boolean);
     if(g.length)add(`${grp(p)==='hal'||kitOf(p)==='vizi'?'Akvárium':'Terrárium'} célértékei nappal: `,g.join('; ')+(n.length?`; éjjel: ${n.join('; ')}`:'')+'.');
     if(T.note&&!/útmutató/.test(T.note))add('Megjegyzés a célértékekhez: ',T.note)}
-  /* a tartási útmutatóból a faj adatai és a környezet kártyái */
-  const C=CARE[gkey(p)];if(C&&C.g)(C.g.all||C.g[st]||[]).filter(c=>['A fajról','Méret és élettartam'].includes(c[0])).forEach(c=>add(c[0]+': ',c[1]));
+  /* a Tartás fül összes kártyája az aktuális életszakaszra (kézbevétel, társak, vedlés, telelés…) */
+  const C=CARE[gkey(p)];if(C&&C.g)(C.g.all||C.g[st]||[]).forEach(c=>add('Tartás – '+c[0]+': ',c[1]));
+  /* a tartási útmutatóból a környezet kártyái (a Terrárium/Otthon fülről) */
   (HOME[gkey(p)]||[]).filter(c=>/^(Terrárium|Akvárium|Tartály|Hőmérséklet|Vízhőmérséklet|Páratartalom|Páratartalom és permetezés|Víz|Vízminőség|Aljzat)$/.test(c[0])).forEach(c=>add(c[0]+': ',c[1]));
   const fx=fishOf(p);
   if(fx)[['Halfaj',fx.n],['Kifejlett méret',fx.cm],['Akvárium',fx.tank],['Viselkedés és társak',fx.soc],['Eleség',fx.feed],['Jó tudni',fx.note],['Általános',fx.gen]].forEach(([k,v])=>v&&add(k+': ',v));
