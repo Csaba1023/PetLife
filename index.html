@@ -2677,7 +2677,7 @@ const cdoc=k=>{const uid=cloud.uid,q=()=>cloud.sb.from(SB_TABLE);return{
   set:async v=>{un(await q().upsert({user_id:uid,key:k,data:v,updated_at:new Date().toISOString()},{onConflict:'user_id,key'}))},
   delete:async()=>{un(await q().delete().eq('user_id',uid).eq('key',k))}}};
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-function save(...keys){S.updatedAt=Date.now();S.pend=true;saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200)}
+function save(...keys){S.updatedAt=Date.now();S.pend=true;saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200);try{pushLater()}catch(e){}}
 /* a Tanácsadó fülön csak akkor rajzolunk újra, ha épp nem ír és nem vár válaszra */
 const soft=()=>{if(!$('#sheet').hidden||(tab==='ai'&&(chatBusy||document.activeElement===$('#chatIn'))))renderTop();else render()};
 async function flush(){
@@ -2741,7 +2741,7 @@ function onAuth(ev,sess){
   const u=sess&&sess.user;
   if(u){
     cloud.email=u.email||'';
-    if(cloud.uid!==u.id){cloud.uid=u.id;cloud.ok=false;cloud.leaving=false;startSync()}
+    if(cloud.uid!==u.id){cloud.uid=u.id;cloud.ok=false;cloud.leaving=false;startSync();setTimeout(()=>{try{pushSync()}catch(e){}},5000)}
     else if(!cloud.ok&&cloud.state==='error')startSync();
     if(ev==='PASSWORD_RECOVERY')pwSheet();
     else if(ev==='SIGNED_IN'&&hashType==='signup'&&!cloud.greeted){cloud.greeted=true;toast('E-mail-cím megerősítve, beléptél')}
@@ -3373,6 +3373,7 @@ function vMore(){
   ${S.pets.length?`<ul class="list">${S.pets.map(p=>{const st=stageOf(p);return`<li>${ava(p)}<button class="grow" data-act="petUse" data-id="${p.id}"><b>${esc(petName(p))}</b>${cur&&cur.id===p.id?' ✓':''}<span class="when">${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</span></button><button class="btn ghost small" data-act="petEdit" data-id="${p.id}">Szerkesztés</button></li>`}).join('')}</ul>`:'<p class="sub">Még nincs felvett állat.</p>'}
   <p style="margin-top:10px"><button class="btn" data-act="petNew">Új állat felvétele</button></p><p><button class="btn ghost" data-act="tab" data-tab="nopet">${S.pets.length?'Újabb állatot keresek':'Még nincs állatom'}</button></p>
   <h2>Fiók</h2>${accountHtml()}
+  <h2>Értesítések</h2>${pushHtml()}
   <h2>Megjelenés</h2><div class="chips">${[['auto','Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,n])=>`<label><input type="radio" name="theme" value="${v}"${th===v?' checked':''}><span>${n}</span></label>`).join('')}</div>
   <h2>Telepítés</h2>${installHtml()}
   <h2>Adatvédelem</h2><p class="sub">Mit tárol a PetVia, hol, meddig, és milyen jogaid vannak.</p><button class="btn ghost" data-act="tab" data-tab="privacy">Adatkezelési tájékoztató</button><button class="btn ghost" style="margin-top:10px" data-act="exportData">Adataim letöltése</button>
@@ -3404,6 +3405,8 @@ function privHtml(){return`<div class="priv">
 <li><b>Miért:</b> hogy az állatodra szabott választ kapj. Csak a hozzájárulásoddal, amit bármikor visszavonhatsz ezen az oldalon.</li>
 <li><b>Hová:</b> a PetVia szerverén át az OpenAI-hoz. Az OpenAI ezeket nem használja modelltanításra, és visszaélések kiszűrése miatt legfeljebb 30 napig őrzi meg.</li>
 <li><b>Visszaélés elleni védelem:</b> a fiókodhoz számoljuk a napi kérdések számát (60 napig őrizzük), és ha többször tiltott kérést küldesz, néhány percre letiltjuk a Tanácsadót.</li></ul>
+<h3>Értesítések</h3>
+<p>Ha bekapcsolod, a fiókodhoz elmentjük az eszközöd értesítési címét (ezt a böngésző vagy a telefon push-szolgáltatója adja: Google, Apple vagy Mozilla) és azokat a napokat, amikor értesítést kapsz. Az értesítés szövegét nem tároljuk és nem küldjük el: az eszközöd állítja össze. A push-szolgáltató csak egy tartalom nélküli jelzést kézbesít. Kikapcsoláskor, kilépéskor és a fiók törlésekor töröljük.</p>
 <h3>Technikai adatok</h3>
 <p>Amikor megnyitod az appot, az IP-címed és a kérés technikai adatai a tárhelyszolgáltatóhoz (Cloudflare) kerülnek. A betűtípusok a Google Fonts szolgáltatásból, a fiókkezelő programrész a jsDelivr szolgáltatásból töltődik be, így ezek is látják az IP-címedet. Hirdetést, követő sütit és látogatottságmérést nem használunk.</p>
 <p>Ha az appból külső oldalt nyitsz meg (térkép, webshop, forrás), ott annak az oldalnak a szabályai érvényesek.</p>
@@ -3465,9 +3468,92 @@ async function delGo(){
   let res;try{res=await fetch(DEL_URL,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({confirm:'TÖRLÉS'})})}catch(e){res=null}
   if(!res||!res.ok){let c='';try{c=String(((await res.json())||{}).code||'')}catch(e){}return fail(`A törlés most nem sikerült. Próbáld újra később.${c?` (hibakód: ${esc(c.slice(0,30))})`:res?` (hibakód: ${res.status})`:''}`)}
   /* a szerveren minden törölve: helyben is takarítunk, és nem töltünk fel semmit */
-  cloud.dirty.clear();cloud.ok=false;cloud.deleted=true;cloud.leaving=true;
+  cloud.dirty.clear();cloud.ok=false;cloud.deleted=true;cloud.leaving=true;if(pushLocal().on)await pushOff(true);
   try{await cloud.sb.auth.signOut({scope:'local'})}catch(e){}
   if(cloud.uid){onAuth('SIGNED_OUT',null)}}
+/* ---------- értesítések (push), 2026. október ----------
+   Naponta legfeljebb egy értesítés 19 órakor: esedékes teendő, szakaszváltás előtti nap, napi tipp.
+   Adatvédelem: a szöveget az app itt állítja össze a következő 14 napra, és csak az eszközön tárolja (Cache Storage);
+   a szerverre csak a feliratkozás címe és a napok dátuma megy. A push tartalom nélküli, a service worker olvassa ki a szöveget. */
+const PUSH_URL=SB_URL.replace(/\/$/,'')+'/functions/v1/push',PUSH_CACHE='petvia-push',PUSH_PLAN='push-plan.json',PUSH_LS='petvia.push',PUSH_DAYS=14;
+const pushOK=()=>'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window;
+const pushLocal=()=>{try{return JSON.parse(localStorage.getItem(PUSH_LS)||'{}')||{}}catch(e){return{}}};
+const pushLocalSet=o=>{try{if(o)localStorage.setItem(PUSH_LS,JSON.stringify(o));else localStorage.removeItem(PUSH_LS)}catch(e){}};
+const pushT=k=>((S.settings.pushT||{})[k])!==false;
+let pushBusy=false;
+/* a következő napok értesítései: {"2026-10-13":{t:"cím",b:"szöveg"}} */
+function pushPlan(from=today()){
+  const out={},sameDay=(a,b)=>a&&iso(a)===iso(b),multi=S.pets.length>1;
+  const per=S.pets.map(p=>({p,items:buildItems(p),par:parDue(p),wc:wcDue(p)}));
+  for(let d=1;d<=PUSH_DAYS;d++){
+    const day=new Date(from.getFullYear(),from.getMonth(),from.getDate()+d-1),next=new Date(day.getFullYear(),day.getMonth(),day.getDate()+1),key=iso(day);
+    const due=[],stage=[],tips=[];
+    for(const{p,items,par,wc}of per){
+      const n=petName(p),pre=multi?n+': ':'';
+      if(pushT('due')){
+        items.filter(i=>i.pending&&!i.unknown&&sameDay(i.date,day)).forEach(i=>due.push(pre+i.m.t));
+        par.filter(x=>sameDay(x.date,day)).forEach(x=>due.push(pre+PAR_SHORT[x.t]));
+        if(wc&&sameDay(wc,day))due.push(pre+'Részleges vízcsere');
+        S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&e.date===key).forEach(e=>due.push(pre+String(e.title||'').slice(0,60)));
+      }
+      if(pushT('stage')){const a=stageAt(p,day),b=stageAt(p,next);if(a&&b&&a!==b)stage.push(`${n} holnap ${STAGE_INTO[b]} lép. A teendők és a tippek ehhez igazodnak.`)}
+      if(pushT('tip')){const T=tipsFor(p,stageAt(p,day));if(T!==TIPS_OTHER&&T.length)tips.push([n,T[Math.floor(day.getTime()/DAY)%T.length]])}
+    }
+    const one=S.pets.length===1?' – '+petName(S.pets[0]):'';
+    if(due.length)out[key]={t:'Ma esedékes'+one,b:due.slice(0,3).join('\n')+(due.length>3?`\n…és még ${due.length-3}`:'')};
+    else if(stage.length)out[key]={t:'Holnap szakaszváltás',b:stage.join('\n')};
+    else if(tips.length){const[n,t]=tips[Math.floor(day.getTime()/DAY)%tips.length];out[key]={t:'Napi tipp – '+n,b:t}}
+  }
+  return out}
+async function pushApi(body,auth){
+  const h={'Content-Type':'application/json',apikey:SB_KEY};
+  if(auth){let tok='';try{const r=await cloud.sb.auth.getSession();tok=(r.data&&r.data.session&&r.data.session.access_token)||''}catch(e){}if(!tok)throw{code:'login'};h.Authorization='Bearer '+tok}
+  const r=await fetch(PUSH_URL,{method:'POST',headers:h,body:JSON.stringify(body)});let j={};try{j=await r.json()}catch(e){}
+  if(!r.ok)throw{code:j.code||String(r.status)};return j}
+const u8=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-s.length%4)%4)),c=>c.charCodeAt(0));
+/* a terv mentése az eszközre és a napok feltöltése (ha változott, vagy naponta egyszer) */
+async function pushSync(force){
+  const L=pushLocal();if(!L.on||!cloud.uid||!pushOK())return;
+  const plan=pushPlan(),days=Object.keys(plan);
+  try{const c=await caches.open(PUSH_CACHE);await c.put(new URL(PUSH_PLAN,location.href).href,new Response(JSON.stringify({days:plan,at:Date.now()}),{headers:{'Content-Type':'application/json'}}))}catch(e){}
+  const sig=days.join(','),stamp=iso(today());
+  if(!force&&L.sig===sig&&L.day===stamp&&L.uid===cloud.uid)return;
+  try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();
+    if(!sub){pushLocalSet(null);return}
+    await pushApi({action:'on',endpoint:sub.endpoint,days},true);pushLocalSet({...L,endpoint:sub.endpoint,sig,day:stamp,uid:cloud.uid})}catch(e){}}
+let pushTimer=0;const pushLater=()=>{clearTimeout(pushTimer);pushTimer=setTimeout(()=>pushSync(),4000)};
+async function pushOn(){
+  if(pushBusy)return;if(!cloud.uid){toast('Az értesítésekhez lépj be.');return}
+  pushBusy=true;render();
+  try{const perm=await Notification.requestPermission();
+    if(perm!=='granted'){toast(perm==='denied'?'Az értesítést letiltottad. A telefon vagy a böngésző beállításaiban engedélyezheted.':'Nem kaptunk engedélyt az értesítéshez.');return}
+    const reg=await navigator.serviceWorker.ready,{key}=await pushApi({action:'key'});
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(key)});
+    pushLocalSet({on:1,endpoint:sub.endpoint});await pushSync(true);
+    if(pushLocal().day)toast('Értesítések bekapcsolva: este 7-kor jelentkezünk');else{pushLocalSet(null);try{await sub.unsubscribe()}catch(e){}toast('Most nem sikerült bekapcsolni. Próbáld újra később.')}}
+  catch(e){pushLocalSet(null);toast('Most nem sikerült bekapcsolni. Próbáld újra később.')}
+  finally{pushBusy=false;render()}}
+async function pushOff(quiet){
+  const L=pushLocal();pushLocalSet(null);
+  try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();
+    if(cloud.uid&&(sub||L.endpoint))await pushApi({action:'off',endpoint:(sub&&sub.endpoint)||L.endpoint},true).catch(()=>{});
+    if(sub)await sub.unsubscribe()}catch(e){}
+  try{const c=await caches.open(PUSH_CACHE);await c.delete(new URL(PUSH_PLAN,location.href).href)}catch(e){}
+  if(!quiet){toast('Értesítések kikapcsolva');render()}}
+function pushHtml(){
+  const intro='<p class="sub">Naponta legfeljebb egy értesítés, este 7 órakor: ha esedékes teendő van, a szakaszváltás előtti napon, egyébként egy napi tipp. Az értesítés szövegét csak az eszközöd tárolja.</p>';
+  if(!pushOK())return intro+`<p class="sub">${isIOS&&!standalone()?'iPhone-on és iPaden az értesítésekhez előbb tedd ki a PetVia-t a kezdőképernyőre (lásd lent, Telepítés), és onnan nyisd meg. Legalább iOS 16.4 kell hozzá.':'Ez a böngésző nem támogatja az értesítéseket.'}</p>`;
+  if(!cloud.uid)return intro+'<p class="sub">Az értesítésekhez lépj be a fiókodba.</p>';
+  const L=pushLocal(),perm=Notification.permission;
+  if(!L.on)return intro+(perm==='denied'?'<p class="sub">Az értesítéseket a telefon vagy a böngésző beállításaiban letiltottad. Ott engedélyezd, utána itt kapcsold be.</p>':'')+`<button class="btn ghost" data-act="pushOn"${pushBusy?' disabled':''}>${pushBusy?'Egy pillanat…':'Értesítések bekapcsolása'}</button>`;
+  return intro+`<p class="sub" style="margin-top:4px"><b>Bekapcsolva ezen az eszközön.</b></p>
+  ${[['due','Esedékes teendők (oltás, féreghajtás, kezelés, vízcsere, saját esemény)'],['stage','Szakaszváltás (az előtte lévő napon)'],['tip','Napi tipp (ha aznap nincs más)']].map(([k,t])=>`<label class="ck"><input type="checkbox" data-act="pushType" data-k="${k}"${pushT(k)?' checked':''}><span>${t}</span></label>`).join('')}
+  <button class="btn ghost" style="margin-top:10px" data-act="pushTest">Próbaértesítés most</button><button class="btn text" style="margin-top:6px" data-act="pushOffBtn">Kikapcsolás</button>`}
+async function pushTest(){
+  try{const reg=await navigator.serviceWorker.ready,plan=pushPlan(),n=plan[iso(today())]||Object.values(plan)[0];
+    await reg.showNotification(n?n.t:'PetVia',{body:n?n.b:'Ma nincs teendő és tipp.',icon:'icons/icon-192.png',tag:'petvia-test'})}
+  catch(e){toast('A próbaértesítés most nem sikerült.')}}
 /* ---------- fiók: belépés, regisztráció, jelszócsere ---------- */
 let auMode='in',auBusy=false;
 const AU={in:{h:'Belépés',b:'Belépés'},up:{h:'Regisztráció',b:'Fiók létrehozása'},reset:{h:'Új jelszó kérése',b:'Levél küldése'}};
@@ -3838,9 +3924,12 @@ Object.assign(ACT,{
     if(S.pend&&!cloud.dirty.size)cloud.dirty.add('main').add('chat');await flush();
     confirmSheet('Kilépsz?',`Az adataid a fiókodban megmaradnak, erről az eszközről viszont törlődnek. Belépés után újra megjelennek.${S.pend?' <b>Figyelem:</b> a legutóbbi módosításaidat még nem sikerült feltölteni, kilépéskor elvesznek.':''}`,'Kilépés','out')},
   async out(){
-    if(!cloud.sb||cloud.leaving)return;cloud.leaving=true;let r;try{r=await cloud.sb.auth.signOut({scope:'local'})}catch(e){r={error:e}}
+    if(!cloud.sb||cloud.leaving)return;cloud.leaving=true;if(pushLocal().on)await pushOff(true);let r;try{r=await cloud.sb.auth.signOut({scope:'local'})}catch(e){r={error:e}}
     if(r&&r.error){cloud.leaving=false;closeSheet();toast('A kilépés most nem sikerült. Ellenőrizd az internetkapcsolatot.')}}
 });
+/* értesítések */
+Object.assign(ACT,{pushOn,pushOffBtn(){pushOff()},pushTest,
+  pushType(el){S.settings.pushT={...(S.settings.pushT||{}),[el.dataset.k]:el.checked};save();pushSync(true)}});
 /* utazás: útra kész lista */
 Object.assign(ACT,{
   tripChk(el){const p=pet();if(!p)return;const i=+el.dataset.i,d=p.tripChk=p.tripChk||{};if(el.checked)d[i]=1;else delete d[i];save();
