@@ -3,11 +3,12 @@
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
 const V = 'petlife-v3';
 const FONTS = 'petlife-fonts-2';
-const LIB = 'petlife-lib';
+const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
 const PUSH = 'petvia-push';
-/* A fiókkezelő könyvtár. Ugyanaz a cím legyen, mint az index.html SB_LIB értéke. */
-const LIB_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4';
+/* A fiókkezelő könyvtár saját tárhelyről (biztonság, A kör). Ugyanaz a fájl legyen, mint az index.html SB_LIB értéke;
+   a régi (jsDelivr) gyorsítótár az aktiváláskor törlődik, mert a LIB neve megváltozott. */
+const LIB_URL = new URL('./vendor/supabase-js-2.112.4.js', self.registration.scope).href;
 const PAGE = './index.html';
 const SHELL = ['./', PAGE, './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 
@@ -15,7 +16,7 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(V).then(c => c.addAll(SHELL))
       /* a könyvtár előtöltése nem feltétele a telepítésnek */
-      .then(() => caches.open(LIB).then(c => c.add(new Request(LIB_URL, { mode: 'cors', credentials: 'omit' }))).catch(() => {}))
+      .then(() => caches.open(LIB).then(c => c.add(LIB_URL)).catch(() => {}))
       .then(() => self.skipWaiting())
   );
 });
