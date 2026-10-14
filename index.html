@@ -198,6 +198,7 @@ a.btn{text-decoration:none}
 input,select,textarea{width:100%;min-height:52px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);padding:0 14px;font-size:16px}
 textarea{padding:12px 14px}
 .err{color:var(--alert);font-weight:600;font-size:14px;margin:8px 0}
+.capbox{margin:6px 0}.capbox:empty{display:none}
 .ck{display:flex;gap:10px;align-items:flex-start;margin:14px 0 6px;font-size:14px;line-height:1.45;cursor:pointer}
 .ck input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--brand)}
 .air summary .tag{margin:0 0 0 6px;vertical-align:1px}
@@ -272,6 +273,21 @@ const okPhoto=s=>typeof s==='string'&&s.length<=1500000&&/^data:image\/(jpeg|png
 /* jelszószabály: legalább 10 karakter, kisbetű, nagybetű és szám (a Supabase beállításával egyezően) */
 const PW_HINT='legalább 10 karakter, kis- és nagybetű, szám',PW_MSG='A jelszó legalább 10 karakter legyen, és legyen benne kisbetű, nagybetű és szám.';
 const pwOk=s=>typeof s==='string'&&s.length>=10&&/[a-z]/.test(s)&&/[A-Z]/.test(s)&&/[0-9]/.test(s);
+/* robotszűrő (Cloudflare Turnstile, biztonság C kör, okt. 14.): belépés, regisztráció, jelszó-visszaállítás és fióktörlés előtt.
+   A site key nyilvános; a titkos kulcs csak a Supabase-ben van. A token egyszer használható, ezért minden kísérlet után új kell.
+   Ha a szűrő nem tölt be, a kérés token nélkül megy: a Supabase dönt (bekapcsolt CAPTCHA mellett elutasítja). */
+const TS_KEY='0x4AAAAAAFWRSy3NW3tIvK-j',TS_URL='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+let capLoad=null,capId=null,capTok='',CAP_WAIT=8000;
+const capLib=()=>capLoad||(capLoad=new Promise((ok,no)=>{if(window.turnstile)return ok();const el=document.createElement('script');el.src=TS_URL;el.async=true;el.onload=()=>window.turnstile?ok():no(new Error('ts'));el.onerror=()=>{capLoad=null;no(new Error('ts'))};document.head.appendChild(el)}));
+const capBox='<div id="capBox" class="capbox"></div>';
+function capDrop(){if(capId!==null&&window.turnstile)try{turnstile.remove(capId)}catch(e){}capId=null;capTok=''}
+async function capMount(){capDrop();try{await capLib()}catch(e){return}
+  const box=$('#capBox');if(!box||!window.turnstile)return;const t=S.settings.theme;
+  try{capId=turnstile.render(box,{sitekey:TS_KEY,theme:t==='dark'||t==='light'?t:'auto',size:'flexible',appearance:'interaction-only',callback:v=>{capTok=v},'expired-callback':()=>{capTok=''},'error-callback':()=>{capTok=''}})}catch(e){capId=null}}
+/* a token kivárása (legfeljebb CAP_WAIT ms); üres, ha nincs */
+async function capToken(){for(let i=0;i<CAP_WAIT/100&&!capTok&&capId!==null;i++)await sleep(100);return capTok}
+/* használat után új ellenőrzés */
+function capReset(){capTok='';if(capId!==null&&window.turnstile)try{turnstile.reset(capId)}catch(e){}}
 const newId=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const DAY=864e5;
 const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
@@ -3392,7 +3408,7 @@ function accountHtml(){
   return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button><button class="btn text" style="margin-top:6px;color:var(--alert)" data-act="delAsk">Fiók törlése</button>`}
 /* ---------- adatvédelem: tájékoztató, adatletöltés, fióktörlés (GDPR-kör, 2026. október) ----------
    A szolgáltatókról szóló állítások forrásai a tájékoztató végén; a linkek letöltéssel ellenőrizve (2026. 10. 12.). */
-const PRIV={name:'Molnár Csaba',mail:'petvia@csabastudio.com',date:'2026. október 13.'};
+const PRIV={name:'Molnár Csaba',mail:'petvia@csabastudio.com',date:'2026. október 14.'};
 const xa=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
 function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 16 éves, vagy a szülőm hozzájárult.</span></label>`}
 function privHtml(){return`<div class="priv">
@@ -3414,13 +3430,13 @@ function privHtml(){return`<div class="priv">
 <h3>Értesítések</h3>
 <p>Ha bekapcsolod, a fiókodhoz elmentjük az eszközöd értesítési címét (ezt a böngésző vagy a telefon push-szolgáltatója adja: Google, Apple vagy Mozilla) és azokat a napokat, amikor értesítést kapsz. Az értesítés szövegét nem tároljuk és nem küldjük el: az eszközöd állítja össze. A push-szolgáltató csak egy tartalom nélküli jelzést kézbesít. Kikapcsoláskor, kilépéskor és a fiók törlésekor töröljük.</p>
 <h3>Technikai adatok</h3>
-<p>Amikor megnyitod az appot, az IP-címed és a kérés technikai adatai a tárhelyszolgáltatóhoz (Cloudflare) kerülnek. A betűtípusok a Google Fonts szolgáltatásból töltődnek be, így az is látja az IP-címedet. Hirdetést, követő sütit és látogatottságmérést nem használunk.</p>
+<p>Amikor megnyitod az appot, az IP-címed és a kérés technikai adatai a tárhelyszolgáltatóhoz (Cloudflare) kerülnek. A betűtípusok a Google Fonts szolgáltatásból töltődnek be, így az is látja az IP-címedet. A belépési, regisztrációs, jelszó-visszaállító és fióktörlő űrlapon a Cloudflare Turnstile robotszűrője is betöltődik, amely az ellenőrzéshez a böngésző és a kapcsolat technikai adatait vizsgálja. Hirdetést, követő sütit és látogatottságmérést nem használunk.</p>
 <p>Ha az appból külső oldalt nyitsz meg (térkép, webshop, forrás), ott annak az oldalnak a szabályai érvényesek.</p>
 <h3>Szolgáltatók, akik az adatokat nekünk kezelik</h3>
 <ul><li><b>Supabase</b> (fiók, mentés, szerver): az adatbázis az EU-ban, Írországban van, a naplók EU-s adatközpontban. ${xa('https://supabase.com/privacy','Adatvédelem')}</li>
 <li><b>OpenAI</b> (Tanácsadó): USA. ${xa('https://developers.openai.com/api/docs/guides/your-data','Adatkezelés az API-ban')}</li>
 <li><b>Resend</b> (e-mail-küldés): a levelek az EU-ból mennek ki, a küldési naplók az USA-ban tárolódnak. ${xa('https://resend.com/legal/privacy-policy','Adatvédelem')}</li>
-<li><b>Cloudflare</b> (tárhely): ${xa('https://www.cloudflare.com/privacypolicy/','Adatvédelem')}</li>
+<li><b>Cloudflare</b> (tárhely; robotszűrés a belépésnél, a regisztrációnál, a jelszó-visszaállításnál és a fióktörlésnél: Turnstile): ${xa('https://www.cloudflare.com/privacypolicy/','Adatvédelem')}</li>
 <li><b>Google Fonts</b> (betűtípus): az app megnyitásakor a böngésző innen tölti le a betűtípusokat.</li></ul>
 <h3>Korhatár</h3>
 <p>A Tanácsadót és a fiókot 16 éves kortól használhatod. Ha még nem vagy 16, a szülőd hozzájárulása kell.</p>
@@ -3457,8 +3473,8 @@ function delSheet(){delBusy=false;openSheet(`<form id="auForm" novalidate><h2>Fi
   <p class="sub">Ha meg szeretnéd tartani őket, előbb töltsd le: Beállítások → Adataim letöltése.</p>
   <label class="f"><span>Jelszó</span><input id="delPw" type="password" autocomplete="current-password" maxlength="72"></label>
   <label class="f"><span>Írd be: TÖRLÉS</span><input id="delTxt" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10"></label>
-  <p class="err" id="delErr" role="alert" hidden></p>
-  <button class="btn danger" id="delBtn" data-act="delGo">Fiók végleges törlése</button><button type="button" class="btn ghost" data-act="close">Mégse</button></form>`)}
+  ${capBox}<p class="err" id="delErr" role="alert" hidden></p>
+  <button class="btn danger" id="delBtn" data-act="delGo">Fiók végleges törlése</button><button type="button" class="btn ghost" data-act="close">Mégse</button></form>`);capMount()}
 async function delGo(){
   if(delBusy||!cloud.sb||!cloud.uid)return;
   const pw=$('#delPw').value,tx=$('#delTxt').value.trim().toUpperCase();
@@ -3467,8 +3483,9 @@ async function delGo(){
   if(navigator.onLine===false)return showErr('#delErr','Nincs internetkapcsolat. A törléshez kapcsolat kell.');
   delBusy=true;$('#delErr').hidden=true;const b=$('#delBtn');b.disabled=true;b.textContent='Törlés…';
   const fail=m=>{delBusy=false;const x=$('#delBtn');if(x){x.disabled=false;x.textContent='Fiók végleges törlése';showErr('#delErr',m)}};
-  let r;try{r=await cloud.sb.auth.signInWithPassword({email:cloud.email,password:pw})}catch(e){r={error:e}}
-  if(r.error)return fail(auErr(r.error));
+  const ct=await capToken();
+  let r;try{r=await cloud.sb.auth.signInWithPassword({email:cloud.email,password:pw,...(ct?{options:{captchaToken:ct}}:{})})}catch(e){r={error:e}}
+  capReset();if(r.error)return fail(auErr(r.error));
   const tok=r.data&&r.data.session&&r.data.session.access_token;if(!tok)return fail('Most nem sikerült. Próbáld újra kicsit később.');
   clearTimeout(cloud.timer);for(let i=0;i<40&&cloud.busy;i++)await sleep(100);
   let res;try{res=await fetch(DEL_URL,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({confirm:'TÖRLÉS'})})}catch(e){res=null}
@@ -3569,13 +3586,14 @@ function authSheet(m,mail=''){auMode=AU[m]?m:'in';auBusy=false;const a=AU[auMode
   <label class="f"><span>E-mail-cím</span><input id="auMail" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="200" value="${esc(mail)}"></label>
   ${auMode==='reset'?'':`<label class="f"><span>Jelszó${auMode==='up'?' ('+PW_HINT+')':''}</span><input id="auPw" type="password" name="password" autocomplete="${auMode==='up'?'new-password':'current-password'}" maxlength="72"></label>`}
   ${auMode==='up'?agreeHtml('auAgree','privFromAuth'):''}
-  <p class="err" id="auErr" role="alert" hidden></p>
+  ${capBox}<p class="err" id="auErr" role="alert" hidden></p>
   <button class="btn" id="auBtn" data-act="auGo">${a.b}</button>
   ${auMode==='in'?'<button type="button" class="btn ghost" data-act="auMode" data-m="up">Nincs még fiókom</button><button type="button" class="btn text" style="width:100%" data-act="auMode" data-m="reset">Elfelejtettem a jelszavam</button>':'<button type="button" class="btn ghost" data-act="auMode" data-m="in">Van már fiókom</button>'}
-  <button type="button" class="btn ghost" data-act="close">Mégse</button></form>`)}
+  <button type="button" class="btn ghost" data-act="close">Mégse</button></form>`);capMount()}
 function pwSheet(){openSheet('<form id="auForm" novalidate><h2>Új jelszó megadása</h2><label class="f"><span>Új jelszó ('+PW_HINT+')</span><input id="npPw" type="password" name="password" autocomplete="new-password" maxlength="72"></label><p class="err" id="npErr" role="alert" hidden></p><button class="btn" id="npBtn" data-act="pwSave">Jelszó mentése</button><button type="button" class="btn ghost" data-act="close">Mégse</button></form>')}
 /* a hibakódok a Supabase Auth kódjai; régebbi válaszoknál a szövegből azonosítunk */
 function auErr(e){const c=String((e&&e.code)||''),m=String((e&&e.message)||'').toLowerCase(),st=e&&e.status;
+  if(c==='captcha_failed'||m.includes('captcha'))return'A robotszűrő ellenőrzése nem sikerült. Várj pár másodpercet, és próbáld újra.';
   if(c==='invalid_credentials'||m.includes('invalid login'))return'Hibás e-mail-cím vagy jelszó.';
   if(c==='email_not_confirmed'||m.includes('not confirmed'))return'Még nem erősítetted meg az e-mail-címed. Kattints a levélben kapott linkre, utána lépj be.';
   if(c==='user_already_exists'||c==='email_exists'||m.includes('already registered'))return'Ezzel az e-mail-címmel már van fiók. Lépj be, vagy kérj új jelszót.';
@@ -3613,7 +3631,7 @@ function render(opt={}){
 const scrollChat=()=>{const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight};
 let toastT=0;function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2400)}
 function openSheet(html,keep){const s=$('#sheet'),old=keep&&s.firstElementChild,y=old?old.scrollTop:0;s.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"${old?' style="animation:none"':''}>${html}</div>`;s.hidden=false;if(old)s.firstElementChild.scrollTop=y;else{const f=s.querySelector('h2');f&&(f.tabIndex=-1,f.focus({preventScroll:true}))}}
-function closeSheet(){$('#sheet').hidden=true;$('#sheet').innerHTML='';W=null;wzStep=0;chatSheet=false}
+function closeSheet(){capDrop();$('#sheet').hidden=true;$('#sheet').innerHTML='';W=null;wzStep=0;chatSheet=false}
 
 /* ---------- állatfelvétel (3 lépés) ---------- */
 let W=null,wzStep=0;
@@ -3912,10 +3930,11 @@ Object.assign(ACT,{
     if(m==='up'&&!pwOk(pw))return showErr('#auErr',PW_MSG);
     if(m==='up'&&!($('#auAgree')&&$('#auAgree').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elolvastad a tájékoztatót, és elmúltál 16 éves (vagy a szülőd hozzájárult).');
     auBusy=true;$('#auErr').hidden=true;const b=$('#auBtn');b.disabled=true;b.textContent='Egy pillanat…';
-    let r;try{r=m==='in'?await cloud.sb.auth.signInWithPassword({email:mail,password:pw})
-      :m==='up'?await cloud.sb.auth.signUp({email:mail,password:pw,options:{emailRedirectTo:APP_URL}})
-      :await cloud.sb.auth.resetPasswordForEmail(mail,{redirectTo:APP_URL})}catch(e){r={error:e}}
-    auBusy=false;
+    const ct=await capToken(),cap=ct?{captchaToken:ct}:{};
+    let r;try{r=m==='in'?await cloud.sb.auth.signInWithPassword({email:mail,password:pw,...(ct?{options:cap}:{})})
+      :m==='up'?await cloud.sb.auth.signUp({email:mail,password:pw,options:{emailRedirectTo:APP_URL,...cap}})
+      :await cloud.sb.auth.resetPasswordForEmail(mail,{redirectTo:APP_URL,...cap})}catch(e){r={error:e}}
+    auBusy=false;capReset();
     if(r.error){const x=$('#auBtn');if(x&&auMode===m){x.disabled=false;x.textContent=AU[m].b;showErr('#auErr',auErr(r.error))}return}
     if(m==='in'||(r.data&&r.data.session)){closeSheet();toast(m==='in'?'Beléptél':'Fiók létrehozva, beléptél');return}
     openSheet(m==='up'?`<h2>Nézd meg a postafiókod</h2><p>Megerősítő levelet küldtünk ide: <b>${esc(mail)}</b>. Kattints a benne lévő linkre, utána itt lépj be.</p><p class="sub">Ha pár percen belül nem érkezik meg, nézd meg a levélszemét mappát. Ha ezzel a címmel már volt fiókod, nem kapsz új levelet: lépj be, vagy kérj új jelszót.</p><button class="btn" data-act="auOpen" data-m="in">Belépés</button><button class="btn ghost" data-act="close">Bezárás</button>`
