@@ -1,7 +1,7 @@
-/* PetVia service worker – offline indulás.
+/* Petavira service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v3';
+const V = 'petlife-v4';
 const FONTS = 'petlife-fonts-2';
 const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
@@ -84,7 +84,7 @@ self.addEventListener('push', e => {
       const c = await caches.open(PUSH), r = await c.match(new URL('push-plan.json', self.registration.scope).href);
       if (r) { const p = await r.json(), d = new Date(); n = p && p.days && p.days[`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`]; }
     } catch (err) { /* nincs terv */ }
-    await self.registration.showNotification(n && n.t ? String(n.t).slice(0, 80) : 'PetVia', {
+    await self.registration.showNotification(n && n.t ? String(n.t).slice(0, 80) : 'Petavira', {
       body: n && n.b ? String(n.b).slice(0, 300) : 'Nézd meg a mai teendőket és tippeket.',
       icon: './icons/icon-192.png', tag: 'petvia-daily', data: { url: './' }
     });
