@@ -1,7 +1,7 @@
 /* Petavira service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v5';
+const V = 'petlife-v6';
 const FONTS = 'petlife-fonts-2';
 const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
@@ -10,7 +10,7 @@ const PUSH = 'petvia-push';
    a régi (jsDelivr) gyorsítótár az aktiváláskor törlődik, mert a LIB neve megváltozott. */
 const LIB_URL = new URL('./vendor/supabase-js-2.112.4.js', self.registration.scope).href;
 const PAGE = './index.html';
-const SHELL = ['./', PAGE, './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './img/paw-144.webp'];
+const SHELL = ['./', PAGE, './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './img/paw-144.webp', './img/kezdo.webp', './img/tile-emlos.webp', './img/tile-madar.webp', './img/tile-gyik.webp', './img/tile-kigyo.webp', './img/tile-teknos.webp', './img/tile-keteltu.webp', './img/tile-hal.webp', './img/tile-gerinctelen.webp', './img/tile-egyeb.webp'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
