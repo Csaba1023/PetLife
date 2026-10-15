@@ -1,4 +1,4 @@
-# PetVia – biztonsági fejlécek (Cloudflare Workers statikus fájlok; a fájl maga nem töltődik le)
+# Petavira – biztonsági fejlécek (Cloudflare Workers statikus fájlok; a fájl maga nem töltődik le)
 # CSP: csak a saját cím, a Supabase, a Google Fonts és a Turnstile robotszűrő (challenges.cloudflare.com) érhető el. Az 'unsafe-inline' azért kell,
 # mert az app kódja egyetlen inline scriptben van (később külön fájlba tehető, és akkor kivehető).
 /*

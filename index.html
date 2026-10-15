@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PetVia</title>
+<title>Petavira</title>
 <meta name="description" content="Kisállat életútkövető és tanácsadó: oltások, teendők, táplálkozás és nevelés az állatod korához igazítva.">
 <meta name="theme-color" content="#F2F6F1">
 <link rel="manifest" href="manifest.webmanifest">
@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="PetVia">
+<meta name="apple-mobile-web-app-title" content="Petavira">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -247,7 +247,7 @@ textarea{padding:12px 14px}
 <body>
 <div id="app">
   <header class="top">
-    <div class="brand">PetVia</div>
+    <div class="brand">Petavira</div>
     <div class="topr"><button class="pill" id="petPill" data-act="pets" hidden></button><button class="gear" id="gear" data-act="tab" data-tab="more" aria-label="Beállítások, fiók, állataim"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="font-size:17px"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.6"/><circle cx="8" cy="17" r="2.6"/></svg></button></div>
   </header>
   <main id="view"></main>
@@ -648,7 +648,7 @@ function tipsFor(p,st){const T=TIPS[gkey(p)]||TIPS[p.species];if(!T)return TIPS_
   const a=[...(stock(p)&&VTIP[p.breed]?[VTIP[p.breed]]:[]),...((st&&T[st])||[]),...(T.all||[])];return a.length?a.slice(0,5):TIPS_OTHER}
 const TIPS_OTHER=['Keress olyan állatorvost, aki ért ehhez a fajhoz.','A faj igényeiről (hely, hőmérséklet, étrend) kérdezd a Tanácsadót.'];
 const EVCAT={vet:[ic('vet'),'Állatorvos'],vacc:[ic('vacc'),'Oltás'],care:[ic('care'),'Ápolás'],shed:[ic('shed'),'Vedlés'],memo:[ic('memo'),'Emlék'],other:[ic('other'),'Egyéb']};
-const DISC='A PetVia nem helyettesíti az állatorvosi vizsgálatot.';
+const DISC='A Petavira nem helyettesíti az állatorvosi vizsgálatot.';
 const BALL='<span class="ballmark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#F2B33D" stroke="#14201C" stroke-width="2.5"/></svg></span>';
 
 const PARROT_FOOD=['Állatorvosi ajánlás szerint a kis papagájok étrendje kb. 40–50% granulált táp (pellet), 30–40% magkeverék, 10–15% zöldség és 5–10% gyümölcs.','A csak magból álló étrend hiányos: kevés benne a fehérje, a kalcium és az A-vitamin, és elhízáshoz vezet.','Friss, megmosott zöldség naponta (pl. sárgarépa, brokkoli, zöldborsó).','Gyümölcs kis mennyiségben; az alma magházát vedd ki.','Kalciumforrás (pl. szépiacsont) és friss víz mindig legyen.'];
@@ -1140,7 +1140,7 @@ function tripMore(p,k){
   return`<h2>Tömegközlekedéssel</h2>${TRANSPORT[kind].map(([t,d,id])=>`<div class="card guide"><b>${t}</b><p>${d}</p>${src(id)}</div>`).join('')}
   <h2>Repülővel</h2><p class="sub" style="margin:-4px 0 10px">A Budapestről induló nagy légitársaságok szabályai. A feltételek és a díjak gyakran változnak, foglalás előtt mindig nézd meg a légitársaság oldalán. Külföldi úthoz az uniós iratok is kellenek (lásd fent).</p>
   ${AIR.map(a=>{const[v,cl]=airVerdict(a,k);return`<details class="acc air"><summary>${a[0]} <span class="tag av-${cl}">${v}</span></summary><p>${a[4]}</p>${src(a[1])}</details>`}).join('')}
-  <h2>Ha nem viheted magaddal</h2><p class="sub" style="margin:-4px 0 10px">Írd be a településed, és a Google Térkép megmutatja a közeli ${q===`állatpanzió`?'állatpanziókat':'kisállat-panziókat'}. A PetVia nem ajánl és nem tárol panziókat: nézd meg személyesen, és kérdezz rá az oltási feltételekre.</p>
+  <h2>Ha nem viheted magaddal</h2><p class="sub" style="margin:-4px 0 10px">Írd be a településed, és a Google Térkép megmutatja a közeli ${q===`állatpanzió`?'állatpanziókat':'kisállat-panziókat'}. A Petavira nem ajánl és nem tárol panziókat: nézd meg személyesen, és kérdezz rá az oltási feltételekre.</p>
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
   <div id="mapBtns"><a class="btn ghost" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>Panzió keresése a térképen</a></div>
   <h2>Útra kész lista</h2><p class="sub" style="margin:-4px 0 6px" id="tripCnt">${n} / ${list.length} kész</p>
@@ -2839,7 +2839,7 @@ function trail(p){
   <div class="trail-lab">${STAGES.map((s,k)=>`<span class="${k===i?'on':''}">${stHU(p,s)}</span>`).join('')}</div></div>
   <p class="next">${next} A szakaszhatárok tájékoztató jellegűek.</p>`}
 function vEmpty(){return`<div class="empty"><div class="big">${ic('paw')}</div><h1>Kövesd végig a kedvenced életét</h1>
-  <p class="sub">Add meg a faját, fajtáját és korát, és a PetVia mindig az aktuális életszakaszához illő teendőket és tippeket mutatja.</p>
+  <p class="sub">Add meg a faját, fajtáját és korát, és a Petavira mindig az aktuális életszakaszához illő teendőket és tippeket mutatja.</p>
   <p><button class="btn" data-act="petNew">Állat felvétele</button></p><p><button class="btn ghost" data-act="tab" data-tab="nopet">Még nincs állatom</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
 function vHome(p){
   const st=stageOf(p),items=buildItems(p),due=dueList(p,items),t=today();
@@ -3137,7 +3137,7 @@ function vProd(p){
   ${l.length?`<h2>Személyre szabott ajánlás</h2>${aiBox(p,'prod_'+pCat,'AI-ajánlás kérése ebben a kategóriában')}`:''}`}
 function vVets(){
   const p=pet(),ex=!!p&&['hullo','keteltu','hal','madar','gerinctelen'].includes(grp(p)),c=S.settings.city||'',a=(q,l,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${l}</a>`;
-  return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A PetVia nem ajánl és nem tárol állatorvosokat.${ex?' Ennél a fajnál egzotikus állatokhoz értő állatorvost keresünk.':''}</p>
+  return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A Petavira nem ajánl és nem tárol állatorvosokat.${ex?' Ennél a fajnál egzotikus állatokhoz értő állatorvost keresünk.':''}</p>
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
   <div id="mapBtns">${a(ex?'egzotikus állatorvos':'állatorvos',ex?'Egzotikus állatorvos keresése a térképen':'Állatorvos keresése a térképen','')}<div style="height:10px"></div>${a('állatorvosi ügyelet','Ügyelet keresése a térképen','ghost')}</div>
   <p class="sub" style="margin-top:12px">A térkép új lapon nyílik meg, a település megadása után.</p>`}
@@ -3316,10 +3316,10 @@ function npAdoptHtml(){
   <label class="f"><span>Megye</span><select id="npMegye"><option value="">Válassz megyét…</option>${MEGYEK.map(m=>`<option value="${m}"${m===npMegye?' selected':''}>${megyeHU(m)}</option>`).join('')}</select></label>
   ${!npMegye?'':l.length?`<ul class="tasks" id="npList">${l.map(s=>npRow(s.n,s.u,s.t+(s.x?', '+s.x:''))).join('')}</ul><p class="sub" style="margin-top:8px">${l.length} szervezet. A link új lapon nyílik meg.</p>`
     :`<p class="sub" id="npNone">Itt most nincs a listánkon olyan szervezet, amelyik ${mit} ad örökbe. Nézz körül a szomszédos megyékben, vagy keress lent a térképen.</p>`}
-  <h2>Keresés a térképen</h2><p class="sub">Írd be a településed, és a Google Térkép megmutatja a közeli menhelyeket. Ezeket a találatokat a PetVia nem nézte át.</p>
+  <h2>Keresés a térképen</h2><p class="sub">Írd be a településed, és a Google Térkép megmutatja a közeli menhelyeket. Ezeket a találatokat a Petavira nem nézte át.</p>
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
   <div id="mapBtns">${a('állatmenhely','Állatmenhely keresése a térképen','')}<div style="height:10px"></div>${a('állatvédő egyesület','Állatvédő szervezet keresése a térképen','ghost')}</div>
-  <p class="note">A listán csak létező szervezet szerepel, az oldalukat 2026 októberében néztük át; az elérhetőségük és az oldaluk címe változhat. A linkek nem fizetett hirdetések, a PetVia nem áll kapcsolatban a szervezetekkel, és nem tartja nyilván az örökbe fogadható állatokat. Örökbefogadás előtt mindig egyeztess a szervezettel.</p>`}
+  <p class="note">A listán csak létező szervezet szerepel, az oldalukat 2026 októberében néztük át; az elérhetőségük és az oldaluk címe változhat. A linkek nem fizetett hirdetések, a Petavira nem áll kapcsolatban a szervezetekkel, és nem tartja nyilván az örökbe fogadható állatokat. Örökbefogadás előtt mindig egyeztess a szervezettel.</p>`}
 function npBreedHtml(){
   const sp=npSp,b=npBreed[sp],dog=sp==='kutya';let res='';
   if(b&&dog){const ids=FAJTAKLUB[b]||[];
@@ -3335,7 +3335,7 @@ function npBreedHtml(){
   <h2>Miről ismered fel a felelős tenyésztőt?</h2>${dog?'':'<p class="sub">A Felis Hungarica tagjaira vonatkozó tenyésztési szabályzat szerint:</p>'}
   <ul class="steps2" id="npSigns" style="margin-top:8px">${BRSIGN[sp].map(x=>`<li>${x}</li>`).join('')}</ul>
   <details class="acc" id="npSrc" style="margin-top:14px"><summary>Források</summary><ul class="srcs">${BRSRC[sp].map(([n,u])=>`<li><a ${ext(u)}>${esc(n)}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">A felsorolás tájékoztató jellegű, a pontjai ezekből a forrásokból származnak.</p></details>
-  <p class="note">A linkek nem fizetett hirdetések. A PetVia egyes tenyésztőket nem ajánl és nem ellenőriz: a listákat a szervezetek vezetik, és az oldaluk címe változhat. A klubok oldalát 2026 októberében néztük át.</p>`}
+  <p class="note">A linkek nem fizetett hirdetések. A Petavira egyes tenyésztőket nem ajánl és nem ellenőriz: a listákat a szervezetek vezetik, és az oldaluk címe változhat. A klubok oldalát 2026 októberében néztük át.</p>`}
 /* „Mielőtt döntesz": felelős állatvállalás. A számok és az állítások az NPRSRC forrásaiból vannak
    (élettartam: PDSA; a visszaadások 70 százaléka, a kiadások fajtái, az ajándékozás, a nagykorúság: Nébih, „Fogadj örökbe!"). */
 const NPRESP={kutya:['Egy állat befogadása életre szóló döntés. A kutyák fajtától függően átlagosan 5,5–14 évig élnek (a kis testűek 7–14, a közepesek 8–13,5, a nagy testűek 5,5–13 évig): ennyi időre vállalod az etetését, az állatorvosi ellátását, a nevelését és a napi törődést.',
@@ -3355,7 +3355,7 @@ function vNoPet(){
   <p class="sub" style="margin-top:6px">Válaszd ki, kutyát vagy macskát keresel, és hogy örökbe fogadnál, vagy fajtatiszta állatot szeretnél.</p>
   ${seg('npSp',npSp,[['kutya','Kutya'],['macska','Macska']],'Milyen állatot keresel?')}${seg('npTab',npTab,[['adopt','Örökbefogadás'],['breed','Fajtatiszta']],'Honnan szeretnéd?')}
   ${npRespHtml()}${npTab==='breed'?npBreedHtml():npAdoptHtml()}
-  <h2>Megvan az új családtag?</h2><p class="sub">Vedd fel, és a PetVia végigkíséri az életét.</p><button class="btn" data-act="petNew">Állat felvétele</button>`}
+  <h2>Megvan az új családtag?</h2><p class="sub">Vedd fel, és a Petavira végigkíséri az életét.</p><button class="btn" data-act="petNew">Állat felvétele</button>`}
 function vHub(p){
   const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
   return`<h1>Gondozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}</p>
@@ -3398,7 +3398,7 @@ function vMore(){
   <h2>Értesítések</h2>${pushHtml()}
   <h2>Megjelenés</h2><div class="chips">${[['auto','Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,n])=>`<label><input type="radio" name="theme" value="${v}"${th===v?' checked':''}><span>${n}</span></label>`).join('')}</div>
   <h2>Telepítés</h2>${installHtml()}
-  <h2>Adatvédelem</h2><p class="sub">Mit tárol a PetVia, hol, meddig, és milyen jogaid vannak.</p><button class="btn ghost" data-act="tab" data-tab="privacy">Adatkezelési tájékoztató</button><button class="btn ghost" style="margin-top:10px" data-act="exportData">Adataim letöltése</button>
+  <h2>Adatvédelem</h2><p class="sub">Mit tárol a Petavira, hol, meddig, és milyen jogaid vannak.</p><button class="btn ghost" data-act="tab" data-tab="privacy">Adatkezelési tájékoztató</button><button class="btn ghost" style="margin-top:10px" data-act="exportData">Adataim letöltése</button>
   <h2>Adatok</h2><p class="sub">${store}</p><button class="btn danger" data-act="wipeAsk">Adatok törlése</button>
   <p class="note">A mérföldkövek és a szakaszhatárok tájékoztató jellegűek. Kutyánál a veszettség elleni oltást a 164/2008. (XII. 20.) FVM rendelet, a mikrochipet a 41/2010. (II. 26.) Korm. rendelet írja elő. ${DISC}</p>`}
 function accountHtml(){
@@ -3408,13 +3408,13 @@ function accountHtml(){
   return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button><button class="btn text" style="margin-top:6px;color:var(--alert)" data-act="delAsk">Fiók törlése</button>`}
 /* ---------- adatvédelem: tájékoztató, adatletöltés, fióktörlés (GDPR-kör, 2026. október) ----------
    A szolgáltatókról szóló állítások forrásai a tájékoztató végén; a linkek letöltéssel ellenőrizve (2026. 10. 12.). */
-const PRIV={name:'Molnár Csaba',mail:'petvia@csabastudio.com',date:'2026. október 14.'};
+const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 15.'};
 const xa=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
 function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 16 éves, vagy a szülőm hozzájárult.</span></label>`}
 function privHtml(){return`<div class="priv">
 <p class="sub">Hatályos: ${PRIV.date}</p>
 <h3>Ki kezeli az adataidat?</h3>
-<p>${PRIV.name} (magánszemély), a PetVia fejlesztője. Kapcsolat: <a href="mailto:${PRIV.mail}">${PRIV.mail}</a></p>
+<p>${PRIV.name} (magánszemély), a Petavira fejlesztője. Kapcsolat: <a href="mailto:${PRIV.mail}">${PRIV.mail}</a></p>
 <h3>Fiók nélkül</h3>
 <p>Minden, amit felveszel (állatok, fotók, események, naplók, beszélgetések), csak ezen az eszközön, a böngésző tárhelyén marad. Ezekhez mi nem férünk hozzá. A Beállításokban bármikor törölheted őket.</p>
 <h3>Fiókkal</h3>
@@ -3425,7 +3425,7 @@ function privHtml(){return`<div class="priv">
 <h3>Tanácsadó (mesterséges intelligencia)</h3>
 <ul><li><b>Mit:</b> a kérdésed, az előző néhány üzenet és az állat adatai (név, faj, fajta, kor, ivar, súly, rögzített mérföldkövek, kezelések, naplóbejegyzések rövidített szövege), valamint az app útmutatójának részlete.</li>
 <li><b>Miért:</b> hogy az állatodra szabott választ kapj. Csak a hozzájárulásoddal, amit bármikor visszavonhatsz ezen az oldalon.</li>
-<li><b>Hová:</b> a PetVia szerverén át az OpenAI-hoz. Az OpenAI ezeket nem használja modelltanításra, és visszaélések kiszűrése miatt legfeljebb 30 napig őrzi meg.</li>
+<li><b>Hová:</b> a Petavira szerverén át az OpenAI-hoz. Az OpenAI ezeket nem használja modelltanításra, és visszaélések kiszűrése miatt legfeljebb 30 napig őrzi meg.</li>
 <li><b>Visszaélés elleni védelem:</b> a fiókodhoz számoljuk a napi kérdések számát (60 napig őrizzük), és ha többször tiltott kérést küldesz, néhány percre letiltjuk a Tanácsadót.</li></ul>
 <h3>Értesítések</h3>
 <p>Ha bekapcsolod, a fiókodhoz elmentjük az eszközöd értesítési címét (ezt a böngésző vagy a telefon push-szolgáltatója adja: Google, Apple vagy Mozilla) és azokat a napokat, amikor értesítést kapsz. Az értesítés szövegét nem tároljuk és nem küldjük el: az eszközöd állítja össze. A push-szolgáltató csak egy tartalom nélküli jelzést kézbesít. Kikapcsoláskor, kilépéskor és a fiók törlésekor töröljük.</p>
@@ -3461,9 +3461,9 @@ function vPrivacy(){
   ${privHtml()}`}
 /* adathordozhatóság: minden adat egy JSON-fájlban (a fotók is, ahogy az eszközön vannak) */
 function exportData(){
-  const out={app:'PetVia',format:1,exportedAt:new Date().toISOString(),account:cloud.uid?cloud.email:null,pets:S.pets,events:S.events,chat:S.chat,ai:S.ai,settings:S.settings};
+  const out={app:'Petavira',format:1,exportedAt:new Date().toISOString(),account:cloud.uid?cloud.email:null,pets:S.pets,events:S.events,chat:S.chat,ai:S.ai,settings:S.settings};
   try{const url=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'})),a=document.createElement('a');
-    a.href=url;a.download=`petvia-adatok-${iso(today())}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Az adataid letöltése elindult')}
+    a.href=url;a.download=`petavira-adatok-${iso(today())}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Az adataid letöltése elindult')}
   catch(e){toast('A letöltés most nem sikerült.')}}
 /* fióktörlés: jelszó újra + „TÖRLÉS” szó, utána a szerveroldali account-delete függvény töröl mindent */
 const DEL_URL=SB_URL.replace(/\/$/,'')+'/functions/v1/account-delete';
@@ -3566,7 +3566,7 @@ async function pushOff(quiet){
   if(!quiet){toast('Értesítések kikapcsolva');render()}}
 function pushHtml(){
   const intro='<p class="sub">Naponta legfeljebb egy értesítés, este 7 órakor: ha esedékes teendő van, a szakaszváltás előtti napon, egyébként egy napi tipp. Az értesítés szövegét csak az eszközöd tárolja.</p>';
-  if(!pushOK())return intro+`<p class="sub">${isIOS&&!standalone()?'iPhone-on és iPaden az értesítésekhez előbb tedd ki a PetVia-t a kezdőképernyőre (lásd lent, Telepítés), és onnan nyisd meg. Legalább iOS 16.4 kell hozzá.':'Ez a böngésző nem támogatja az értesítéseket.'}</p>`;
+  if(!pushOK())return intro+`<p class="sub">${isIOS&&!standalone()?'iPhone-on és iPaden az értesítésekhez előbb tedd ki a Petavirát a kezdőképernyőre (lásd lent, Telepítés), és onnan nyisd meg. Legalább iOS 16.4 kell hozzá.':'Ez a böngésző nem támogatja az értesítéseket.'}</p>`;
   if(!cloud.uid)return intro+'<p class="sub">Az értesítésekhez lépj be a fiókodba.</p>';
   const L=pushLocal(),perm=Notification.permission;
   if(!L.on)return intro+(perm==='denied'?'<p class="sub">Az értesítéseket a telefon vagy a böngésző beállításaiban letiltottad. Ott engedélyezd, utána itt kapcsold be.</p>':'')+`<button class="btn ghost" data-act="pushOn"${pushBusy?' disabled':''}>${pushBusy?'Egy pillanat…':'Értesítések bekapcsolása'}</button>`;
@@ -3575,7 +3575,7 @@ function pushHtml(){
   <button class="btn ghost" style="margin-top:10px" data-act="pushTest">Próbaértesítés most</button><button class="btn text" style="margin-top:6px" data-act="pushOffBtn">Kikapcsolás</button>`}
 async function pushTest(){
   try{const reg=await navigator.serviceWorker.ready,plan=pushPlan(),n=plan[iso(today())]||Object.values(plan)[0];
-    await reg.showNotification(n?n.t:'PetVia',{body:n?n.b:'Ma nincs teendő és tipp.',icon:'icons/icon-192.png',tag:'petvia-test'})}
+    await reg.showNotification(n?n.t:'Petavira',{body:n?n.b:'Ma nincs teendő és tipp.',icon:'icons/icon-192.png',tag:'petvia-test'})}
   catch(e){toast('A próbaértesítés most nem sikerült.')}}
 /* ---------- fiók: belépés, regisztráció, jelszócsere ---------- */
 let auMode='in',auBusy=false;
@@ -3824,7 +3824,7 @@ async function aiCall(body,{signal}={}){
 let aiPending=null;
 /* hozzájárulás a Tanácsadóhoz (2. változat, 2026. október: korhatár és tájékoztató; a korábbi elfogadás nem elég) */
 const aiAgreed=()=>(S.settings.aiConsentV|0)>=2&&!!S.settings.aiConsent;
-const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a PetVia szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot). A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${agreeHtml('','privFromAi','aiAge')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be a négyzetet a folytatáshoz.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
+const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot). A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${agreeHtml('','privFromAi','aiAge')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be a négyzetet a folytatáshoz.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
 const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom</button></div>`;
 function aiConsent(fn){if(aiAgreed()){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom</button><button class="btn ghost" data-act="close">Mégse</button>`)}
 async function sendChat(raw){
@@ -3981,12 +3981,12 @@ const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator
 const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 function installHtml(){
   const why='Telepítve saját ikont kap, teljes képernyőn és internet nélkül is elindul.';
-  if(standalone())return'<p class="sub">A PetVia telepítve van erre az eszközre.</p>';
+  if(standalone())return'<p class="sub">A Petavira telepítve van erre az eszközre.</p>';
   if(installEvt)return`<p class="sub">${why}</p><button class="btn" data-act="install">Telepítés a kezdőképernyőre</button>`;
   return`<p class="sub">${why} ${isIOS?'iPhone-on Safariban koppints a Megosztás gombra, majd válaszd a „Főképernyőhöz adás" pontot.':'A böngésző menüjében válaszd az „Alkalmazás telepítése" vagy a „Hozzáadás a kezdőképernyőhöz" pontot.'}</p>`}
 ACT.install=async()=>{if(!installEvt)return;const ev=installEvt;installEvt=null;ev.prompt();try{await ev.userChoice}catch(e){}if(tab==='more')render()};
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(tab==='more')render()});
-addEventListener('appinstalled',()=>{installEvt=null;toast('PetVia telepítve');if(tab==='more')render()});
+addEventListener('appinstalled',()=>{installEvt=null;toast('Petavira telepítve');if(tab==='more')render()});
 /* vízértékek és vízcsere (4/a kör) */
 Object.assign(ACT,{
   waterNew(){waterSheet()},wcNew(){wcSheet()},
