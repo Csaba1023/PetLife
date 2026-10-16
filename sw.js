@@ -1,8 +1,7 @@
 /* Petavira service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v9';
-const FONTS = 'petlife-fonts-2';
+const V = 'petlife-v10';
 const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
 const PUSH = 'petvia-push';
@@ -12,7 +11,7 @@ const IMG = 'petlife-img-1';
    a régi (jsDelivr) gyorsítótár az aktiváláskor törlődik, mert a LIB neve megváltozott. */
 const LIB_URL = new URL('./vendor/supabase-js-2.112.4.js', self.registration.scope).href;
 const PAGE = './index.html';
-const SHELL = ['./', PAGE, './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './img/paw-144.webp', './img/kezdo.webp', './img/tile-emlos.webp', './img/tile-madar.webp', './img/tile-gyik.webp', './img/tile-kigyo.webp', './img/tile-teknos.webp', './img/tile-keteltu.webp', './img/tile-hal.webp', './img/tile-gerinctelen.webp', './img/tile-egyeb.webp'];
+const SHELL = ['./', PAGE, './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './img/paw-144.webp', './fonts/fraunces-var.woff', './fonts/plusjakartasans-var.woff', './img/kezdo.webp', './img/tile-emlos.webp', './img/tile-madar.webp', './img/tile-gyik.webp', './img/tile-kigyo.webp', './img/tile-teknos.webp', './img/tile-keteltu.webp', './img/tile-hal.webp', './img/tile-gerinctelen.webp', './img/tile-egyeb.webp'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -26,7 +25,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== V && k !== FONTS && k !== LIB && k !== PUSH && k !== IMG).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== V && k !== LIB && k !== PUSH && k !== IMG).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -57,24 +56,15 @@ async function cacheFirst(req, name) {
   return res;
 }
 
-async function staleWhileRevalidate(req) {
-  const cache = await caches.open(FONTS);
-  const hit = await cache.match(req);
-  const fresh = fetch(req).then(res => { if (res && res.ok) cache.put(req, res.clone()); return res; });
-  if (hit) { fresh.catch(() => {}); return hit; }
-  return fresh;
-}
-
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  const font = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (req.url === LIB_URL) { e.respondWith(cacheFirst(req, LIB)); return; }
-  if (url.origin !== self.location.origin && !font) return;
+  if (url.origin !== self.location.origin) return;
   if (req.mode === 'navigate') { e.respondWith(pageFirst(req)); return; }
   if (url.pathname.includes('/img/faj/')) { e.respondWith(cacheFirst(req, IMG)); return; }
-  e.respondWith(font ? staleWhileRevalidate(req) : cacheFirst(req));
+  e.respondWith(cacheFirst(req));
 });
 
 /* Értesítés: a push tartalom nélküli; a mai szöveget az app által elmentett tervből olvassuk.
