@@ -209,6 +209,14 @@ textarea{padding:12px 14px}
 .priv ul{padding-left:18px;margin:6px 0}
 .priv a{color:var(--brand);overflow-wrap:anywhere}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+/* fajválasztó képes kártyákkal */
+.spgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chip.spc{position:relative;overflow:hidden;flex-direction:column;align-items:stretch;justify-content:flex-end;gap:0;min-height:0;aspect-ratio:1;padding:0;border-radius:16px;background:var(--soft);color:#fff;text-align:left}
+.chip.spc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.chip.spc::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(5,15,11,.88),rgba(5,15,11,.35) 45%,rgba(5,15,11,0) 70%);pointer-events:none}
+.chip.spc span{position:relative;z-index:1;padding:6px 7px;font-size:12.5px;line-height:1.2;overflow-wrap:break-word;hyphens:auto;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.chip.spc[aria-pressed=true]{background:var(--soft);border-color:var(--ball);color:#fff}
+.chip.spc[aria-pressed=true] img{transform:scale(1.06)}
 .chips label{position:relative}
 .chips input{position:absolute;opacity:0;inset:0;min-height:0}
 .chips span,.chip{display:flex;align-items:center;gap:6px;min-height:48px;padding:0 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-weight:600}
@@ -300,7 +308,7 @@ textarea{padding:12px 14px}
 @media (prefers-reduced-motion:reduce){
   #bgfx *,.paw::before,.trail-bar .ballmark::before,.tl>li.stage:first-child::after,#view.fx-in .seg.cur,#view.fx-in .trail-bar .ballmark,#view.fx-in .tl::after,.tile.pop,.chip.pop{animation:none!important}
   #view.fx-in .seg.cur::after{display:none}
-  .tile,.tile .tpic,.chip[data-act=wzSpecies]{transition:none}
+  .tile,.tile .tpic,.chip[data-act=wzSpecies],.chip.spc img{transition:none}
   .tl>li.stage:first-child::after{display:none}
   #bgfx .pt{opacity:.5}
 }
@@ -2893,7 +2901,11 @@ function whenText(i){
 const tags=m=>`<span class="tag">tájékoztató</span>${m.mand?'<span class="tag must">jogszabály írja elő</span>':''}`;
 
 /* ---------- nézetek ---------- */
-const ava=(p,big)=>okPhoto(p.photo)?`<img class="ava${big?' big':''}" src="${esc(p.photo)}" alt="">`:`<span class="ava${big?' big':''}" aria-hidden="true">${ic(tileInfo(tileOf(p)).i)}</span>`;
+/* fajképek (okt. 16.): Csaba képei, 320×320 WebP; ha nincs saját fotó, ez a profilkép */
+/* a fajkártyán rövid név: zárójeles rész nélkül, a hosszú összetett szavakban feltételes elválasztással (a teljes név az aria-label-ben) */
+const spShort=(k,n)=>k==='cukormokus'?'Cukormókus':k==='parduckameleon'?'Párduc&shy;kaméleon':k==='tigrisszalamandra'?'Tigris&shy;szalamandra':n.replace(/ \(.*\)$/,'');
+const spImg=k=>k==='egyeb'?'img/tile-egyeb.webp':SPECIES[k]?`img/faj/${k}.webp`:'';
+const ava=(p,big)=>okPhoto(p.photo)?`<img class="ava${big?' big':''}" src="${esc(p.photo)}" alt="">`:spImg(p.species)?`<img class="ava${big?' big':''}" src="${spImg(p.species)}" alt="" decoding="async">`:`<span class="ava${big?' big':''}" aria-hidden="true">${ic(tileInfo(tileOf(p)).i)}</span>`;
 function trail(p){
   const L=limitsFor(p);if(!L)return'<p class="next">Ennél a fajnál nem számolunk életszakaszt, csak az életkort követjük. A fajra szabott tanácsokat a Tanácsadó adja.</p>';
   const st=stageOf(p),i=STAGES.indexOf(st),m=ageM(p),lo=[0,...L][i],hi=i<3?L[i]:L[2]*1.5,f=Math.min(.9,Math.max(.08,(m-lo)/(hi-lo)));
@@ -3716,7 +3728,7 @@ function drawWizard(){
   const pop=wzPop;wzPop='';
   const w=W,t=iso(today()),g=grp(w);let body='';
   if(w.step===1)body=`<h2>Milyen állat?</h2><div class="tiles">${Object.keys(TILES).map(k=>{const x=tileInfo(k);return`<button class="tile${pop==='g'&&w.group===k?' pop':''}" data-act="wzGroup" data-v="${k}" aria-pressed="${w.group===k}"><img class="tpic" src="img/tile-${k}.webp" alt="" width="360" height="360" decoding="async"><span class="tn">${x.n}</span></button>`}).join('')}</div>
-    ${w.group&&w.group!=='egyeb'?`<div class="f"><span>Melyik faj?</span><div class="chips">${Object.entries(SPECIES).filter(([,x])=>(x.t||x.g)===w.group).map(([k,x])=>`<button type="button" class="chip${pop==='s'&&w.species===k?' pop':''}" data-act="wzSpecies" data-v="${k}" aria-pressed="${w.species===k}">${x.n}</button>`).join('')}</div></div>`:''}
+    ${w.group&&w.group!=='egyeb'?`<div class="f"><span>Melyik faj?</span><div class="spgrid">${Object.entries(SPECIES).filter(([,x])=>(x.t||x.g)===w.group).map(([k,x])=>`<button type="button" class="chip spc${pop==='s'&&w.species===k?' pop':''}" data-act="wzSpecies" data-v="${k}" aria-pressed="${w.species===k}" aria-label="${x.n}"><img src="${spImg(k)}" alt="" width="320" height="320" loading="lazy" decoding="async"><span aria-hidden="true">${spShort(k,x.n)}</span></button>`).join('')}</div></div>`:''}
     ${w.species==='egyeb'?`<label class="f"><span>Milyen állat pontosan?</span><input name="speciesName" value="${esc(w.speciesName)}" placeholder="pl. törpemalac, galamb, tyúk" maxlength="40"></label>`:''}${flagHtml(w.species)}`;
   if(w.step===2){
     const dogKnown=w.species==='kutya'&&w.breed!=='mix'&&DOGSIZE[w.breed],list=BREEDS[w.species]||[];
