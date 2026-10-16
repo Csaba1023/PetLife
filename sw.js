@@ -1,11 +1,13 @@
 /* Petavira service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v6';
+const V = 'petlife-v7';
 const FONTS = 'petlife-fonts-2';
 const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
 const PUSH = 'petvia-push';
+/* a fajképek (img/faj/) első megjelenéskor töltődnek le, és verzióváltáskor is megmaradnak */
+const IMG = 'petlife-img-1';
 /* A fiókkezelő könyvtár saját tárhelyről (biztonság, A kör). Ugyanaz a fájl legyen, mint az index.html SB_LIB értéke;
    a régi (jsDelivr) gyorsítótár az aktiváláskor törlődik, mert a LIB neve megváltozott. */
 const LIB_URL = new URL('./vendor/supabase-js-2.112.4.js', self.registration.scope).href;
@@ -24,7 +26,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== V && k !== FONTS && k !== LIB && k !== PUSH).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== V && k !== FONTS && k !== LIB && k !== PUSH && k !== IMG).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -71,6 +73,7 @@ self.addEventListener('fetch', e => {
   if (req.url === LIB_URL) { e.respondWith(cacheFirst(req, LIB)); return; }
   if (url.origin !== self.location.origin && !font) return;
   if (req.mode === 'navigate') { e.respondWith(pageFirst(req)); return; }
+  if (url.pathname.includes('/img/faj/')) { e.respondWith(cacheFirst(req, IMG)); return; }
   e.respondWith(font ? staleWhileRevalidate(req) : cacheFirst(req));
 });
 
