@@ -157,7 +157,8 @@ button{cursor:pointer}
 .msg.e{align-self:center;background:var(--alert-bg);color:var(--alert);border-radius:12px;padding:10px 14px;font-size:14px;max-width:100%}
 .sugs{display:flex;flex-direction:column;gap:8px;margin-top:8px}
 .sugs button{text-align:left;min-height:48px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);font-weight:500}
-.composer{display:flex;gap:8px;align-items:flex-end;padding:10px 16px 12px;border-top:1px solid var(--line);background:var(--bg)}
+.composer{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding:10px 16px 12px;border-top:1px solid var(--line);background:var(--bg)}
+.pwarn{flex-basis:100%;margin:0 0 -2px;font-size:12px;line-height:1.35;color:var(--muted)}
 .composer textarea{flex:1;resize:none;min-height:48px;max-height:120px;padding:11px 14px;line-height:1.4}
 .send{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--brand);color:var(--brand-ink);font-size:20px;font-weight:700}
 .note.warn{background:var(--alert-bg);color:var(--alert)}
@@ -3471,9 +3472,9 @@ function chatLogHtml(p){
 function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="aimark">Mesterséges intelligencia válaszol</p><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p></div>
   ${chatLog(p).length&&!chatBusy?'<button class="btn ghost small" data-act="chatClear">Törlés</button>':''}</div>
   <div id="msgs" aria-live="polite">${chatLogHtml(p)}</div>
-  <div class="composer"><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
+  <div class="composer"><p class="pwarn">Ne írj személyes adatot (név, cím, telefonszám, egészségügyi adat).</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
   <button class="send" data-act="${chatBusy?'chatStop':'chatSend'}" aria-label="${chatBusy?'Leállítás':'Küldés'}">${chatBusy?'■':'↑'}</button></div>`}
-const composer=()=>`<div class="composer"><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
+const composer=()=>`<div class="composer"><p class="pwarn">Ne írj személyes adatot (név, cím, telefonszám, egészségügyi adat).</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
   <button class="send" data-act="${chatBusy?'chatStop':'chatSend'}" aria-label="${chatBusy?'Leállítás':'Küldés'}">${chatBusy?'■':'↑'}</button></div>`;
 function drawChatSheet(clear){
   const p=pet(),old=$('#chatIn'),draft=old&&!clear?old.value:'',s=$('#sheet'),had=!!s.querySelector('.chatsheet');
@@ -3502,7 +3503,7 @@ function accountHtml(){
   return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button><button class="btn text" style="margin-top:6px;color:var(--alert)" data-act="delAsk">Fiók törlése</button>`}
 /* ---------- adatvédelem: tájékoztató, adatletöltés, fióktörlés (GDPR-kör, 2026. október) ----------
    A szolgáltatókról szóló állítások forrásai a tájékoztató végén; a linkek letöltéssel ellenőrizve (2026. 10. 12.). */
-const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 16.'};
+const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 17.'};
 const xa=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
 function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 16 éves, vagy a szülőm hozzájárult.</span></label>`}
 function privHtml(){return`<div class="priv">
@@ -3514,10 +3515,11 @@ function privHtml(){return`<div class="priv">
 <h3>Fiókkal</h3>
 <ul><li><b>Mit:</b> az e-mail-címed, a jelszavad (mi nem látjuk), és az adataid másolata (állatok, fotók, események, beszélgetések).</li>
 <li><b>Miért:</b> hogy belépés után minden eszközödön megjelenjenek, és legyen biztonsági mentésed. Ez a szolgáltatás nyújtásához szükséges.</li>
-<li><b>Meddig:</b> amíg a fiókodat nem törlöd.</li>
+<li><b>Meddig:</b> amíg a fiókodat nem törlöd. A biztonsági mentésekben a törlés után legfeljebb 14 napig megmaradnak, titkosítva.</li>
+<li><b>Biztonsági mentés:</b> naponta titkosított mentés készül a fiókokhoz mentett adatokról és a fiókok listájáról (e-mail-cím, a regisztráció, a megerősítés és az utolsó belépés ideje; jelszó nélkül). A mentést titkosítva a GitHub tárhelyén őrizzük 14 napig, utána magától törlődik. Visszafejteni csak a fejlesztő tudja, a GitHub nem. Célja, hogy hiba vagy támadás esetén ne vesszenek el az adataid (adatbiztonság).</li>
 <li><b>Levelek:</b> csak a regisztráció megerősítéséhez és az új jelszó kéréséhez küldünk levelet. Hírlevelet nem küldünk.</li></ul>
 <h3>Tanácsadó (mesterséges intelligencia)</h3>
-<ul><li><b>Mit:</b> a kérdésed, az előző néhány üzenet és az állat adatai (név, faj, fajta, kor, ivar, súly, rögzített mérföldkövek, kezelések, naplóbejegyzések rövidített szövege), valamint az app útmutatójának részlete.</li>
+<ul><li><b>Mit:</b> a kérdésed, az előző néhány üzenet és az állat adatai (név, faj, fajta, kor, ivar, súly, rögzített mérföldkövek, kezelések, naplóbejegyzések rövidített szövege), valamint az app útmutatójának részlete. Az e-mail-címet, a telefonszámot, a linket és a bank- vagy kártyaszámot az app és a szerver is kitakarja, mielőtt továbbküldené. Ne írj be nevet, címet vagy egészségügyi adatot (a sajátodat vagy más emberét).</li>
 <li><b>Miért:</b> hogy az állatodra szabott választ kapj. Csak a hozzájárulásoddal, amit bármikor visszavonhatsz ezen az oldalon.</li>
 <li><b>Hová:</b> a Petavira szerverén át az OpenAI-hoz. Az OpenAI ezeket nem használja modelltanításra, és visszaélések kiszűrése miatt legfeljebb 30 napig őrzi meg.</li>
 <li><b>Visszaélés elleni védelem:</b> a fiókodhoz számoljuk a napi kérdések számát (60 napig őrizzük), és ha többször tiltott kérést küldesz, néhány percre letiltjuk a Tanácsadót.</li></ul>
@@ -3530,6 +3532,7 @@ function privHtml(){return`<div class="priv">
 <ul><li><b>Supabase</b> (fiók, mentés, szerver): az adatbázis az EU-ban, Írországban van, a naplók EU-s adatközpontban. ${xa('https://supabase.com/privacy','Adatvédelem')}</li>
 <li><b>OpenAI</b> (Tanácsadó): USA. ${xa('https://developers.openai.com/api/docs/guides/your-data','Adatkezelés az API-ban')}</li>
 <li><b>Resend</b> (e-mail-küldés): a levelek az EU-ból mennek ki, a küldési naplók az USA-ban tárolódnak. ${xa('https://resend.com/legal/privacy-policy','Adatvédelem')}</li>
+<li><b>GitHub</b> (a titkosított biztonsági mentések tárhelye): USA; a GitHub az EU–USA adatvédelmi keretrendszer (DPF) szerint kezeli az adatokat. ${xa('https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement','Adatvédelem')}</li>
 <li><b>Cloudflare</b> (tárhely; robotszűrés a belépésnél, a regisztrációnál, a jelszó-visszaállításnál és a fióktörlésnél: Turnstile): ${xa('https://www.cloudflare.com/privacypolicy/','Adatvédelem')}</li></ul>
 <h3>Korhatár</h3>
 <p>A Tanácsadót és a fiókot 16 éves kortól használhatod. Ha még nem vagy 16, a szülőd hozzájárulása kell.</p>
@@ -3850,8 +3853,23 @@ const showErr=(sel,t)=>{const el=$(sel);el.textContent=t;el.hidden=false};
    D réteg (itt): a válasz mindig szövegként jelenik meg (esc / textContent), a hibaüzenet semleges, technikai részlet nélkül. */
 const AI_INVIS=/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F­͏؜ᅟᅠ឴឵᠋-᠏​-‏‪-‮⁠-⁯ㅤ︀-️﻿ﾠ￰-￿\u{E0000}-\u{E007F}\u{E0100}-\u{E01EF}]/gu;
 const aiClean=(s,n)=>String(s??'').normalize('NFC').replace(AI_INVIS,'').replace(/\s+/g,' ').trim().slice(0,n);
-/* a gazda szabad szövege (tünet, saját esemény, készítmény): csak betű, szám, szóköz és alapvető írásjel, legfeljebb 120 karakter */
-const noteClean=s=>aiClean(String(s??'').normalize('NFC').replace(AI_INVIS,'').replace(/[^\p{L}\p{N}\s.,!?:;'"()\-–%/+°]/gu,''),120);
+/* ADATVÉDELEM (okt. 17.): személyes adat kitakarása, mielőtt bármi az AI-hoz menne (kérdés, naplójegyzet, tünet).
+   Link, e-mail, IBAN, bankszámla- és kártyaszám, telefonszám → [link], [e-mail], [számlaszám], [kártyaszám], [telefonszám].
+   Ugyanez a szabálysor fut a szerveren is (advisor, redact), mert a kliens megkerülhető. Óvatos minták: dátum, súly,
+   hőmérséklet, pH, darabszám és a 15 jegyű mikrochipszám nem érintett. Nevet és lakcímet nem takar ki (túl sok téves találat):
+   ezekre a chat figyelmeztető sora vonatkozik. */
+const luhn=d=>{let s=0;for(let i=0;i<d.length;i++){let n=+d[d.length-1-i];if(i%2){n*=2;if(n>9)n-=9}s+=n}return s%10===0};
+const aiRedact=t=>String(t??'')
+  .replace(/\b(?:https?:\/\/|www\.)\S+/gi,'[link]')
+  .replace(/[\p{L}\p{N}._%+\-]+@[\p{L}\p{N}\-]+(?:\.[\p{L}\p{N}\-]+)+/gu,'[e-mail]')
+  .replace(/(?<![\p{L}\p{N}])[A-Za-z]{2}\d{2}(?:[ ]?[A-Za-z0-9]{4}){3,7}(?:[ ]?[A-Za-z0-9]{1,3})?(?![\p{L}\p{N}])/gu,m=>(m.match(/\d/g)||[]).length>=12?'[számlaszám]':m)
+  .replace(/(?<!\p{N})\d{8}[ \-]\d{8}(?:[ \-]\d{8})?(?!\p{N})|(?<!\p{N})(?:\d{24}|\d{16})(?!\p{N})/gu,'[számlaszám]')
+  .replace(/(?<!\p{N})\d{4}([ \-])\d{4}\1\d{4}\1\d{4}(?!\p{N})/gu,m=>luhn(m.replace(/\D/g,''))?'[kártyaszám]':m)
+  .replace(/(?<![\p{L}\p{N}])(?:\+|00)\d{1,3}(?:[ \-./()]*\d){7,12}(?!\p{N})/gu,'[telefonszám]')
+  .replace(/(?<![\p{L}\p{N}])06[ \-/()]*\d{1,2}(?:[ \-/().]*\d){6,7}(?!\p{N})/gu,'[telefonszám]')
+  .replace(/(?<![\p{L}\p{N}])(?:20|30|31|50|70)[ \-/]\d{3}[ \-]?\d{3,4}(?!\p{N})/gu,'[telefonszám]');
+/* a gazda szabad szövege (tünet, saját esemény, készítmény): kitakarás, majd csak betű, szám, szóköz és alapvető írásjel, legfeljebb 120 karakter */
+const noteClean=s=>aiClean(aiRedact(String(s??'').normalize('NFC').replace(AI_INVIS,'')).replace(/[^\p{L}\p{N}\s.,!?:;'"()\-–%/+°\[\]]/gu,''),120);
 const AI_Q=500,AI_HIST=10,AI_GAP=3000,AI_HOUR=20;
 let aiRate=(()=>{try{const r=JSON.parse(localStorage.getItem('petvia.ai')||'{}');return r&&typeof r==='object'?r:{}}catch(e){return{}}})();
 const aiRateSave=()=>{try{localStorage.setItem('petvia.ai',JSON.stringify(aiRate))}catch(e){}};
@@ -3931,11 +3949,11 @@ async function aiCall(body,{signal}={}){
 let aiPending=null;
 /* hozzájárulás a Tanácsadóhoz (2. változat, 2026. október: korhatár és tájékoztató; a korábbi elfogadás nem elég) */
 const aiAgreed=()=>(S.settings.aiConsentV|0)>=2&&!!S.settings.aiConsent;
-const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot). A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${agreeHtml('','privFromAi','aiAge')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be a négyzetet a folytatáshoz.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
+const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot, a saját vagy más ember egészségügyi adatát). Az e-mail-címet, a telefonszámot, a linket és a bankszámlaszámot az app küldés előtt kitakarja. A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${agreeHtml('','privFromAi','aiAge')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be a négyzetet a folytatáshoz.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
 const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom</button></div>`;
 function aiConsent(fn){if(aiAgreed()){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom</button><button class="btn ghost" data-act="close">Mégse</button>`)}
 async function sendChat(raw){
-  const p=pet();if(!p||chatBusy)return;const text=aiClean(raw,AI_Q);if(!text)return;
+  const p=pet();if(!p||chatBusy)return;const text=aiClean(aiRedact(aiClean(raw,AI_Q)),AI_Q);if(!text)return;
   if(!aiAgreed()){chatNote=ERR.consent;redrawChat();return}
   const log=S.chat[p.id]=S.chat[p.id]||[],lastU=[...log].reverse().find(m=>m.r==='u');
   if(lastU&&lastU.sig&&lastU.t===text){chatNote=ERR.dup;redrawChat();return}
