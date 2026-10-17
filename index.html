@@ -159,6 +159,7 @@ button{cursor:pointer}
 .sugs button{text-align:left;min-height:48px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);font-weight:500}
 .composer{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding:10px 16px 12px;border-top:1px solid var(--line);background:var(--bg)}
 .pwarn{flex-basis:100%;margin:0 0 -2px;font-size:12px;line-height:1.35;color:var(--muted)}
+.pleft{flex-basis:100%;margin:0 0 -4px;font-size:13px;font-weight:700;color:var(--tip)}.pleft.none{color:var(--alert)}
 .composer textarea{flex:1;resize:none;min-height:48px;max-height:120px;padding:11px 14px;line-height:1.4}
 .send{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--brand);color:var(--brand-ink);font-size:20px;font-weight:700}
 .note.warn{background:var(--alert-bg);color:var(--alert)}
@@ -3472,9 +3473,9 @@ function chatLogHtml(p){
 function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="aimark">Mesterséges intelligencia válaszol</p><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p></div>
   ${chatLog(p).length&&!chatBusy?'<button class="btn ghost small" data-act="chatClear">Törlés</button>':''}</div>
   <div id="msgs" aria-live="polite">${chatLogHtml(p)}</div>
-  <div class="composer"><p class="pwarn">Ne írj személyes adatot (név, cím, telefonszám, egészségügyi adat).</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
+  <div class="composer">${aiLeftHtml()}<p class="pwarn">Ne írj személyes adatot (név, cím, telefonszám, egészségügyi adat).</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
   <button class="send" data-act="${chatBusy?'chatStop':'chatSend'}" aria-label="${chatBusy?'Leállítás':'Küldés'}">${chatBusy?'■':'↑'}</button></div>`}
-const composer=()=>`<div class="composer"><p class="pwarn">Ne írj személyes adatot (név, cím, telefonszám, egészségügyi adat).</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
+const composer=()=>`<div class="composer">${aiLeftHtml()}<p class="pwarn">Ne írj személyes adatot (név, cím, telefonszám, egészségügyi adat).</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
   <button class="send" data-act="${chatBusy?'chatStop':'chatSend'}" aria-label="${chatBusy?'Leállítás':'Küldés'}">${chatBusy?'■':'↑'}</button></div>`;
 function drawChatSheet(clear){
   const p=pet(),old=$('#chatIn'),draft=old&&!clear?old.value:'',s=$('#sheet'),had=!!s.querySelector('.chatsheet');
@@ -3870,7 +3871,7 @@ const aiRedact=t=>String(t??'')
   .replace(/(?<![\p{L}\p{N}])(?:20|30|31|50|70)[ \-/]\d{3}[ \-]?\d{3,4}(?!\p{N})/gu,'[telefonszám]');
 /* a gazda szabad szövege (tünet, saját esemény, készítmény): kitakarás, majd csak betű, szám, szóköz és alapvető írásjel, legfeljebb 120 karakter */
 const noteClean=s=>aiClean(aiRedact(String(s??'').normalize('NFC').replace(AI_INVIS,'')).replace(/[^\p{L}\p{N}\s.,!?:;'"()\-–%/+°\[\]]/gu,''),120);
-const AI_Q=500,AI_HIST=10,AI_GAP=3000,AI_HOUR=20;
+const AI_Q=500,AI_HIST=10,AI_GAP=3000,AI_HOUR=20,AI_DAY=3;
 let aiRate=(()=>{try{const r=JSON.parse(localStorage.getItem('petvia.ai')||'{}');return r&&typeof r==='object'?r:{}}catch(e){return{}}})();
 const aiRateSave=()=>{try{localStorage.setItem('petvia.ai',JSON.stringify(aiRate))}catch(e){}};
 function aiLimit(){const now=Date.now();aiRate.t=(Array.isArray(aiRate.t)?aiRate.t:[]).filter(x=>now-x<36e5&&x<=now);
@@ -3878,9 +3879,13 @@ function aiLimit(){const now=Date.now();aiRate.t=(Array.isArray(aiRate.t)?aiRate
   if(aiRate.t.length&&now-aiRate.t[aiRate.t.length-1]<AI_GAP)return{code:'too_fast'};
   if(aiRate.t.length>=AI_HOUR)return{code:'hourly_limit'};return null}
 const aiMark=()=>{aiRate.t=[...(aiRate.t||[]),Date.now()].slice(-AI_HOUR);aiRateSave()};
+/* napi keret (okt. 17.): a mára maradt kérdések számát a szerver adja (left); itt csak megjelenítjük, a keretet a szerver tartja be */
+const aiLeftSet=n=>{if(Number.isInteger(n)&&n>=0){aiRate.left=n;aiRate.leftDay=iso(today());aiRateSave()}};
+const aiLeft=()=>aiRate.leftDay===iso(today())&&Number.isInteger(aiRate.left)?aiRate.left:null;
+const aiLeftHtml=()=>{if(!cloud.uid)return'';const n=aiLeft();if(n===null)return'';return`<p class="pleft${n?'':' none'}">${n?`Ma még ${n} kérdésed van.`:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`}</p>`};
 const AI_NEUTRAL='Most nem tudok válaszolni, próbáld újra később.';
 const ERR={login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
-  daily_limit:'Mára elfogyott a kérdéskereted. Holnap újra kérdezhetsz.',hourly_limit:'Ebben az órában elérted a kérdéskeretet. Próbáld újra később.',too_fast:'Várj néhány másodpercet a következő kérdéssel.',
+  daily_limit:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`,hourly_limit:'Ebben az órában elérted a kérdéskeretet. Próbáld újra később.',too_fast:'Várj néhány másodpercet a következő kérdéssel.',
   refused:'Ebben nem tudok segíteni. Kisállattartásról kérdezz, például a táplálásáról, az egészségéről vagy a tartásáról.',blocked:'A Tanácsadó néhány percre szünetel. Próbáld újra később.',
   dup:'Ezt a kérdést az előbb már elküldted.',consent:'A Tanácsadó használatához előbb fogadd el a fenti tájékoztatót.',rate_limited:AI_NEUTRAL,setup:AI_NEUTRAL,none:AI_NEUTRAL,output:AI_NEUTRAL,def:AI_NEUTRAL};
 const aiErrText=e=>{const c=e&&ERR[e.code]?e.code:'def';if(['def','setup','none','output','rate_limited'].includes(c))console.warn('[Tanácsadó]',e&&e.code,e&&e.detail||'');
@@ -3941,6 +3946,7 @@ async function aiCall(body,{signal}={}){
   let res;try{res=await fetch(AI_URL,{method:'POST',signal,headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify(body)})}
   catch(e){throw{code:e&&e.name==='AbortError'?'cancelled':'offline'}}
   let j={};try{j=await res.json()}catch(e){if(e&&e.name==='AbortError')throw{code:'cancelled'}}
+  if(j&&typeof j.left==='number')aiLeftSet(j.left);
   if(!res.ok||!j||typeof j.t!=='string'){j=j||{};
     if(j.code==='blocked'){aiRate.until=+new Date(j.until)||Date.now()+3e5;aiRateSave()}
     throw{code:typeof j.code==='string'&&ERR[j.code]?j.code:res.status===401?'session_expired':'def',detail:typeof j.detail==='string'?j.detail:String(res.status),until:j.until}}
