@@ -2970,7 +2970,7 @@ function trail(p){
   <div class="trail-lab">${STAGES.map((s,k)=>`<span class="${k===i?'on':''}">${stHU(p,s)}</span>`).join('')}</div></div>
   <p class="next">${next} A szakaszhatárok tájékoztató jellegűek.</p>`}
 function vEmpty(){return`<div class="empty start"><img class="startpic" src="img/kezdo.webp" alt="Petavira – Okos gazdi, boldog családtag." width="720" height="1279"><h1 class="sr-only">Kövesd végig a kedvenced életét</h1>
-  <p class="sub">Add meg a faját, fajtáját és korát, és a Petavira mindig az aktuális életszakaszához illő teendőket és tippeket mutatja.</p>
+  <p class="sub">Életút, egészség, táplálkozás, gondozás és tanácsadó – több mint 60 állatfajra</p>
   <p><button class="btn" data-act="petNew">Állat felvétele</button></p><p><button class="btn ghost" data-act="tab" data-tab="nopet">Még nincs állatom</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
 function vHome(p){
   const st=stageOf(p),items=buildItems(p),due=dueList(p,items),t=today();
