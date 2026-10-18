@@ -1,7 +1,7 @@
 /* Petavira service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v10';
+const V = 'petlife-v11';
 const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
 const PUSH = 'petvia-push';
@@ -62,7 +62,13 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (req.url === LIB_URL) { e.respondWith(cacheFirst(req, LIB)); return; }
   if (url.origin !== self.location.origin) return;
-  if (req.mode === 'navigate') { e.respondWith(pageFirst(req)); return; }
+  /* okt. 17.: csak az app oldala (a hatókör gyökere, index.html) megy a pageFirst-be. A nyilvános jogi oldalak
+     (adatvedelem.html, fioktorles.html) hálózatról jönnek, és nem írhatják felül a mentett app-oldalt. */
+  if (req.mode === 'navigate') {
+    const root = new URL(self.registration.scope).pathname;
+    if (url.pathname === root || url.pathname === root + 'index.html') e.respondWith(pageFirst(req));
+    return;
+  }
   if (url.pathname.includes('/img/faj/')) { e.respondWith(cacheFirst(req, IMG)); return; }
   e.respondWith(cacheFirst(req));
 });
