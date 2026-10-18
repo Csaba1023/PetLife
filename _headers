@@ -9,3 +9,8 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Strict-Transport-Security: max-age=31536000
   Cross-Origin-Opener-Policy: same-origin
+
+# Google Play (TWA): Digital Asset Links. Okt. 18.: üres lista ([]) – a G2-ben a Play aláíró kulcsának SHA-256 lenyomata kerül bele.
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: no-cache
