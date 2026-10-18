@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "Petavira – kisállat életútkövető",
   "short_name": "Petavira",
   "description": "Kisállat életútkövető és tanácsadó: oltások, teendők, táplálkozás és nevelés az állatod korához igazítva.",
@@ -10,10 +11,75 @@
   "orientation": "portrait",
   "background_color": "#021611",
   "theme_color": "#0F3D33",
-  "categories": ["lifestyle", "health"],
+  "categories": [
+    "lifestyle"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "display_override": [
+    "standalone"
+  ],
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "img/screens/fooldal.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Főoldal: életszakasz, teendők, tippek"
+    },
+    {
+      "src": "img/screens/eletut.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Életút: mérföldkövek és saját események"
+    },
+    {
+      "src": "img/screens/egeszseg.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Egészség: súlynapló grafikonnal"
+    },
+    {
+      "src": "img/screens/taplalkozas.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Táplálkozás: adag, tiltott ételek"
+    },
+    {
+      "src": "img/screens/tanacsado.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Tanácsadó: mesterséges intelligencia"
+    },
+    {
+      "src": "img/screens/allatvalaszto.webp",
+      "sizes": "1080x1920",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Állat felvétele: 68 faj"
+    }
   ]
 }
