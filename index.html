@@ -750,6 +750,32 @@ function tipsFor(p,st){const T=TIPS[gkey(p)]||TIPS[p.species];if(!T)return TIPS_
 const TIPS_OTHER=['Keress olyan állatorvost, aki ért ehhez a fajhoz.','A faj igényeiről (hely, hőmérséklet, étrend) kérdezd a Tanácsadót.'];
 const EVCAT={vet:[ic('vet'),'Állatorvos'],vacc:[ic('vacc'),'Oltás'],care:[ic('care'),'Ápolás'],shed:[ic('shed'),'Vedlés'],memo:[ic('memo'),'Emlék'],other:[ic('other'),'Egyéb']};
 const DISC='A Petavira nem helyettesíti az állatorvosi vizsgálatot.';
+/* tájékoztató jelleg (okt. 18., Csaba kérése): minden tartalmi képernyő alján ugyanaz a mondat + a képernyőhöz illő kiegészítés.
+   Szándékosan nem „saját felelősségre”: a felelősséget az ÁSZF rendezi (jogász). Konkrét számot nem tartalmaz: a fajonkénti
+   tartományok az útmutatókban vannak, forrással. */
+const GAZDA='Tájékoztató jellegű, általános tartalom. Hogy mit és hogyan alkalmazol, arról te döntesz, az állatod egyéni állapotát figyelembe véve.';
+const INFO_X={
+  path:'Oltásról, kezelésről az állatorvossal egyeztess.',
+  health:'Oltásról, kezelésről az állatorvossal egyeztess.',
+  food:'Az adag kiindulópont: figyeld a testsúlyát és a kondícióját, és ehhez igazítsd. A túletetés elhízáshoz és betegséghez vezethet. Étrendváltás előtt kérdezd az állatorvost.',
+  foodHal:'A meg nem evett eleség rontja a vízminőséget.',
+  terra:'A hőmérséklet, a páratartalom és a világítás (UVB) értékei tartományok, nem pontos előírások. Mindig hőmérővel és páratartalom-mérővel ellenőrizd, a fűtést termosztáttal szabályozd. A túl magas vagy túl alacsony érték gyorsan veszélyes lehet.',
+  water:'A vízértékek (hőmérséklet, pH, nitrit, nitrát, keménység) céltartományok, nem pontos előírások. Rendszeresen mérd tesztkészlettel, és fokozatosan változtass, mert a hirtelen változás megviselheti a halakat. Ha a nitrit mérhető, vagy a halak furcsán viselkednek, cserélj vizet, és kérj szakember tanácsát.',
+  train:'Figyeld a jelzéseit (félelem, fájdalom, fáradtság), és ha ilyet látsz, hagyd abba. Beteg, sérült, idős, vemhes vagy agresszív állatnál előbb kérj szakembert.',
+  prob:'Hirtelen viselkedésváltozás mögött betegség is állhat.',
+  prod:'A termék használati útmutatóját kövesd.'};
+/* melyik környezeti kiegészítés illik az állathoz: víz (halak, vízi kétéltűek) vagy terrárium */
+const envX=p=>{const g=grp(p),w=g==='hal'||(hasTerra(p)&&terraKind(p)==='viz');return w?['water']:hasTerra(p)?['terra']:[]};
+function infoNote(where,p,disc){const x=[];
+  if(where==='path'||where==='health')x.push(INFO_X[where]);
+  if(where==='health:terra')x.push(...envX(p).map(k=>INFO_X[k]));
+  if(where==='health:water')x.push(INFO_X.water);
+  if(where==='food'){x.push(INFO_X.food);if(p&&grp(p)==='hal')x.push(INFO_X.foodHal)}
+  if(where==='care:guide'||where==='care:home')x.push(...envX(p).map(k=>INFO_X[k]));
+  if(where==='care:les'||where==='care:play')x.push(INFO_X.train);
+  if(where==='care:prob')x.push(INFO_X.prob);
+  if(where==='prod')x.push(INFO_X.prod);
+  return`<p class="note info">${[GAZDA,...x,...(disc?[DISC]:[])].join(' ')}</p>`}
 const BALL='<span class="ballmark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#F2B33D" stroke="#14201C" stroke-width="2.5"/></svg></span>';
 
 const PARROT_FOOD=['Állatorvosi ajánlás szerint a kis papagájok étrendje kb. 40–50% granulált táp (pellet), 30–40% magkeverék, 10–15% zöldség és 5–10% gyümölcs.','A csak magból álló étrend hiányos: kevés benne a fehérje, a kalcium és az A-vitamin, és elhízáshoz vezet.','Friss, megmosott zöldség naponta (pl. sárgarépa, brokkoli, zöldborsó).','Gyümölcs kis mennyiségben; az alma magházát vedd ki.','Kalciumforrás (pl. szépiacsont) és friss víz mindig legyen.'];
@@ -2963,7 +2989,7 @@ function vHome(p){
    :'<p class="sub">A következő 30 napban nincs esedékes teendő. A teljes tervet az Életút fülön látod.</p>'}
   <h2>Tippek ${st?stHU(p,st).toLowerCase()+' korra':TIPS[p.species]?'a tartáshoz':'a kezdéshez'}</h2>
   <ul class="tips">${tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
-  <button class="btn ghost" style="margin-top:6px" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button>`}
+  <button class="btn ghost" style="margin-top:6px" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button>${infoNote('home',p)}`}
 function vPath(p){
   const b=D(p.birth),L=limitsFor(p),arr=buildItems(p);
   S.events.filter(e=>e.petId===p.id&&e.kind==='own').forEach(e=>arr.push({own:e,date:D(e.date)}));
@@ -2986,7 +3012,7 @@ function vPath(p){
   return`<div class="row" style="justify-content:space-between"><h1>Életút</h1><button class="btn small" data-act="evNew">Új esemény</button></div>
   <p class="sub" style="margin-top:6px">${esc(petName(p))} mérföldkövei és saját eseményei időrendben.${p.est?' A születési dátum becsült, ezért az időpontok hozzávetőlegesek.':''}</p>
   <ul class="tl">${arr.map(row).join('')}</ul>
-  <p class="note">A mérföldkövek tájékoztató jellegűek, a magyarországi előírások és az általános ajánlások alapján. ${DISC}</p>`}
+  <p class="note">A mérföldkövek tájékoztató jellegűek, a magyarországi előírások és az általános ajánlások alapján.</p>${infoNote('path',p,1)}`}
 let hTab='vacc';
 const delBtn=id=>`<button class="btn text" data-act="recDel" data-id="${id}">Törlés</button>`;
 function chart(l,p){ /* l: régi → új */
@@ -3149,12 +3175,12 @@ function vHealth(p){
     b=`<p style="margin-top:14px"><button class="btn" data-act="evNew" data-cat="vet">Látogatás rögzítése</button></p>
     ${l.length?`<ul class="tasks" style="margin-top:14px">${l.map(e=>`<li><div><b>${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}${D(e.date)>t?', tervezett':''}</span>${e.note?`<span class="when">${esc(e.note)}</span>`:''}</div><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></li>`).join('')}</ul>`:'<p class="sub" style="margin-top:14px">Még nincs rögzített látogatás. A jövőbeli időpont emlékeztetőként megjelenik a Főoldalon.</p>'}
     <p style="margin-top:12px"><button class="btn ghost" data-act="tab" data-tab="vets">Állatorvos keresése</button></p>`}
-  return`<h1>Egészség</h1><div class="seg2" role="group" aria-label="Az Egészség részei">${tabs.map(k=>[k,htName(p,k)]).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}<p class="note">${DISC}</p>`}
+  return`<h1>Egészség</h1><div class="seg2" role="group" aria-label="Az Egészség részei">${tabs.map(k=>[k,htName(p,k)]).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}${infoNote(hTab==='terra'||hTab==='water'?'health:'+hTab:'health',p,1)}`}
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
 function vFood(p){
   const F=FOOD[gkey(p)],st=stageOf(p),L=limitsFor(p);
-  if(!F&&VARPICK[p.species])return`${BACK}<h1>Táplálkozás</h1>${varPick(p)}<p class="note">${DISC}</p>`;
-  if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div>${foods(p).length?`<h2>Ajánlott eleségek és kiegészítők</h2>${tierChips()}<div style="height:10px"></div>${prodList(p,foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>`:PEMPTY[kitOf(p)]?`<p class="sub" style="margin-top:14px">${PEMPTY[kitOf(p)]}</p>`:''}<p class="note">${DISC}</p>`;
+  if(!F&&VARPICK[p.species])return`${BACK}<h1>Táplálkozás</h1>${varPick(p)}${infoNote('food',p,1)}`;
+  if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div>${foods(p).length?`<h2>Ajánlott eleségek és kiegészítők</h2>${tierChips()}<div style="height:10px"></div>${prodList(p,foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>`:PEMPTY[kitOf(p)]?`<p class="sub" style="margin-top:14px">${PEMPTY[kitOf(p)]}</p>`:''}${infoNote('food',p,1)}`;
   /* adatvezérelt adatlap: ami az adott fajnál hiányzik (táplista, szakasz szerinti gyakoriság), az a lapról is kimarad */
   const kc=kcalRange(p),k100=+p.kcal100||0,meals=F.meals&&st?F.meals[st]:0,fl=foods(p),freq=(F.freq&&st&&F.freq[st])||F.freqAll||'';let portion;
   if(F.base)portion=`<ul class="tips" style="margin-bottom:-12px">${F.base.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
@@ -3172,7 +3198,7 @@ function vFood(p){
     :`<p>Új tápra fokozatosan, 7–10 nap alatt válts, a régihez keverve.</p><div class="plan">${[['1–3. nap',25],['4–6. nap',50],['7–9. nap',75],['10. naptól',100]].map(([d,n])=>`<div><i style="--h:${n}%"></i><b>${n}%</b><span>${d}</span></div>`).join('')}</div>
     <p class="sub">Az oszlop az új táp arányát mutatja. Felnőtt tápra kb. ${L[1]} hónapos kor körül érdemes áttérni; a szenior tápról az állatorvossal egyeztess.</p>`}`}
   ${F.bad.length?`<h2>Tilos vagy kerülendő ételek</h2><ul class="bad">${F.bad.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:F.extra?'<h2>Jó tudni</h2>':''}${F.extra?`<p class="sub" style="margin-top:10px">${F.extra}</p>`:''}
-  ${F.bad.length?'<p class="note warn">Ha mégis evett valamelyikből, vagy mérgezésre gyanakszol, azonnal fordulj állatorvoshoz.</p>':''}${srcBox(p,'food')}<p class="note">${DISC}</p>`}
+  ${F.bad.length?'<p class="note warn">Ha mégis evett valamelyikből, vagy mérgezésre gyanakszol, azonnal fordulj állatorvoshoz.</p>':''}${srcBox(p,'food')}${infoNote('food',p,1)}`}
 let tier='all',pCat='tap',careSt=null,aiRun=null,aiErr=null,symOpen='';
 const tierChips=()=>`<div class="seg2" role="group" aria-label="Árkategória">${[['all','Mind'],['k','Közép'],['p','Prémium']].map(([v,n])=>`<button data-act="tier" data-v="${v}" aria-pressed="${tier===v}">${n}</button>`).join('')}</div>`;
 /* egy ajánlás: konkrét terméknél az egész sor a termék oldalát nyitja; gyűjtősornál a márkanév és minden ellenőrzött tétel külön link */
@@ -3227,11 +3253,11 @@ function vCare(p){
     b=`<h2>Mozgásigény${cur?` ${stHU(p,cur).toLowerCase()} korban`:''}</h2><p>${(cur&&P.need[cur])||P.need.all}</p>${P.walk?`<h2>Séta</h2><p>${P.walk}</p>`:''}
     ${P.games?`<h2>Játékok</h2><ul class="tips">${P.games.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${J&&J.length?`<p class="sub">Bevált játékmárkák: ${J.map(x=>`${blink(x[0],p)} (${parts(x[1]).map(t=>{const u=plGet(p,x[0],t);return u?`<a class="blink" ${ext(u)}>${esc(t)}</a>`:esc(t)}).join(', ')})`).join('; ')}.</p>`:''}
     <h2>Így foglalkozz vele</h2><p>${P.engage}</p><h2>Személyre szabott terv</h2>${aiBox(p,'play','Napi mozgás- és játékterv kérése')}`}
-  if(ct==='prob')b=`<h2>Gyakori problémák</h2>${C.p.map(([q,a])=>`<details class="acc"><summary>${q}</summary><p>${a}</p><p>${ask(q+': mit tegyek?')}</p></details>`).join('')}<p class="note">${DISC}</p>`;
+  if(ct==='prob')b=`<h2>Gyakori problémák</h2>${C.p.map(([q,a])=>`<details class="acc"><summary>${q}</summary><p>${a}</p><p>${ask(q+': mit tegyek?')}</p></details>`).join('')}`;
   if(ct==='trip')b=`<h2>Utazás és szállítás</h2>${TRIP[k].map(card).join('')}${TRIP_ON(k)?tripMore(p,k):''}
     <p class="sub" style="margin-top:10px">Tájékoztató összefoglaló. A szabályok változhatnak: külföldi út előtt mindig ellenőrizd a hatályos feltételeket a Nébihnél és a célország hatóságánál.</p><p>${ask('Mire figyeljek, ha utazom vele, vagy szállítanom kell?')}</p>`;
   return`${BACK}<h1>Tartás és nevelés</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${cur?', '+stHU(p,cur).toLowerCase():''}</p>
-  <div class="seg2" role="group" aria-label="A Tartás és nevelés részei">${tabs.map(x=>`<button data-act="cTab" data-v="${x}" aria-pressed="${ct===x}">${CT[x]}</button>`).join('')}</div>${b}${srcBox(p,ct==='trip'?'trip':'care')}`}
+  <div class="seg2" role="group" aria-label="A Tartás és nevelés részei">${tabs.map(x=>`<button data-act="cTab" data-v="${x}" aria-pressed="${ct===x}">${CT[x]}</button>`).join('')}</div>${b}${infoNote('care:'+ct,p,ct==='prob')}${srcBox(p,ct==='trip'?'trip':'care')}`}
 function vProd(p){
   const P=prodOf(p),st=stageOf(p),C=pcat(p);
   if(!P)return`${BACK}<h1>Ajánlott termékek</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített terméklista.</p><p class="sub">Felszerelésről a jobb alsó Kérdezz gombbal a Tanácsadót kérdezheted.</p></div>`;
@@ -3239,7 +3265,7 @@ function vProd(p){
   return`${BACK}<h1>Ajánlott termékek</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p>
   <div class="seg2" role="group" aria-label="Kategória">${Object.entries(C).map(([k,n])=>`<button data-act="pCat" data-v="${k}" aria-pressed="${pCat===k}">${n}</button>`).join('')}</div>${tierChips()}<div style="height:10px"></div>
   ${l.length?prodList(p,l):`<p class="sub">${(pCat==='tap'&&!PROD[p.species]&&PEMPTY[kitOf(p)])||(PNONE[p.species]||{})[pCat]||'Ebben a kategóriában nincs beépített ajánlás.'}</p>`}<p class="sub" style="margin-top:10px">${PNOTE}</p>
-  ${l.length?`<h2>Személyre szabott ajánlás</h2>${aiBox(p,'prod_'+pCat,'AI-ajánlás kérése ebben a kategóriában')}`:''}`}
+  ${l.length?`<h2>Személyre szabott ajánlás</h2>${aiBox(p,'prod_'+pCat,'AI-ajánlás kérése ebben a kategóriában')}`:''}${infoNote('prod',p)}`}
 function vVets(){
   const p=pet(),ex=!!p&&['hullo','keteltu','hal','madar','gerinctelen'].includes(grp(p)),c=S.settings.city||'',a=(q,l,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${l}</a>`;
   return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A Petavira nem ajánl és nem tárol állatorvosokat.${ex?' Ennél a fajnál egzotikus állatokhoz értő állatorvost keresünk.':''}</p>
@@ -3725,7 +3751,7 @@ function render(opt={}){
   renderTop();v.className='';
   if(tab==='more')v.innerHTML=vMore();
   else if(tab==='vets')v.innerHTML=vVets();
-  else if(tab==='nopet')v.innerHTML=vNoPet();
+  else if(tab==='nopet')v.innerHTML=vNoPet()+infoNote('nopet');
   else if(tab==='privacy')v.innerHTML=vPrivacy();
   else if(!p)v.innerHTML=vEmpty();
   else if(tab==='hub')v.innerHTML=vHub(p);
