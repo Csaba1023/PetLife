@@ -2969,7 +2969,7 @@ function trail(p){
   return`<div class="trail" role="img" aria-label="Életszakasz: ${stHU(p,st)}"><div class="trail-bar">${STAGES.map((s,k)=>`<span class="seg ${k<i?'past':k===i?'cur':''}"${k===i?` style="--f:${Math.round(f*100)}%"`:''}></span>`).join('')}<span style="position:absolute;left:${((i+f)/4*100).toFixed(1)}%;top:50%">${BALL}</span></div>
   <div class="trail-lab">${STAGES.map((s,k)=>`<span class="${k===i?'on':''}">${stHU(p,s)}</span>`).join('')}</div></div>
   <p class="next">${next} A szakaszhatárok tájékoztató jellegűek.</p>`}
-function vEmpty(){return`<div class="empty start"><img class="startpic" src="img/kezdo.webp" alt="Petavira – Kisállatok. Életre szólóan." width="720" height="1279"><h1 class="sr-only">Kövesd végig a kedvenced életét</h1>
+function vEmpty(){return`<div class="empty start"><img class="startpic" src="img/kezdo.webp" alt="Petavira – Okos gazdi, boldog családtag." width="720" height="1279"><h1 class="sr-only">Kövesd végig a kedvenced életét</h1>
   <p class="sub">Add meg a faját, fajtáját és korát, és a Petavira mindig az aktuális életszakaszához illő teendőket és tippeket mutatja.</p>
   <p><button class="btn" data-act="petNew">Állat felvétele</button></p><p><button class="btn ghost" data-act="tab" data-tab="nopet">Még nincs állatom</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
 function vHome(p){
