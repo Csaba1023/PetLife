@@ -3542,7 +3542,7 @@ function accountHtml(){
    A szolgáltatókról szóló állítások forrásai a tájékoztató végén; a linkek letöltéssel ellenőrizve (2026. 10. 12.). */
 const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 18.'};
 const xa=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
-function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 16 éves, vagy a szülőm hozzájárult.</span></label>`}
+function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 16 éves.</span></label>`}
 function privHtml(){return`<div class="priv">
 <p class="sub">Hatályos: ${PRIV.date}</p>
 <h3>Ki kezeli az adataidat?</h3>
@@ -3576,7 +3576,7 @@ function privHtml(){return`<div class="priv">
 <li><b>Google</b> (Gmail): a ${PRIV.mail} címre írt levelek fogadása.</li>
 <li><b>Cloudflare</b> (tárhely; a ${PRIV.mail} címre írt levelek továbbítása; robotszűrés a belépésnél, a regisztrációnál, a jelszó-visszaállításnál és a fióktörlésnél: Turnstile): ${xa('https://www.cloudflare.com/privacypolicy/','Adatvédelem')}</li></ul>
 <h3>Korhatár</h3>
-<p>A Tanácsadót és a fiókot 16 éves kortól használhatod. Ha még nem vagy 16, a szülőd hozzájárulása kell.</p>
+<p>A fiókot és a Tanácsadót 16 éves kortól használhatod. Fiók nélkül az app mindenkinek elérhető: ilyenkor minden adat csak az eszközödön marad, hozzánk nem kerül.</p>
 <h3>A jogaid</h3>
 <ul><li>Tájékoztatást kérhetsz arról, milyen adatot kezelünk rólad, és kérheted a helyesbítését.</li>
 <li>Letöltheted az adataidat: Beállítások → Adataim letöltése.</li>
@@ -3998,8 +3998,10 @@ async function aiCall(body,{signal}={}){
   return{text:j.t,truncated:!!j.cut,sig:typeof j.sig==='string'?j.sig:'',qsig:typeof j.qsig==='string'?j.qsig:''}}
 /* hozzájárulás: az első AI-kérés előtt egyszer (a chatben a beszélgetés tetején, máshol felugró lapon) */
 let aiPending=null;
-/* hozzájárulás a Tanácsadóhoz (2. változat, 2026. október: korhatár és tájékoztató; a korábbi elfogadás nem elég) */
-const aiAgreed=()=>(S.settings.aiConsentV|0)>=2&&!!S.settings.aiConsent;
+/* hozzájárulás a Tanácsadóhoz (3. változat, 2026. okt. 18.: csak 16 év felett, szülői hozzájárulás nélkül – GDPR 8. cikk;
+   a korábbi, „vagy a szülőm hozzájárult” szövegű elfogadás nem elég, mindenkinek egyszer újra el kell fogadnia) */
+const AI_CONSENT_V=3;
+const aiAgreed=()=>(S.settings.aiConsentV|0)>=AI_CONSENT_V&&!!S.settings.aiConsent;
 const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot, a saját vagy más ember egészségügyi adatát). Az e-mail-címet, a telefonszámot, a linket és a bankszámlaszámot az app küldés előtt kitakarja. A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${agreeHtml('','privFromAi','aiAge')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be a négyzetet a folytatáshoz.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
 const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom</button></div>`;
 function aiConsent(fn){if(aiAgreed()){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom</button><button class="btn ghost" data-act="close">Mégse</button>`)}
@@ -4094,7 +4096,7 @@ const ACT={
   symAi(el){const e=S.events.find(x=>x.id===el.dataset.id);e&&symAsk(e)},
   aiGo(el){const p=pet(),key=el.dataset.key;aiConsent(()=>runAi(key,aiPayload(p,key.startsWith('prod_')?'prod':key,aiTaskData(p,key)),(t,sig)=>{(S.ai[p.id]=S.ai[p.id]||{})[key]={t,ts:Date.now(),...(sig?{sig}:{})}}))},
   aiOk(el){const box=el&&el.parentElement.querySelector('.aiAge');if(!box||!box.checked){const e=el&&el.parentElement.querySelector('.aiAgeErr');if(e)e.hidden=false;return}
-    S.settings.aiConsent=iso(today());S.settings.aiConsentV=2;save();const fn=aiPending;aiPending=null;if(fn){closeSheet();fn()}else redrawChat()},
+    S.settings.aiConsent=iso(today());S.settings.aiConsentV=AI_CONSENT_V;save();const fn=aiPending;aiPending=null;if(fn){closeSheet();fn()}else redrawChat()},
   aiStop(){aiRun&&aiRun.ctl.abort()},
   tier(el){tier=el.dataset.v;render()},pCat(el){pCat=el.dataset.v;render()},careSt(el){careSt=el.dataset.v;render()},
   cTab(el){cTab=el.dataset.v;render()},
@@ -4139,7 +4141,7 @@ Object.assign(ACT,{
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail))return showErr('#auErr','Írd be az e-mail-címed.');
     if(m!=='reset'&&!pw)return showErr('#auErr','Írd be a jelszavad.');
     if(m==='up'&&!pwOk(pw))return showErr('#auErr',PW_MSG);
-    if(m==='up'&&!($('#auAgree')&&$('#auAgree').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elolvastad a tájékoztatót, és elmúltál 16 éves (vagy a szülőd hozzájárult).');
+    if(m==='up'&&!($('#auAgree')&&$('#auAgree').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elolvastad a tájékoztatót, és elmúltál 16 éves. Fiók nélkül is használhatod az appot.');
     auBusy=true;$('#auErr').hidden=true;const b=$('#auBtn');b.disabled=true;b.textContent='Egy pillanat…';
     const ct=await capToken(),cap=ct?{captchaToken:ct}:{};
     let r;try{r=m==='in'?await cloud.sb.auth.signInWithPassword({email:mail,password:pw,...(ct?{options:cap}:{})})
