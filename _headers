@@ -1,8 +1,9 @@
 # Petavira – biztonsági fejlécek (Cloudflare Workers statikus fájlok; a fájl maga nem töltődik le)
-# CSP: csak a saját cím (a betűtípusok is), a Supabase és a Turnstile robotszűrő (challenges.cloudflare.com) érhető el. Az 'unsafe-inline' azért kell,
-# mert az app kódja egyetlen inline scriptben van (később külön fájlba tehető, és akkor kivehető).
+# CSP: csak a saját cím (a betűtípusok is), a Supabase és a Turnstile robotszűrő (challenges.cloudflare.com) érhető el.
+# Okt. 21.: az app kódja külön fájlban van (app.js), ezért a script-src-ben nincs 'unsafe-inline' (inline script nem fut).
+# A style-src 'unsafe-inline' marad: sok inline style="" van, részben dinamikusan; a CSS-injekció kockázata kisebb.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://vxinkrltltlfcgjhoqqj.supabase.co; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://vxinkrltltlfcgjhoqqj.supabase.co; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
@@ -13,4 +14,8 @@
 # Google Play (TWA): Digital Asset Links. Okt. 18.: üres lista ([]) – a G2-ben a Play aláíró kulcsának SHA-256 lenyomata kerül bele.
 /.well-known/assetlinks.json
   Content-Type: application/json
+  Cache-Control: no-cache
+
+# Az app kódja: a böngésző mindig ellenőrizze a frissességét (az index.html-lel együtt frissüljön).
+/app.js
   Cache-Control: no-cache
