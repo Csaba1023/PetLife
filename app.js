@@ -3176,7 +3176,7 @@ function accountHtml(){
   return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button><button class="btn text" style="margin-top:6px;color:var(--alert)" data-act="delAsk">Fiók törlése</button>`}
 /* ---------- adatvédelem: tájékoztató, adatletöltés, fióktörlés (GDPR-kör, 2026. október) ----------
    A szolgáltatókról szóló állítások forrásai a tájékoztató végén; a linkek letöltéssel ellenőrizve (2026. 10. 12.). */
-const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 18.'};
+const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 21.'};
 const xa=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
 function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 16 éves.</span></label>`}
 function privHtml(){return`<div class="priv">
@@ -3190,6 +3190,7 @@ function privHtml(){return`<div class="priv">
 <li><b>Miért:</b> hogy belépés után minden eszközödön megjelenjenek, és legyen biztonsági mentésed. Jogalap: a szolgáltatás nyújtása (szerződés teljesítése, GDPR 6. cikk (1) b).</li>
 <li><b>Meddig:</b> amíg a fiókodat nem törlöd. A biztonsági mentésekben a törlés után legfeljebb 14 napig megmaradnak, titkosítva.</li>
 <li><b>Biztonsági mentés:</b> naponta titkosított mentés készül a fiókokhoz mentett adatokról és a fiókok listájáról (e-mail-cím, a regisztráció, a megerősítés és az utolsó belépés ideje; jelszó nélkül). A mentést titkosítva a GitHub tárhelyén őrizzük 14 napig, utána magától törlődik. Visszafejteni csak a fejlesztő tudja, a GitHub nem. Célja, hogy hiba vagy támadás esetén ne vesszenek el az adataid. Jogalap: jogos érdek (adatbiztonság, 6. cikk (1) f).</li>
+<li><b>Visszaélés elleni védelem a regisztrációnál:</b> eldobható (ideiglenes) e-mail-címmel nem lehet regisztrálni, és egy postafiókhoz egy fiók tartozhat. Ehhez az e-mail-címed normalizált (kisbetűs, a „+” utáni rész és Gmailnél a pontok nélküli) változatának lenyomata (SHA-256) és a fiók első létrehozásának ideje; magát a címet ebben nem tároljuk. Ha törlöd a fiókodat, a lenyomat 12 hónapig megmarad, hogy újraregisztrációkor az ingyenes keret ne induljon újra. Jogalap: jogos érdek (a szolgáltatás és a költségek védelme).</li>
 <li><b>Levelek:</b> csak a regisztráció megerősítéséhez, az új jelszóhoz és az e-mail-cím cseréjéhez küldünk levelet. Hírlevelet nem küldünk. A levélküldő (Resend) a levelet és a küldési naplót 30 napig őrzi, utána törli.</li></ul>
 <h3>Tanácsadó (mesterséges intelligencia)</h3>
 <ul><li><b>Mit:</b> a kérdésed, az előző néhány üzenet és az állat adatai (név, faj, fajta, kor, ivar, súly, rögzített mérföldkövek, kezelések, naplóbejegyzések rövidített szövege), valamint az app útmutatójának részlete. Az e-mail-címet, a telefonszámot, a linket és a bank- vagy kártyaszámot az app és a szerver is kitakarja, mielőtt továbbküldené. Ne írj be nevet, címet vagy egészségügyi adatot (a sajátodat vagy más emberét).</li>
@@ -3378,6 +3379,8 @@ function auErr(e){const c=String((e&&e.code)||''),m=String((e&&e.message)||'').t
   if(c.includes('rate_limit')||st===429||m.includes('rate limit')||m.includes('security purposes'))return'Túl sok próbálkozás. Várj néhány percet, majd próbáld újra.';
   if(c==='email_address_invalid'||c==='validation_failed'||m.includes('invalid email')||m.includes('invalid format'))return'Ez az e-mail-cím nem tűnik érvényesnek.';
   if(c==='signup_disabled'||c==='email_provider_disabled')return'A regisztráció jelenleg nincs engedélyezve.';
+  /* okt. 21.: a regisztrációs védelem (eldobható cím, ugyanaz a postafiók) adatbázis-hibaként jön vissza; részletet a Supabase nem ad */
+  if(m.includes('database error'))return'Ezzel az e-mail-címmel nem lehet regisztrálni. Eldobható (ideiglenes) címet nem fogadunk el, és egy postafiókhoz egy fiók tartozhat. Ha már van fiókod, lépj be, vagy kérj új jelszót.';
   if(navigator.onLine===false||m.includes('fetch')||m.includes('network'))return'Nincs internetkapcsolat. Próbáld újra később.';
   return`Most nem sikerült. Próbáld újra kicsit később.${c?` (hibakód: ${c.slice(0,40)})`:''}`}
 function renderTop(){const p=pet(),b=$('#petPill');b.hidden=!p;if(p)b.innerHTML=`${ava(p)}<b>${esc(petName(p))}</b><span aria-hidden="true">▾</span>`;
