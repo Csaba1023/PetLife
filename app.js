@@ -3307,6 +3307,7 @@ async function pushApi(body,auth){
   if(auth){let tok='';try{const r=await cloud.sb.auth.getSession();tok=(r.data&&r.data.session&&r.data.session.access_token)||''}catch(e){}if(!tok)throw{code:'login'};h.Authorization='Bearer '+tok}
   const r=await fetch(PUSH_URL,{method:'POST',headers:h,body:JSON.stringify(body)});let j={};try{j=await r.json()}catch(e){}
   if(!r.ok)throw{code:j.code||String(r.status)};return j}
+const pushAuth=sub=>{try{const k=sub.getKey&&sub.getKey('auth');if(!k)return undefined;return btoa(String.fromCharCode(...new Uint8Array(k))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}catch(e){return undefined}};
 const u8=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-s.length%4)%4)),c=>c.charCodeAt(0));
 /* a terv mentése az eszközre és a napok feltöltése (ha változott, vagy naponta egyszer) */
 async function pushSync(force){
@@ -3314,10 +3315,11 @@ async function pushSync(force){
   const plan=pushPlan(),days=Object.keys(plan);
   try{const c=await caches.open(PUSH_CACHE);await c.put(new URL(PUSH_PLAN,location.href).href,new Response(JSON.stringify({days:plan,at:Date.now()}),{headers:{'Content-Type':'application/json'}}))}catch(e){}
   const sig=days.join(','),stamp=iso(today());
-  if(!force&&L.sig===sig&&L.day===stamp&&L.uid===cloud.uid)return;
+  if(!force&&L.sig===sig&&L.day===stamp&&L.uid===cloud.uid&&L.ah)return;
   try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();
     if(!sub){pushLocalSet(null);return}
-    await pushApi({action:'on',endpoint:sub.endpoint,days},true);pushLocalSet({...L,endpoint:sub.endpoint,sig,day:stamp,uid:cloud.uid})}catch(e){}}
+    /* okt. 21.: az eszköz push-kulcsa (auth) is megy; a szerver csak a lenyomatát tárolja, így más fiók nem viheti el a feliratkozást */
+    await pushApi({action:'on',endpoint:sub.endpoint,auth:pushAuth(sub),days},true);pushLocalSet({...L,endpoint:sub.endpoint,sig,day:stamp,uid:cloud.uid,ah:1})}catch(e){}}
 let pushTimer=0;const pushLater=()=>{clearTimeout(pushTimer);pushTimer=setTimeout(()=>pushSync(),4000)};
 async function pushOn(){
   if(pushBusy)return;if(!cloud.uid){toast('Az értesítésekhez lépj be.');return}
