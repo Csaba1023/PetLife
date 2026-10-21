@@ -1,7 +1,7 @@
 /* Petavira service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v15';
+const V = 'petlife-v16';
 const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
 const PUSH = 'petvia-push';
@@ -11,7 +11,9 @@ const IMG = 'petlife-img-1';
    a régi (jsDelivr) gyorsítótár az aktiváláskor törlődik, mert a LIB neve megváltozott. */
 const LIB_URL = new URL('./vendor/supabase-js-2.112.4.js', self.registration.scope).href;
 const PAGE = './index.html';
-const SHELL = ['./', PAGE, './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './img/paw-144.webp', './fonts/fraunces-var.woff', './fonts/plusjakartasans-var.woff', './img/kezdo.webp', './img/tile-emlos.webp', './img/tile-madar.webp', './img/tile-gyik.webp', './img/tile-kigyo.webp', './img/tile-teknos.webp', './img/tile-keteltu.webp', './img/tile-hal.webp', './img/tile-gerinctelen.webp', './img/tile-egyeb.webp'];
+/* okt. 21.: az app kódja külön fájlban; az oldallal együtt hálózat-első, hogy a kettő ne keveredjen */
+const APP = './app.js';
+const SHELL = ['./', PAGE, APP, './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './img/paw-144.webp', './fonts/fraunces-var.woff', './fonts/plusjakartasans-var.woff', './img/kezdo.webp', './img/tile-emlos.webp', './img/tile-madar.webp', './img/tile-gyik.webp', './img/tile-kigyo.webp', './img/tile-teknos.webp', './img/tile-keteltu.webp', './img/tile-hal.webp', './img/tile-gerinctelen.webp', './img/tile-egyeb.webp'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -30,16 +32,16 @@ self.addEventListener('activate', e => {
   );
 });
 
-async function pageFirst(req) {
+async function pageFirst(req, key = PAGE) {
   const cache = await caches.open(V);
-  const cached = await cache.match(PAGE);
+  const cached = await cache.match(key);
   try {
     const wait = cached ? 4000 : 30000;
     const res = await Promise.race([
       fetch(req),
       new Promise((_, no) => setTimeout(() => no(new Error('timeout')), wait))
     ]);
-    if (res && res.ok) { cache.put(PAGE, res.clone()); return res; }
+    if (res && res.ok) { cache.put(key, res.clone()); return res; }
     return cached || res;
   } catch (err) {
     if (cached) return cached;
@@ -69,6 +71,7 @@ self.addEventListener('fetch', e => {
     if (url.pathname === root || url.pathname === root + 'index.html') e.respondWith(pageFirst(req));
     return;
   }
+  if (url.pathname === new URL(APP, self.registration.scope).pathname) { e.respondWith(pageFirst(req, APP)); return; }
   if (url.pathname.includes('/img/faj/')) { e.respondWith(cacheFirst(req, IMG)); return; }
   e.respondWith(cacheFirst(req));
 });
