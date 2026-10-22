@@ -3647,7 +3647,7 @@ function aiPayload(p,task,x={}){
 /* az app forrásokból összeállított útmutatójának lényege (etetés, célértékek, fajlap): a Tanácsadó erre támaszkodik.
    A sorok a klienstől jönnek, ezért a szerveren ezek is átmennek az ellenőrző hívásen. */
 function aiGuide(p){
-  const out=[],st=stageOf(p),txt=s=>String(s??'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+  const out=[],st=stageOf(p),txt=s=>{let t=String(s??''),o;do{o=t;t=t.replace(/<[^>]*>/g,'')}while(t!==o);return t.replace(/\s+/g,' ').trim()};   /* CodeQL #1: ismételt tagtörlés, amíg változik (csak sima szöveg megy a szerverre, HTML-ként sehol nem jelenik meg) */
   const add=(pre,s)=>{s=txt(s);if(!s)return;let t=pre+s;while(t.length>400){let i=t.lastIndexOf('. ',398);if(i<100)i=398;out.push(t.slice(0,i+1).trim());t=t.slice(i+1).trim()}out.push(t)};
   const F=FOOD[gkey(p)];
   if(F){(F.base||[]).forEach(x=>add('Étrend: ',x));
