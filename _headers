@@ -11,7 +11,7 @@
   Strict-Transport-Security: max-age=31536000
   Cross-Origin-Opener-Policy: same-origin
 
-# Google Play (TWA): Digital Asset Links. Okt. 18.: üres lista ([]) – a G2-ben a Play aláíró kulcsának SHA-256 lenyomata kerül bele.
+# Google Play (TWA): Digital Asset Links. Okt. 24.: a Play alkalmazás-aláíró kulcs (1.) és a PWABuilder feltöltőkulcs (2.) SHA-256 lenyomata.
 /.well-known/assetlinks.json
   Content-Type: application/json
   Cache-Control: no-cache
