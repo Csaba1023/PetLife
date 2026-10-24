@@ -2085,10 +2085,10 @@ const fishCard=p=>{const f=fishOf(p);
   return`<div class="card" id="fishCard" style="margin-top:14px"><b>Fajlap: ${f.n}</b>${f.gen?`<p style="margin-bottom:0">${f.gen}</p>`:`<ul class="list" style="margin-top:8px">${row('Kifejlett méret',f.cm)}${row(f.pond?'Kerti tó':'Akvárium',f.tank)}${row('Hőmérséklet',rg('temp','°C'))}${row('Sűrűség',rg('sg'))}${row('pH',rg('ph'))}${row('Keménység',rg('gh','°dH'))}${row('Viselkedés és társak',f.soc)}${row('Eleség',f.feed)}${row('Jó tudni',f.note)}</ul>`}</div>`};
 const fishFeed=p=>{const f=fishOf(p);return f&&f.feed?`<h2>${esc(p.breed)}</h2><p id="fishFeed">${f.feed}</p>`:''};
 function wcHtml(p){const l=recs(p,'wchg'),last=l[0],next=wcNext(p),late=!!(next&&next<today());
-  return`<h2>Részleges vízcsere</h2><div class="card" id="wcCard">${last?`<p style="margin:0"><b>Utolsó vízcsere:</b> ${fmtDate(D(last.date))}${last.pct?`, ${last.pct}%`:''}</p><p class="${late?'err':'sub'}" id="wcNext">Következő: ${fmtDate(next)}${late?', már elmúlt':''}</p>`:'<p class="sub" style="margin:0">Még nincs rögzített vízcsere. Rögzítsd az utolsót, és az app emlékeztet a következőre.</p>'}
+  return`<h2>Részleges vízcsere</h2><div class="card" id="wcCard">${last?`<p style="margin:0"><b>Utolsó vízcsere:</b> ${fmtDate(D(last.date))}${last.pct?`, ${esc(last.pct)}%`:''}</p><p class="${late?'err':'sub'}" id="wcNext">Következő: ${fmtDate(next)}${late?', már elmúlt':''}</p>`:'<p class="sub" style="margin:0">Még nincs rögzített vízcsere. Rögzítsd az utolsót, és az app emlékeztet a következőre.</p>'}
   <div class="f"><span>Emlékeztető a vízcsere után</span>${radio('wcW',[['1','1 hét'],['2','2 hét'],['4','4 hét']],String(wcWeeks(p)))}</div>
   <button class="btn small" data-act="wcNew">Vízcsere rögzítése</button>
-  ${l.length?`<ul class="list" style="margin-top:8px">${l.slice(0,6).map(e=>`<li><div style="flex:1;min-width:0">${fmtDate(D(e.date))}${e.pct?`<span class="when">${e.pct}%</span>`:''}</div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}</div>`}
+  ${l.length?`<ul class="list" style="margin-top:8px">${l.slice(0,6).map(e=>`<li><div style="flex:1;min-width:0">${fmtDate(D(e.date))}${e.pct?`<span class="when">${esc(e.pct)}%</span>`:''}</div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}</div>`}
 function waterHtml(p){
   const G=wGoals(p),F=wFields(p),l=recs(p,'water'),last=l[0],asc=[...l].reverse(),unit=f=>WF[f][1]?' '+WF[f][1]:'',sea=p.species==='tengeri',f2=v=>aqNum('nh3',v);
   const cell=(e,f)=>{const v=e[f],r=G[f];return`<div><span class="when">${WF[f][0]}</span><div class="num">${v==null?'–':aqNum(f,v)+unit(f)}</div>${r?`<span class="when">cél: ${wGoal(f,r)}${unit(f)}</span>`:''}${TSTAT[wStat(v,r)]||''}</div>`};
@@ -2443,7 +2443,33 @@ let S=blank(),tab='home';
 const AGE_LS='petavira.age18';let ageMem=false;
 const adultOk=()=>{if(ageMem)return true;try{return!!localStorage.getItem(AGE_LS)}catch(e){return false}};
 const AGE_ACTS=new Set(['age18','privAge','privBack','tab']);
-try{const r=localStorage.getItem(LS);if(r)S=Object.assign(blank(),JSON.parse(r))}catch(e){}
+/* BIZTONSÁG (B1–B2, okt. 24.): a betöltött állapot (helyi tárhely vagy felhő) alakellenőrzése, mielőtt bármi kirajzolódna.
+   A bevitelnél már szűrünk, de a tárolt adat kívülről (pl. ellopott munkamenettel a felhőbe írva) is jöhet:
+   azonosító csak betű/szám/_/- lehet (HTML-attribútumba kerül), a mért értékek számok, ismeretlen kategória → „egyéb”,
+   hibás dátumú vagy gazdátlan bejegyzés kimarad. Nem töröl érvényes adatot; a hibás azonosítót újra cseréli. */
+const ID_OK=/^[A-Za-z0-9_-]{1,64}$/,DATE_OK=/^\d{4}-\d{2}-\d{2}$/,NUM_OK=/^-?\d{1,6}([.,]\d{1,4})?$/;
+const EV_NUM=['kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW'];
+const numFix=(o,ks)=>ks.forEach(k=>{const v=o[k];if(v==null||v==='')return;if(typeof v==='number'?!Number.isFinite(v):!(typeof v==='string'&&NUM_OK.test(v)))delete o[k]});
+const isObj=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
+function fixState(st){
+  if(!isObj(st))return blank();
+  const pets=Array.isArray(st.pets)?st.pets.filter(isObj):[],map={};
+  for(const p of pets){if(!ID_OK.test(String(p.id))){const n=newId();map[String(p.id)]=n;p.id=n}numFix(p,PET_NUM);
+    for(const k of ['name','speciesName','breed','species','size','sex','neutered','photo','birth','createdAt'])if(p[k]!=null&&typeof p[k]!=='string'&&typeof p[k]!=='number')delete p[k]}
+  const ids=new Set(pets.map(p=>p.id)),re=k=>map[k]||k;
+  const events=(Array.isArray(st.events)?st.events:[]).filter(isObj).filter(e=>{e.petId=re(String(e.petId));
+    if(!ids.has(e.petId)||!DATE_OK.test(String(e.date))||typeof e.kind!=='string')return false;
+    if(!ID_OK.test(String(e.id)))e.id=newId();numFix(e,EV_NUM);
+    if(e.kind==='own'&&!EVCAT[e.cat])e.cat='other';return true});
+  const byPet=o=>{const r={};if(isObj(o))for(const[k,v]of Object.entries(o)){const k2=re(k);if(ids.has(k2))r[k2]=v}return r};
+  const chat=byPet(st.chat);for(const k in chat)if(!Array.isArray(chat[k]))delete chat[k];else chat[k]=chat[k].filter(m=>isObj(m)&&typeof m.t==='string');
+  const ai=byPet(st.ai);for(const k in ai)if(!isObj(ai[k]))delete ai[k];
+  const settings=Object.assign(blank().settings,isObj(st.settings)?st.settings:{});
+  settings.activePetId=ids.has(re(String(settings.activePetId)))?re(String(settings.activePetId)):(pets[0]?pets[0].id:null);
+  if(typeof settings.city!=='string')settings.city='';
+  return Object.assign(blank(),st,{pets,events,chat,ai,settings});
+}
+try{const r=localStorage.getItem(LS);if(r)S=fixState(JSON.parse(r))}catch(e){}
 const HOST_THEME=document.documentElement.getAttribute('data-theme');
 /* ---------- fiók és szinkron (Supabase) ----------
    SB_URL: a projekt címe. SB_KEY: a NYILVÁNOS (publishable / anon) kulcs. Titkos (secret / service_role) kulcs ide soha nem kerülhet. */
@@ -2501,7 +2527,7 @@ async function pull(){
       if(cloud.uid!==uid)return false;
       pets.forEach((p,i)=>{if(ph[i]&&ph[i].exists){const v=ph[i].data().data;if(okPhoto(v))p.photo=v}delete p.hasPhoto});
       const mine=S,keep=anon||mine.pend;
-      S={pets,events:R.events||[],chat:(cs.exists&&cs.data().byPet)||{},ai:(cs.exists&&cs.data().ai)||{},settings:Object.assign(blank().settings,R.settings),updatedAt:R.updatedAt||Date.now(),owner:uid,pend:false};
+      S={pets,events:R.events||[],chat:(cs.exists&&cs.data().byPet)||{},ai:(cs.exists&&cs.data().ai)||{},settings:Object.assign(blank().settings,R.settings),updatedAt:R.updatedAt||Date.now(),owner:uid,pend:false};S=fixState(S);/* B1–B2 */
       cloud.dirty.clear();
       const have=new Set(S.pets.map(p=>p.id)),extra=keep?mine.pets.filter(p=>!have.has(p.id)):[];
       if(extra.length){S.pets.push(...extra);S.events.push(...mine.events.filter(e=>!have.has(e.petId)));
@@ -2631,7 +2657,7 @@ function vHome(p){
   <h2>Teendők és emlékeztetők</h2>
   ${due.length||soon.length||par.length||wc?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}${wc?`<li class="${wc<t?'late':''}" id="wcDue"><div><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(wc)}${wc<t?', már elmúlt':''}</span></div><button class="btn small" data-act="wcNew">Rögzítés</button></li>`:''}
    ${par.map(x=>`<li class="${x.date<t?'late':''}"><div><b>${PAR_SHORT[x.t]} esedékes</b><span class="when">${fmtDate(x.date)}${x.date<t?', már elmúlt':''}</span></div><button class="btn small" data-act="parNew" data-t="${x.t}">Rögzítés</button></li>`).join('')}
-   ${soon.map(e=>`<li><div><b>${EVCAT[e.cat||'other'][0]} ${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}</span></div><button class="btn ghost small" data-act="evEdit" data-id="${e.id}">Megnyitás</button></li>`).join('')}</ul>`
+   ${soon.map(e=>`<li><div><b>${(EVCAT[e.cat]||EVCAT.other)[0]} ${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}</span></div><button class="btn ghost small" data-act="evEdit" data-id="${e.id}">Megnyitás</button></li>`).join('')}</ul>`
    :'<p class="sub">A következő 30 napban nincs esedékes teendő. A teljes tervet az Életút fülön látod.</p>'}
   <h2>Tippek ${st?stHU(p,st).toLowerCase()+' korra':TIPS[p.species]?'a tartáshoz':'a kezdéshez'}</h2>
   <ul class="tips">${tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
@@ -2649,8 +2675,8 @@ function vPath(p){
     if(x.birth)return`<li class="stage">${hatch(p)?(p.est?'Becsült kelés':'Kelés'):p.est?'Becsült születés':'Születés'}<small>${fmtDate(x.date)}</small></li>`;
     if(x.stage)return`<li class="stage">${STAGE_START[x.stage]}<small>${x.date>today()?'várhatóan ':''}${fmtDate(x.date)}</small></li>`;
     if(x.now)return`<li class="today" id="tlToday">${BALL}Ma</li>`;
-    if(x.own){const e=x.own,c=EVCAT[e.cat||'other'];return`<li class="it own"><div class="card"><b>${c[0]} ${esc(e.title)}</b><span class="when">${fmtDate(x.date)}, ${c[1].toLowerCase()}</span>${e.note?`<p>${esc(e.note)}</p>`:''}<div class="acts"><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></div></div></li>`}
-    if(x.wc)return`<li class="it done wc"><span>Részleges vízcsere${x.wc.pct?`, ${x.wc.pct}%`:''}</span><small>${fmtDate(x.date)}</small></li>`;
+    if(x.own){const e=x.own,c=EVCAT[e.cat]||EVCAT.other;return`<li class="it own"><div class="card"><b>${c[0]} ${esc(e.title)}</b><span class="when">${fmtDate(x.date)}, ${c[1].toLowerCase()}</span>${e.note?`<p>${esc(e.note)}</p>`:''}<div class="acts"><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></div></div></li>`}
+    if(x.wc)return`<li class="it done wc"><span>Részleges vízcsere${x.wc.pct?`, ${esc(x.wc.pct)}%`:''}</span><small>${fmtDate(x.date)}</small></li>`;
     if(x.wcn){const late=x.date<today(),soon=x.date-today()<=DAY;return`<li class="it ${late?'late':soon?'now':'later'}" id="tlWc"><div class="card"><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(x.date)}${late?', már elmúlt':''}</span><div class="acts"><button class="btn small${soon?'':' ghost'}" data-act="wcNew">Rögzítés</button></div></div></li>`}
     const s=statusOf(x),m=x.m;
     if(x.done)return`<li class="it done"><div class="card"><b>${esc(m.t)}</b><span class="when">${fmtDate(x.date)}</span>${x.done.note?`<p>${esc(x.done.note)}</p>`:''}${tags(m)}<div class="acts"><span class="ok">✓ Megvolt</span><button class="btn text" data-act="untick" data-id="${x.done.id}">Visszavonás</button></div></div></li>`;
