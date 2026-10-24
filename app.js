@@ -2437,6 +2437,12 @@ const TOPIC_Q={path:['Milyen oltások és vizsgálatok várhatók a következő 
 const LS='petlife.v1';
 const blank=()=>({pets:[],events:[],chat:{},ai:{},settings:{theme:'auto',activePetId:null,city:''},updatedAt:0,owner:null,pend:false});
 let S=blank(),tab='home';
+/* BIZTONSÁG/KORHATÁR (okt. 24., B változat): az egész app 18 éves kortól használható.
+   Egyszeri nyilatkozat az eszközön (külön kulcs, a felhőbe nem kerül, az „adatok törlése” nem törli);
+   ha a tárhely nem írható (privát ablak), a nyilatkozat csak erre a munkamenetre szól. */
+const AGE_LS='petavira.age18';let ageMem=false;
+const adultOk=()=>{if(ageMem)return true;try{return!!localStorage.getItem(AGE_LS)}catch(e){return false}};
+const AGE_ACTS=new Set(['age18','privAge','privBack','tab']);
 try{const r=localStorage.getItem(LS);if(r)S=Object.assign(blank(),JSON.parse(r))}catch(e){}
 const HOST_THEME=document.documentElement.getAttribute('data-theme');
 /* ---------- fiók és szinkron (Supabase) ----------
@@ -2605,6 +2611,10 @@ function trail(p){
   return`<div class="trail" role="img" aria-label="Életszakasz: ${stHU(p,st)}"><div class="trail-bar">${STAGES.map((s,k)=>`<span class="seg ${k<i?'past':k===i?'cur':''}"${k===i?` style="--f:${Math.round(f*100)}%"`:''}></span>`).join('')}<span style="position:absolute;left:${((i+f)/4*100).toFixed(1)}%;top:50%">${BALL}</span></div>
   <div class="trail-lab">${STAGES.map((s,k)=>`<span class="${k===i?'on':''}">${stHU(p,s)}</span>`).join('')}</div></div>
   <p class="next">${next} A szakaszhatárok tájékoztató jellegűek.</p>`}
+function vAge(){return`<div class="empty start"><img class="startpic" src="img/kezdo.webp" alt="Petavira – Okos gazdi, boldog családtag." width="720" height="1279"><h1 class="sr-only">Korhatár</h1>
+  <p><b>A Petavira 18 éves kortól használható.</b></p>
+  <p><button class="btn" data-act="age18">Elmúltam 18 éves – tovább</button></p>
+  <p class="hint">Az adataid kezeléséről: <button type="button" class="lnk" data-act="privAge">adatkezelési tájékoztató</button></p></div>`}
 function vEmpty(){return`<div class="empty start"><img class="startpic" src="img/kezdo.webp" alt="Petavira – Okos gazdi, boldog családtag." width="720" height="1279"><h1 class="sr-only">Kövesd végig a kedvenced életét</h1>
   <p class="sub">Életút, egészség, táplálkozás, gondozás és tanácsadó – több mint 60 állatfajra</p>
   <p><button class="btn" data-act="petNew">Állat felvétele</button></p><p><button class="btn ghost" data-act="tab" data-tab="nopet">Még nincs állatom</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
@@ -3176,9 +3186,9 @@ function accountHtml(){
   return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button><button class="btn text" style="margin-top:6px;color:var(--alert)" data-act="delAsk">Fiók törlése</button>`}
 /* ---------- adatvédelem: tájékoztató, adatletöltés, fióktörlés (GDPR-kör, 2026. október) ----------
    A szolgáltatókról szóló állítások forrásai a tájékoztató végén; a linkek letöltéssel ellenőrizve (2026. 10. 12.). */
-const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 21.'};
+const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 24.'};
 const xa=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
-function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 16 éves.</span></label>`}
+function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 18 éves.</span></label>`}
 function privHtml(){return`<div class="priv">
 <p class="sub">Hatályos: ${PRIV.date}</p>
 <h3>Ki kezeli az adataidat?</h3>
@@ -3203,7 +3213,7 @@ function privHtml(){return`<div class="priv">
 <h3>Technikai adatok</h3>
 <p>Amikor megnyitod az appot, az IP-címed és a kérés technikai adatai a tárhelyszolgáltatóhoz (Cloudflare) kerülnek. A belépési, regisztrációs, jelszó-visszaállító és fióktörlő űrlapon a Cloudflare Turnstile robotszűrője is betöltődik, amely az ellenőrzéshez a böngésző és a kapcsolat technikai adatait vizsgálja. A robotszűrésnél a Cloudflare adatfeldolgozó; a jelzéseket a robotfelismerés fejlesztésére saját adatkezelőként is felhasználja. Jogalap: jogos érdek (működés, biztonság). A szerver (Supabase) naplói 1 napig maradnak meg. Hirdetést, követő sütit és látogatottságmérést nem használunk.</p>
 <h3>Sütik és helyi tárolás</h3>
-<p>Sütit nem használunk (a robotszűrő sem tesz le). A böngésződben csak a működéshez szükséges adatokat tároljuk: az app adatait (amíg nem törlöd), a belépést (kilépésig), a Tanácsadó napi keretét és az értesítések tervét, valamint az app fájljait az offline használathoz (a következő frissítésig).</p>
+<p>Sütit nem használunk (a robotszűrő sem tesz le). A böngésződben csak a működéshez szükséges adatokat tároljuk: az app adatait (amíg nem törlöd), a belépést (kilépésig), a Tanácsadó napi keretét és az értesítések tervét, a 18 éves kor megerősítését, valamint az app fájljait az offline használathoz (a következő frissítésig).</p>
 <p>Ha az appból külső oldalt nyitsz meg (térkép, webshop, forrás), ott annak az oldalnak a szabályai érvényesek.</p>
 <h3>Szolgáltatók, akik az adatokat nekünk kezelik</h3>
 <ul><li><b>Supabase</b> (fiók, mentés, szerver): az adatbázis az EU-ban, Írországban van, a naplók EU-s adatközpontban. ${xa('https://supabase.com/privacy','Adatvédelem')}</li>
@@ -3213,7 +3223,7 @@ function privHtml(){return`<div class="priv">
 <li><b>Google</b> (Gmail): a ${PRIV.mail} címre írt levelek fogadása.</li>
 <li><b>Cloudflare</b> (tárhely; a ${PRIV.mail} címre írt levelek továbbítása; robotszűrés a belépésnél, a regisztrációnál, a jelszó-visszaállításnál és a fióktörlésnél: Turnstile): ${xa('https://www.cloudflare.com/privacypolicy/','Adatvédelem')}</li></ul>
 <h3>Korhatár</h3>
-<p>A fiókot és a Tanácsadót 16 éves kortól használhatod. Fiók nélkül az app mindenkinek elérhető: ilyenkor minden adat csak az eszközödön marad, hozzánk nem kerül.</p>
+<p>A Petavira 18 éves kortól használható, nem gyerekeknek készült. Ezt az első indításkor egyszer megerősíted (a megerősítés csak az eszközödön marad), a regisztrációnál és a Tanácsadó első használatakor pedig újra.</p>
 <h3>A jogaid</h3>
 <ul><li>Tájékoztatást kérhetsz arról, milyen adatot kezelünk rólad, és kérheted a helyesbítését.</li>
 <li>Letöltheted az adataidat: Beállítások → Adataim letöltése.</li>
@@ -3390,6 +3400,7 @@ let fxKey='',fxAt=0;
 function render(opt={}){
   const p=pet(),v=$('#view'),draft=$('#chatIn')?$('#chatIn').value:'';
   renderTop();v.className='';
+  if(!adultOk()){v.innerHTML=vAge();if(opt.top)v.scrollTop=0;navSync();return}
   if(tab==='more')v.innerHTML=vMore();
   else if(tab==='vets')v.innerHTML=vVets();
   else if(tab==='nopet')v.innerHTML=vNoPet()+infoNote('nopet');
@@ -3438,7 +3449,7 @@ const radio=(name,opts,cur)=>`<div class="chips">${opts.map(([v,n])=>`<label><in
 function drawWizard(){
   const pop=wzPop;wzPop='';
   const w=W,t=iso(today()),g=grp(w);let body='';
-  if(w.step===1)body=`<h2>Milyen állat?</h2><div class="tiles">${Object.keys(TILES).map(k=>{const x=tileInfo(k);return`<button class="tile${pop==='g'&&w.group===k?' pop':''}" data-act="wzGroup" data-v="${k}" aria-pressed="${w.group===k}"><img class="tpic" src="img/tile-${k}.webp" alt="" width="360" height="360" decoding="async"><span class="tn">${x.n}</span></button>`}).join('')}</div>
+  if(w.step===1)body=`<h2>Milyen állat?</h2><div class="tiles">${Object.keys(TILES).map(k=>{const x=tileInfo(k);return`<button class="tile${pop==='g'&&w.group===k?' pop':''}" data-act="wzGroup" data-v="${k}" aria-pressed="${w.group===k}"><img class="tpic" src="img/tile-${k}.webp" alt="" width="360" height="360" decoding="async"><span class="tn">${k==='gerinctelen'?'Gerinc&shy;telen':x.n}</span></button>`}).join('')}</div>
     ${w.group&&w.group!=='egyeb'?`<div class="f"><span>Melyik faj?</span><div class="spgrid">${Object.entries(SPECIES).filter(([,x])=>(x.t||x.g)===w.group).map(([k,x])=>`<button type="button" class="chip spc${pop==='s'&&w.species===k?' pop':''}" data-act="wzSpecies" data-v="${k}" aria-pressed="${w.species===k}" aria-label="${x.n}"><img src="${spImg(k)}" alt="" width="320" height="320" loading="lazy" decoding="async"><span aria-hidden="true">${spShort(k,x.n)}</span></button>`).join('')}</div></div>`:''}
     ${w.species==='egyeb'?`<label class="f"><span>Milyen állat pontosan?</span><input name="speciesName" value="${esc(w.speciesName)}" placeholder="pl. törpemalac, galamb, tyúk" maxlength="40"></label>`:''}${flagHtml(w.species)}`;
   if(w.step===2){
@@ -3692,9 +3703,9 @@ async function aiCall(body,{signal}={}){
   return{text:j.t,truncated:!!j.cut,sig:typeof j.sig==='string'?j.sig:'',qsig:typeof j.qsig==='string'?j.qsig:''}}
 /* hozzájárulás: az első AI-kérés előtt egyszer (a chatben a beszélgetés tetején, máshol felugró lapon) */
 let aiPending=null;
-/* hozzájárulás a Tanácsadóhoz (3. változat, 2026. okt. 18.: csak 16 év felett, szülői hozzájárulás nélkül – GDPR 8. cikk;
-   a korábbi, „vagy a szülőm hozzájárult” szövegű elfogadás nem elég, mindenkinek egyszer újra el kell fogadnia) */
-const AI_CONSENT_V=3;
+/* hozzájárulás a Tanácsadóhoz (4. változat, 2026. okt. 24.: csak 18 év felett – az egész app 18+;
+   a korábbi, 16 éves elfogadás nem elég, mindenkinek egyszer újra el kell fogadnia) */
+const AI_CONSENT_V=4;
 const aiAgreed=()=>(S.settings.aiConsentV|0)>=AI_CONSENT_V&&!!S.settings.aiConsent;
 const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot, a saját vagy más ember egészségügyi adatát). Az e-mail-címet, a telefonszámot, a linket és a bankszámlaszámot az app küldés előtt kitakarja. A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${agreeHtml('','privFromAi','aiAge')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be a négyzetet a folytatáshoz.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
 const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom</button></div>`;
@@ -3809,7 +3820,7 @@ const ACT={
 };
 document.addEventListener('click',e=>{
   if(e.target.id==='sheet'&&!W)return closeSheet();
-  const el=e.target.closest('[data-act]');if(el&&ACT[el.dataset.act]){if(el.tagName==='BUTTON')e.preventDefault();ACT[el.dataset.act](el)}});
+  const el=e.target.closest('[data-act]');if(el&&ACT[el.dataset.act]){if(!adultOk()&&!AGE_ACTS.has(el.dataset.act))return;/* KORHATÁR: megerősítés előtt csak ezek */if(el.tagName==='BUTTON')e.preventDefault();ACT[el.dataset.act](el)}});
 document.addEventListener('change',e=>{const t=e.target;
   if(t.id==='photoIn')pickPhoto(t);
   else if(t.id==='wzBreed'||t.name==='mode'){readWizard();W.err='';drawWizard()}
@@ -3835,7 +3846,7 @@ Object.assign(ACT,{
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail))return showErr('#auErr','Írd be az e-mail-címed.');
     if(m!=='reset'&&!pw)return showErr('#auErr','Írd be a jelszavad.');
     if(m==='up'&&!pwOk(pw))return showErr('#auErr',PW_MSG);
-    if(m==='up'&&!($('#auAgree')&&$('#auAgree').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elolvastad a tájékoztatót, és elmúltál 16 éves. Fiók nélkül is használhatod az appot.');
+    if(m==='up'&&!($('#auAgree')&&$('#auAgree').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elolvastad a tájékoztatót, és elmúltál 18 éves. Fiók nélkül is használhatod az appot.');
     auBusy=true;$('#auErr').hidden=true;const b=$('#auBtn');b.disabled=true;b.textContent='Egy pillanat…';
     const ct=await capToken(),cap=ct?{captchaToken:ct}:{};
     let r;try{r=m==='in'?await cloud.sb.auth.signInWithPassword({email:mail,password:pw,...(ct?{options:cap}:{})})
@@ -3870,6 +3881,8 @@ Object.assign(ACT,{
 });
 /* adatvédelem: tájékoztató, letöltés, hozzájárulás visszavonása, fióktörlés */
 Object.assign(ACT,{
+  age18(){ageMem=true;try{localStorage.setItem(AGE_LS,iso(today()))}catch(e){}tab='home';render({top:true})},
+  privAge(){privSheet()},
   privBack(){const f=privBack;privBack=null;if(f)f();else closeSheet()},
   privFromAuth(){const m=$('#auMail')?$('#auMail').value.trim():'';privSheet(()=>authSheet('up',m))},
   privFromAi(el){const fn=aiPending;if(el.closest('#sheet'))privSheet(()=>aiConsent(fn));else privSheet()},
