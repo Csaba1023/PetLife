@@ -1,1 +1,11 @@
-[]
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.csabastudio.petavira",
+    "sha256_cert_fingerprints": [
+      "13:94:4C:FF:C2:F8:F0:02:4E:37:CF:C9:D1:61:7B:27:09:EF:F8:BB:67:90:63:5F:01:58:BD:BB:5D:98:A1:F2",
+      "67:52:FF:89:4B:E1:2E:21:E5:0E:A6:C2:4C:7A:9A:B1:78:30:56:85:07:53:C0:E0:2F:CF:0D:B4:05:35:91:2B"
+    ]
+  }
+}]
