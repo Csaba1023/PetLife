@@ -3619,7 +3619,7 @@ async function planGet(force){
     plan={uid,day:iso(today()),live:q.live===true,tier:['free','trial','premium','test'].includes(q.tier)?q.tier:'free',per:q.per==='week'?'week':'day',
       limit:Number.isInteger(q.limit)&&q.limit>=0?q.limit:null,left:Number.isInteger(q.left)&&q.left>=0?q.left:null,phase_end:okD(q.phase_end),ends:okD(q.ends)};
     planSave();
-    if(plan.live&&plan.per==='week'&&plan.left!==null){aiRate.wleft=plan.left;aiRate.wk=monday();aiRateSave()}
+    if(plan.live&&plan.per==='week'&&plan.left!==null){aiAcct();aiRate.wleft=plan.left;aiRate.wk=monday();aiRateSave()}
     else if(plan.live&&plan.per==='day'&&plan.left!==null&&plan.tier!=='test')aiLeftSet(plan.left);
     if(j.unl===true||plan.tier==='test')aiUnlSet();
     if(planCur())soft();
@@ -3630,7 +3630,7 @@ const lapseHtml=()=>`<div class="composer lapse"><p class="pleft">Az ingyenes Ta
 /* 2 állatos korlát: csak új állat felvételét tiltja; a meglévők maradnak és szerkeszthetők */
 const petCapped=()=>{if(!planOn()||S.pets.length<PLAN_PETS)return false;
   if(!cloud.uid)return true;
-  if(aiRate.unl===true)return false;
+  aiAcct();if(aiRate.unl===true)return false;
   const q=planCur();return!!q&&q.tier==='free'};
 const capSheet=()=>openSheet(`<h2>Új állat felvétele</h2><p>Az ingyenes csomagban ${PLAN_PETS} állatot kezelhetsz. A meglévő állataid megmaradnak, és továbbra is szerkesztheted őket.</p><button class="btn ghost" data-act="close">Bezárás</button>`);
 /* tesztfiók (okt. 18.): ha a szerver 'unl: true'-t küld, nincs napi keret, és az óránkénti 100; ezt csak a szerver dönti el (UNLIMITED_UIDS),
@@ -3638,16 +3638,19 @@ const capSheet=()=>openSheet(`<h2>Új állat felvétele</h2><p>Az ingyenes csoma
 const aiHour=()=>aiRate.unl===true?AI_HOUR_UNL:AI_HOUR;
 let aiRate=(()=>{try{const r=JSON.parse(localStorage.getItem('petvia.ai')||'{}');return r&&typeof r==='object'?r:{}}catch(e){return{}}})();
 const aiRateSave=()=>{try{localStorage.setItem('petvia.ai',JSON.stringify(aiRate))}catch(e){}};
-function aiLimit(){const now=Date.now();aiRate.t=(Array.isArray(aiRate.t)?aiRate.t:[]).filter(x=>now-x<36e5&&x<=now);
+/* okt. 24. (2): a helyi keret, a tiltás és a tesztfiók-jelzés fiókonként él (eddig eszközönként: a szünet átjött a másik fiókra).
+   Csak kijelzés és előszűrés – a valódi keretet és tiltást a szerver fiókonként tartja (petlife_gate2, petlife_strike). */
+const aiAcct=()=>{const u=(typeof cloud!=='undefined'&&cloud.uid)||'';if(aiRate.uid!==u){aiRate={uid:u};aiRateSave()}};
+function aiLimit(){aiAcct();const now=Date.now();aiRate.t=(Array.isArray(aiRate.t)?aiRate.t:[]).filter(x=>now-x<36e5&&x<=now);
   if(aiRate.until&&now<aiRate.until)return{code:'blocked',until:aiRate.until};
   if(aiRate.t.length&&now-aiRate.t[aiRate.t.length-1]<AI_GAP)return{code:'too_fast'};
   if(aiRate.t.length>=aiHour())return{code:'hourly_limit'};return null}
-const aiMark=()=>{aiRate.t=[...(aiRate.t||[]),Date.now()].slice(-aiHour());aiRateSave()};
+const aiMark=()=>{aiAcct();aiRate.t=[...(aiRate.t||[]),Date.now()].slice(-aiHour());aiRateSave()};
 /* napi keret (okt. 17.): a mára maradt kérdések számát a szerver adja (left); itt csak megjelenítjük, a keretet a szerver tartja be */
-const aiLeftSet=n=>{if(Number.isInteger(n)&&n>=0){aiRate.left=n;aiRate.leftDay=iso(today());aiRate.unl=false;aiRateSave()}};
-const aiUnlSet=()=>{aiRate.unl=true;aiRate.left=null;aiRate.leftDay='';aiRateSave()};
-const aiLeft=()=>aiRate.leftDay===iso(today())&&Number.isInteger(aiRate.left)?aiRate.left:null;
-const aiLeftHtml=()=>{if(!cloud.uid)return'';if(aiRate.unl===true)return'<p class="pleft">Tesztfiók: nincs napi keret.</p>';
+const aiLeftSet=n=>{aiAcct();if(Number.isInteger(n)&&n>=0){aiRate.left=n;aiRate.leftDay=iso(today());aiRate.unl=false;aiRateSave()}};
+const aiUnlSet=()=>{aiAcct();aiRate.unl=true;aiRate.left=null;aiRate.leftDay='';aiRateSave()};
+const aiLeft=()=>(aiAcct(),aiRate.leftDay===iso(today())&&Number.isInteger(aiRate.left)?aiRate.left:null);
+const aiLeftHtml=()=>{if(!cloud.uid)return'';aiAcct();if(aiRate.unl===true)return'<p class="pleft">Tesztfiók: nincs napi keret.</p>';
   const q=planCur();
   if(q&&q.per==='week'){const n=aiRate.wk===monday()&&Number.isInteger(aiRate.wleft)?aiRate.wleft:null,d=dayDiff(q.ends);
     const a=n===null?'':n?`Ezen a héten még ${n} kérdésed van.`:'Ezen a héten elfogytak az ingyenes kérdéseid. Hétfőtől újra kérdezhetsz.';
@@ -3721,10 +3724,10 @@ async function aiCall(body,{signal}={}){
   catch(e){throw{code:e&&e.name==='AbortError'?'cancelled':'offline'}}
   let j={};try{j=await res.json()}catch(e){if(e&&e.name==='AbortError')throw{code:'cancelled'}}
   if(j&&j.unl===true)aiUnlSet();else if(j&&typeof j.left==='number'&&j.per!=='week')aiLeftSet(j.left);
-  else if(j&&Number.isInteger(j.left)&&j.left>=0&&j.per==='week'){aiRate.wleft=j.left;aiRate.wk=monday();aiRateSave()}   /* heti keret (3. kör) */
+  else if(j&&Number.isInteger(j.left)&&j.left>=0&&j.per==='week'){aiAcct();aiRate.wleft=j.left;aiRate.wk=monday();aiRateSave()}   /* heti keret (3. kör) */
   if(j&&j.code==='plan_ended'&&plan&&plan.uid===cloud.uid){plan.limit=0;plan.left=0;planSave()}
   if(!res.ok||!j||typeof j.t!=='string'){j=j||{};
-    if(j.code==='blocked'){aiRate.until=+new Date(j.until)||Date.now()+3e5;aiRateSave()}
+    if(j.code==='blocked'){aiAcct();aiRate.until=+new Date(j.until)||Date.now()+3e5;aiRateSave()}
     throw{code:typeof j.code==='string'&&ERR[j.code]?j.code:res.status===401?'session_expired':'def',detail:typeof j.detail==='string'?j.detail:String(res.status),until:j.until}}
   return{text:j.t,truncated:!!j.cut,sig:typeof j.sig==='string'?j.sig:'',qsig:typeof j.qsig==='string'?j.qsig:''}}
 /* hozzájárulás: az első AI-kérés előtt egyszer (a chatben a beszélgetés tetején, máshol felugró lapon) */
