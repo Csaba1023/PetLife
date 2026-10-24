@@ -3887,7 +3887,10 @@ Object.assign(ACT,{
     const pw=$('#npPw').value;if(!pwOk(pw))return showErr('#npErr',PW_MSG);
     const b=$('#npBtn');b.disabled=true;let r;try{r=await cloud.sb.auth.updateUser({password:pw})}catch(e){r={error:e}}
     if(r.error){const x=$('#npBtn');if(x){x.disabled=false;showErr('#npErr',auErr(r.error))}return}
-    closeSheet();toast('Jelszó megváltoztatva')},
+    /* BIZTONSÁG (C1, okt. 24.): új jelszó után a fiók többi munkamenete (más eszközök) érvénytelen – ha valaki ellopta a belépést,
+       a jelszócsere kizárja. Ez az eszköz bejelentkezve marad. Hiba esetén a jelszó ettől még megváltozott. */
+    let all=true;try{const o=await cloud.sb.auth.signOut({scope:'others'});if(o&&o.error)all=false}catch(e){all=false}
+    closeSheet();toast(all?'Jelszó megváltoztatva. A többi eszközön kiléptettünk.':'Jelszó megváltoztatva')},
   async outAsk(){
     clearTimeout(cloud.timer);for(let i=0;i<40&&cloud.busy;i++)await sleep(100);
     if(S.pend&&!cloud.dirty.size)cloud.dirty.add('main').add('chat');await flush();
