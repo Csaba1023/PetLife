@@ -1,7 +1,7 @@
 /* Petavira service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v26';
+const V = 'petlife-v27';
 const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
 const PUSH = 'petvia-push';
