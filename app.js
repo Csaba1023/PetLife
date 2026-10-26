@@ -2442,7 +2442,7 @@ let S=blank(),tab='home';
    ha a tárhely nem írható (privát ablak), a nyilatkozat csak erre a munkamenetre szól. */
 const AGE_LS='petavira.age18';let ageMem=false;
 const adultOk=()=>{if(ageMem)return true;try{return!!localStorage.getItem(AGE_LS)}catch(e){return false}};
-const AGE_ACTS=new Set(['age18','privAge','privBack','tab']);
+const AGE_ACTS=new Set(['age18','privAge','privBack']);/* okt. 26.: a 'tab' kikerült – a kapunál nincs menü */
 /* BIZTONSÁG (B1–B2, okt. 24.): a betöltött állapot (helyi tárhely vagy felhő) alakellenőrzése, mielőtt bármi kirajzolódna.
    A bevitelnél már szűrünk, de a tárolt adat kívülről (pl. ellopott munkamenettel a felhőbe írva) is jöhet:
    azonosító csak betű/szám/_/- lehet (HTML-attribútumba kerül), a mért értékek számok, ismeretlen kategória → „egyéb”,
@@ -3426,7 +3426,9 @@ let fxKey='',fxAt=0;
 function render(opt={}){
   const p=pet(),v=$('#view'),draft=$('#chatIn')?$('#chatIn').value:'';
   renderTop();v.className='';
-  if(!adultOk()){v.innerHTML=vAge();if(opt.top)v.scrollTop=0;navSync();return}
+  /* KORHATÁR (okt. 26.): a megerősítés előtt az alsó menü rejtve (különben a gombok halottnak tűnnek) */
+  const ok18=adultOk();document.body.classList.toggle('age-gate',!ok18);
+  if(!ok18){v.innerHTML=vAge();if(opt.top)v.scrollTop=0;navSync();return}
   if(tab==='more')v.innerHTML=vMore();
   else if(tab==='vets')v.innerHTML=vVets();
   else if(tab==='nopet')v.innerHTML=vNoPet()+infoNote('nopet');
