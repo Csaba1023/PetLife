@@ -3606,6 +3606,7 @@ const planClear=()=>{plan=null;planSave()};
 /* érvényes csomagállapot: csak ha él a kapcsoló, a belépett fiókhoz tartozik és a szerver is élőnek mondja */
 const planCur=()=>planOn()&&cloud.uid&&plan&&plan.uid===cloud.uid&&plan.live===true?plan:null;
 const monday=()=>{const d=today();d.setDate(d.getDate()-((d.getDay()+6)%7));return iso(d)};
+const monthKey=()=>iso(today()).slice(0,7);   /* okt. 27.: a havi keret hónapja (ÉÉÉÉ-HH) */
 const dayDiff=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s||''));return m?Math.round((new Date(+m[1],m[2]-1,+m[3])-today())/864e5):null};
 const huDate=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s||''));return m?new Date(+m[1],m[2]-1,+m[3]).toLocaleDateString('hu-HU',{year:'numeric',month:'long',day:'numeric'}):''};
 async function planGet(force){
@@ -3618,10 +3619,11 @@ async function planGet(force){
     const j=await res.json().catch(()=>null),q=j&&j.ok===true&&j.plan;
     if(!res.ok||!q||typeof q!=='object'||cloud.uid!==uid)return;
     const okD=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)?x:null;
-    plan={uid,day:iso(today()),live:q.live===true,tier:['free','trial','premium','test'].includes(q.tier)?q.tier:'free',per:q.per==='week'?'week':'day',
-      limit:Number.isInteger(q.limit)&&q.limit>=0?q.limit:null,left:Number.isInteger(q.left)&&q.left>=0?q.left:null,phase_end:okD(q.phase_end),ends:okD(q.ends)};
+    plan={uid,day:iso(today()),live:q.live===true,tier:['free','trial','premium','test'].includes(q.tier)?q.tier:'free',per:['week','month'].includes(q.per)?q.per:'day',
+      limit:Number.isInteger(q.limit)&&q.limit>=0?q.limit:null,left:Number.isInteger(q.left)&&q.left>=0?q.left:null,phase_end:okD(q.phase_end),ends:okD(q.ends),resets:okD(q.resets)};
     planSave();
     if(plan.live&&plan.per==='week'&&plan.left!==null){aiAcct();aiRate.wleft=plan.left;aiRate.wk=monday();aiRateSave()}
+    else if(plan.live&&plan.per==='month'&&plan.left!==null){aiAcct();aiRate.mleft=plan.left;aiRate.mo=monthKey();aiRateSave()}   /* okt. 27.: prémium havi keret */
     else if(plan.live&&plan.per==='day'&&plan.left!==null&&plan.tier!=='test')aiLeftSet(plan.left);
     if(j.unl===true||plan.tier==='test')aiUnlSet();
     if(planCur())soft();
@@ -3658,13 +3660,16 @@ const aiLeftHtml=()=>{if(!cloud.uid)return'';aiAcct();if(aiRate.unl===true)retur
     const a=n===null?'':n?`Ezen a héten még ${n} kérdésed van.`:'Ezen a héten elfogytak az ingyenes kérdéseid. Hétfőtől újra kérdezhetsz.';
     const b=d!==null&&d>0?` Az ingyenes Tanácsadó még ${d} napig érhető el.`+(q.phase_end&&q.phase_end!==q.ends&&dayDiff(q.phase_end)>0?` ${huDate(q.phase_end)} után heti 2 kérdés.`:''):'';
     return a||b?`<p class="pleft${n===0?' none':''}">${(a+b).trim()}</p>`:''}
+  /* okt. 27.: prémium havi keret (havi 300, napi korlát nélkül) */
+  if(q&&q.per==='month'){const n=aiRate.mo===monthKey()&&Number.isInteger(aiRate.mleft)?aiRate.mleft:null;if(n===null)return'';
+    return`<p class="pleft${n?'':' none'}">${n?`Ebben a hónapban még ${n} kérdésed van.`:ERR.monthly_limit}</p>`}
   if(q&&q.limit){const n=aiLeft();if(n===null)return'';return`<p class="pleft${n?'':' none'}">${n?`Ma még ${n} kérdésed van.`:`Mára elfogyott a napi ${q.limit} kérdésed. Holnap újra kérdezhetsz.`}</p>`}
   const n=aiLeft();if(n===null)return'';return`<p class="pleft${n?'':' none'}">${n?`Ma még ${n} kérdésed van.`:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`}</p>`};
 const AI_NEUTRAL='Most nem tudok válaszolni, próbáld újra később.';
 const ERR={login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
   daily_limit:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`,hourly_limit:'Ebben az órában elérted a kérdéskeretet. Próbáld újra később.',
   /* okt. 21.: díjcsomag szerinti keret (a szerver PLAN_START után küldi) és a napi globális ingyenes keret */
-  weekly_limit:'Ezen a héten elfogytak az ingyenes kérdéseid. Hétfőtől újra kérdezhetsz.',plan_ended:'Az ingyenes Tanácsadó-időszakod lejárt.',free_busy:'Ma már nagyon sokan kérdeztek, ezért az ingyenes Tanácsadó szünetel. Holnap újra kérdezhetsz.',too_fast:'Várj néhány másodpercet a következő kérdéssel.',
+  weekly_limit:'Ezen a héten elfogytak az ingyenes kérdéseid. Hétfőtől újra kérdezhetsz.',monthly_limit:'Ebben a hónapban elfogytak a Tanácsadó-kérdéseid. A következő hónap 1-jétől újra kérdezhetsz.',plan_ended:'Az ingyenes Tanácsadó-időszakod lejárt.',free_busy:'Ma már nagyon sokan kérdeztek, ezért az ingyenes Tanácsadó szünetel. Holnap újra kérdezhetsz.',too_fast:'Várj néhány másodpercet a következő kérdéssel.',
   refused:'Ebben nem tudok segíteni. Kisállattartásról kérdezz, például a táplálásáról, az egészségéről vagy a tartásáról.',blocked:'A Tanácsadó néhány percre szünetel. Próbáld újra később.',
   dup:'Ezt a kérdést az előbb már elküldted.',consent:'A Tanácsadó használatához előbb fogadd el a fenti tájékoztatót.',rate_limited:AI_NEUTRAL,setup:AI_NEUTRAL,none:AI_NEUTRAL,output:AI_NEUTRAL,def:AI_NEUTRAL};
 const aiErrText=e=>{const c=e&&ERR[e.code]?e.code:'def';{const q=planCur();if(c==='daily_limit'&&q&&q.per==='day'&&q.limit)return`Mára elfogyott a napi ${q.limit} kérdésed. Holnap újra kérdezhetsz.`}if(['def','setup','none','output','rate_limited'].includes(c))console.warn('[Tanácsadó]',e&&e.code,e&&e.detail||'');
@@ -3725,7 +3730,8 @@ async function aiCall(body,{signal}={}){
   let res;try{res=await fetch(AI_URL,{method:'POST',signal,headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify(body)})}
   catch(e){throw{code:e&&e.name==='AbortError'?'cancelled':'offline'}}
   let j={};try{j=await res.json()}catch(e){if(e&&e.name==='AbortError')throw{code:'cancelled'}}
-  if(j&&j.unl===true)aiUnlSet();else if(j&&typeof j.left==='number'&&j.per!=='week')aiLeftSet(j.left);
+  if(j&&j.unl===true)aiUnlSet();else if(j&&typeof j.left==='number'&&j.per!=='week'&&j.per!=='month')aiLeftSet(j.left);
+  else if(j&&Number.isInteger(j.left)&&j.left>=0&&j.per==='month'){aiAcct();aiRate.mleft=j.left;aiRate.mo=monthKey();aiRateSave()}   /* havi keret (okt. 27.) */
   else if(j&&Number.isInteger(j.left)&&j.left>=0&&j.per==='week'){aiAcct();aiRate.wleft=j.left;aiRate.wk=monday();aiRateSave()}   /* heti keret (3. kör) */
   if(j&&j.code==='plan_ended'&&plan&&plan.uid===cloud.uid){plan.limit=0;plan.left=0;planSave()}
   if(!res.ok||!j||typeof j.t!=='string'){j=j||{};
