@@ -3493,7 +3493,7 @@ function drawWizard(){
   if(w.step===3)body=`<h2>Kor és adatok</h2>
     <div class="f"><span>Mit tudsz a koráról?</span>${radio('mode',[['date','Tudom a születésnapját'],['est','Csak becsülni tudom']],w.mode)}</div>
     ${w.mode==='date'?`<label class="f"><span>Születési dátum</span><input type="date" name="birth" value="${esc(w.birth)}" max="${t}"></label>`
-      :`<div class="f"><span>Becsült kor</span><div class="three">${[['ey','év'],['em','hónap'],['ew','hét']].map(([k,n])=>`<label><input type="number" inputmode="numeric" min="0" name="${k}" value="${esc(w[k])}" placeholder="${n}" aria-label="${n}"></label>`).join('')}</div><span class="hint" style="font-weight:400;margin-top:6px">Ebből születési dátumot számolunk, így az app magától követi az öregedést.</span></div>`}
+      :`<div class="f"><span>Becsült kor</span><div class="three">${[['ey','Hány éves?','pl. 3'],['em','+ hány hónap?','pl. 6'],['ew','+ hány hét?','pl. 2']].map(([k,n,ph])=>`<label class="agef"><small>${n}</small><input type="number" inputmode="numeric" min="0" name="${k}" value="${esc(w[k])}" placeholder="${ph}" aria-label="${n}"></label>`).join('')}</div><span class="hint" style="font-weight:400;margin-top:6px">Ebből születési dátumot számolunk, így az app magától követi az öregedést.</span></div>`}
     <label class="f"><span>${g==='hal'?'Név (nem kötelező, pl. az akvárium neve)':'Név (nem kötelező)'}</span><input name="name" value="${esc(w.name)}" maxlength="40" autocomplete="off"></label>
     <div class="f"><span>Fotó (nem kötelező)</span><div class="row">${okPhoto(w.photo)?`<img class="ava big" src="${esc(w.photo)}" alt="">`:''}<label class="btn ghost small" style="position:relative">${w.photo?'Csere':'Fotó választása'}<input type="file" id="photoIn" accept="image/*" style="position:absolute;inset:0;opacity:0;min-height:0"></label>${w.photo?'<button class="btn text" data-act="wzNoPhoto">Eltávolítás</button>':''}</div></div>
     ${g==='hal'?`<label class="f"><span>Hány hal él az akváriumban?</span><input type="number" inputmode="numeric" min="1" max="999" name="count" value="${esc(w.count)}" placeholder="pl. 6"></label>
@@ -3516,7 +3516,7 @@ function wizardNext(){
     if(w.mode==='date'){if(!w.birth)w.err='Add meg a születési dátumot, vagy válaszd a becsült kort.';else birth=D(w.birth)}
     else{const y=+w.ey||0,m=+w.em||0,k=+w.ew||0;if(y<0||m<0||k<0||!(y||m||k))w.err='Adj meg legalább egy értéket a becsült korhoz (év, hónap vagy hét).';else{birth=addM(t,-(y*12+m));birth.setDate(birth.getDate()-k*7)}}
     if(birth&&(isNaN(birth)||birth>t))w.err='A születési dátum nem lehet a jövőben.';
-    else if(birth&&birth<addM(t,-Math.max(480,((limitsFor(w)||[])[2]||0)*3)))w.err='Ez a dátum túl régi. Ellenőrizd az évszámot.';
+    else if(birth&&birth<addM(t,-Math.max(480,((limitsFor(w)||[])[2]||0)*3)))w.err=w.mode==='est'?'Ennyi idős nem lehet. A „Hány éves?” mezőbe a korát írd (pl. 3), ne a születési évét.':'Ez a dátum túl régi. Ellenőrizd az évszámot.';
     const fish=g==='hal',gr=gramSp(w);let kg=null,cnt=null,tank=null;
     if(fish){cnt=parseInt(w.count,10);tank=parseFloat(String(w.tankL).replace(',','.'));
       if(!w.err&&!(cnt>=1&&cnt<=999))w.err='Add meg, hány hal él az akváriumban (1 és 999 között).';else if(!w.err&&!(tank>0&&tank<=10000))w.err='Add meg az akvárium méretét literben, pl. 60.'}
