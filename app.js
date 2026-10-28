@@ -2456,7 +2456,9 @@ function fixState(st){
   if(!isObj(st))return blank();
   const pets=Array.isArray(st.pets)?st.pets.filter(isObj):[],map={};
   for(const p of pets){if(!ID_OK.test(String(p.id))){const n=newId();map[String(p.id)]=n;p.id=n}numFix(p,PET_NUM);
-    for(const k of ['name','speciesName','breed','species','size','sex','neutered','photo','birth','createdAt'])if(p[k]!=null&&typeof p[k]!=='string'&&typeof p[k]!=='number')delete p[k]}
+    for(const k of ['name','speciesName','breed','species','size','sex','neutered','photo','birth','createdAt'])if(p[k]!=null&&typeof p[k]!=='string'&&typeof p[k]!=='number')delete p[k];
+    {const ok=o=>isObj(o)&&+o.g>0&&+o.g<=100000&&+o.d>0&&+o.d<=5000&&DATE_OK.test(String(o.start))&&(o.name==null||typeof o.name==='string');
+     if(p.stock!=null&&!ok(p.stock))delete p.stock;if(p.stockHist!=null)p.stockHist=Array.isArray(p.stockHist)?p.stockHist.filter(h=>ok(h)&&DATE_OK.test(String(h.end))).slice(0,5):[]}}
   const ids=new Set(pets.map(p=>p.id)),re=k=>map[k]||k;
   const events=(Array.isArray(st.events)?st.events:[]).filter(isObj).filter(e=>{e.petId=re(String(e.petId));
     if(!ids.has(e.petId)||!DATE_OK.test(String(e.date))||typeof e.kind!=='string')return false;
@@ -2651,7 +2653,7 @@ function vEmpty(){return`<div class="empty start"><img class="startpic" src="img
 function vHome(p){
   const st=stageOf(p),items=buildItems(p),due=dueList(p,items),t=today();
   const soon=S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&D(e.date)>=t&&D(e.date)-t<=30*DAY).sort((a,c)=>a.date<c.date?-1:1);
-  const tips=tipsFor(p,st),size=sizeOf(p),par=parDue(p).filter(x=>x.date-t<=30*DAY),wc=wcDue(p),rem=remsOf(p).map(r=>[r,remNext(r)]).filter(([,d])=>d&&d-t<=30*DAY).sort((a,c)=>a[1]-c[1]);
+  const tips=tipsFor(p,st),size=sizeOf(p),par=parDue(p).filter(x=>x.date-t<=30*DAY),wc=wcDue(p),sk=stockDue(p),rem=remsOf(p).map(r=>[r,remNext(r)]).filter(([,d])=>d&&d-t<=30*DAY).sort((a,c)=>a[1]-c[1]);
   const sex={him:'hím',nosteny:'nőstény'}[p.sex];
   return`${p.lastStage&&st&&p.lastStage!==st?`<div class="banner"><div style="flex:1">${esc(petName(p))} ${STAGE_INTO[st]||'új szakaszba'} lépett. A teendők és a tippek mostantól ehhez igazodnak.</div><button class="btn small" data-act="stageAck">Rendben</button></div>`:''}
   <section class="hero"><div class="who">${ava(p,1)}<div style="min-width:0"><h1>${esc(petName(p))}</h1>
@@ -2659,9 +2661,9 @@ function vHome(p){
    <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+stHU(p,st).toLowerCase():''}</div></div>
    <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">${ic('pen')}</button></div>${trail(p)}</section>${flagHtml(FLAG[gkey(p)]?gkey(p):p.species)}
   <h2>Teendők és emlékeztetők</h2>
-  ${due.length||soon.length||par.length||wc||rem.length?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}${wc?`<li class="${wc<t?'late':''}" id="wcDue"><div><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(wc)}${wc<t?', már elmúlt':''}</span></div><button class="btn small" data-act="wcNew">Rögzítés</button></li>`:''}
+  ${due.length||soon.length||par.length||wc||rem.length||sk?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}${wc?`<li class="${wc<t?'late':''}" id="wcDue"><div><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(wc)}${wc<t?', már elmúlt':''}</span></div><button class="btn small" data-act="wcNew">Rögzítés</button></li>`:''}
    ${par.map(x=>`<li class="${x.date<t?'late':''}"><div><b>${PAR_SHORT[x.t]} esedékes</b><span class="when">${fmtDate(x.date)}${x.date<t?', már elmúlt':''}</span></div><button class="btn small" data-act="parNew" data-t="${x.t}">Rögzítés</button></li>`).join('')}
-   ${rem.map(([r,d])=>`<li class="${d<t?'late':''}"><div><b>${esc(r.title)}</b><span class="when">${remWhen(d,t)}</span></div><button class="btn small" data-act="remDone" data-id="${r.id}">Kész</button></li>`).join('')}${soon.map(e=>`<li><div><b>${(EVCAT[e.cat]||EVCAT.other)[0]} ${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}</span></div><button class="btn ghost small" data-act="evEdit" data-id="${e.id}">Megnyitás</button></li>`).join('')}</ul>`
+   ${sk?`<li class="${sk.left<=0?'late':''}" id="stockDue"><div><b>${stockMsg(p,sk)}</b><span class="when">${esc(p.stock.name||'')}${p.stock.name?' · ':''}várhatóan ${fmtDate(sk.end)}</span></div><button class="btn small" data-act="stockNew">Új zsák</button></li>`:''}${rem.map(([r,d])=>`<li class="${d<t?'late':''}"><div><b>${esc(r.title)}</b><span class="when">${remWhen(d,t)}</span></div><button class="btn small" data-act="remDone" data-id="${r.id}">Kész</button></li>`).join('')}${soon.map(e=>`<li><div><b>${(EVCAT[e.cat]||EVCAT.other)[0]} ${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}</span></div><button class="btn ghost small" data-act="evEdit" data-id="${e.id}">Megnyitás</button></li>`).join('')}</ul>`
    :'<p class="sub">A következő 30 napban nincs esedékes teendő. A teljes tervet az Életút fülön látod.</p>'}
   ${watchHtml(p)}<h2>Tippek ${st?stHU(p,st).toLowerCase()+' korra':TIPS[p.species]?'a tartáshoz':'a kezdéshez'}</h2>
   <ul class="tips">${tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
@@ -2857,7 +2859,7 @@ function vHealth(p){
    A4-es összesítő a böngésző nyomtatásával („Mentés PDF-ként” / megosztás), szerver nélkül. Mindig világos: a #print saját színeket kap (index.html, @media print).
    Nem kerül bele: a gazdi neve és e-mail-címe, a fotó, a Tanácsadó „lehetséges okai”. A „Kérdéseim” szöveg nem mentődik (csak az összesítőbe kerül).
    Prémium jelölés: amíg nincs PLAN_START, mindenkinek elérhető (a zárt tesztelők is kipróbálják). */
-const PREM_FEAT=new Set(['vetPdf','remind','watch','cost']);
+const PREM_FEAT=new Set(['vetPdf','remind','watch','cost','food']);
 const premOK=f=>!PREM_FEAT.has(f)||!planOn()||!!(plan&&['premium','trial','test'].includes(plan.tier));
 const VP_PER=[['3','3 hónap'],['6','6 hónap'],['12','12 hónap'],['0','Összes']];
 const VP_SEC={vacc:'Oltások',par:'Parazita elleni kezelések',w:'Súly',sym:'Tünetnapló',vet:'Állatorvosi látogatások',terra:'Terrárium',water:'Vízértékek'};
@@ -3005,10 +3007,41 @@ function watchHtml(p){if(!premOK('watch'))return'';const l=watchFor(p);if(!l.len
   return`<h2>Figyelő</h2><ul class="tasks" id="watchList">${l.map(a=>`<li class="late"><div style="flex:1;min-width:0"><b>${esc(a.t)}</b><span class="when">${esc(a.b)}</span></div><button class="btn ghost small" data-act="watchGo" data-k="${a.tab}">Megnézem</button></li>`).join('')}</ul>
   <p class="sub" style="margin-top:8px">A figyelő a naplóidból jelez, nem diagnosztizál. ${DISC}</p>`}
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
+/* ---------- Tápkészlet-figyelő (okt. 28.; prémium) ----------
+   Adat az állaton: p.stock {name?, g (összes gramm), d (napi gramm), start (kibontás napja), w (figyelmeztetés ennyi nappal előtte: 3|5|7|10)},
+   p.stockHist: az utolsó 5 lezárt zsák {name?, g, d, start, end}. Számítás: elég = g/d nap; elfogy = start + floor(g/d) nap.
+   A napi adag javaslata a Táplálkozás lap meglévő becsléséből (kcalRange + kcal/100 g), ha van; a gazdi átírhatja. Szerver és AI nincs. */
+const STOCK_W=[3,5,7,10];
+const stockWord=p=>grp(p)==='emlos'?'táp':'eleség';
+const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+function stockInfo(p,t=today()){const s=p.stock;if(!s||!(s.g>0)||!(s.d>0)||!DATE_OK.test(String(s.start)))return null;
+  const days=Math.floor(s.g/s.d),end=addDays(D(s.start),days),left=Math.round((end-t)/DAY),w=STOCK_W.includes(+s.w)?+s.w:7;
+  return{days,end,left,w,warnDay:addDays(end,-w),pct:Math.max(0,Math.min(100,Math.round(left/days*100)))}}
+const stockSugg=p=>{const kc=kcalRange(p),k=+p.kcal100||0;return kc&&k?Math.round((kc[0]+kc[1])/2/k*100/5)*5:0};
+const stockDue=(p,t=today())=>{if(!premOK('food'))return null;const i=stockInfo(p,t);return i&&i.left<=i.w?i:null};
+const stockMsg=(p,i)=>i.left<0?`Elfogyott a ${stockWord(p)} (becslés)`:i.left===0?`Ma fogy el a ${stockWord(p)} (becslés)`:`Fogyóban a ${stockWord(p)}: kb. ${i.left} napra elég`;
+function stockHtml(p){const s=p.stock,i=stockInfo(p),w=stockWord(p),H=Array.isArray(p.stockHist)?p.stockHist:[];
+  if(!premOK('food')&&!s)return'';
+  return`<h2>${w[0].toUpperCase()+w.slice(1)}készlet</h2><div class="card" id="stockCard">${i?`<b>${esc(s.name||'Aktuális zsák')}</b><span class="when">${s.g>=1000?fmtKg(s.g/1000)+' kg':s.g+' g'}, napi ${s.d} g · kibontva: ${fmtDate(D(s.start))}</span>
+    <div class="num" style="margin-top:8px">${i.left>0?`kb. ${i.left} napra elég`:i.left===0?'ma fogy el':'elfogyott'}</div><span class="when">várhatóan ${fmtDate(i.end)}-ig tart (összesen kb. ${i.days} nap)</span>
+    <div style="height:8px;border-radius:4px;background:var(--soft);margin:10px 0 4px"><div style="height:8px;border-radius:4px;background:${i.left<=i.w?'var(--alert)':'var(--brand)'};width:${Math.max(2,i.pct)}%"></div></div>
+    <p class="sub" style="margin:6px 0 10px">${i.w} nappal előtte szólunk. Ez becslés a beírt napi adagból: ha többet vagy kevesebbet adsz, módosítsd.</p>
+    ${premOK('food')?`<button class="btn small" data-act="stockNew">Új zsák</button> <button class="btn text" data-act="stockEdit">Szerkesztés</button>`:''}`
+    :`<p class="sub" style="margin:0 0 10px">Írd be, mekkora zsákot bontottál és mennyit adsz naponta: az app kiszámolja, meddig tart, és szól, mielőtt elfogy.</p>${premOK('food')?`<button class="btn small" data-act="stockNew">Zsák rögzítése</button>`:''}`}
+  ${H.length?`<details class="acc" style="margin:10px 0 0"><summary>Előző zsákok (${H.length})</summary><ul class="list">${H.map(h=>{const real=Math.round((D(h.end)-D(h.start))/DAY),plan=Math.floor(h.g/h.d);return`<li><div style="flex:1;min-width:0">${esc(h.name||'Zsák')}<span class="when">${fmtDate(D(h.start))} – ${fmtDate(D(h.end))}: ${real} nap (a beírt adaggal ${plan} nap lett volna)</span></div></li>`}).join('')}</ul></details>`:''}</div>`}
+function stockSheet(edit){const p=pet();if(!p||!premOK('food'))return;const s=edit&&p.stock?p.stock:null,sg=stockSugg(p),big=s?s.g>=1000:true;
+  openSheet(`<h2>${s?'Zsák szerkesztése':'Új zsák'}</h2>${!s&&p.stock?`<p class="sub">Az előző zsák lezárul a mai nappal, és bekerül az előzmények közé.</p>`:''}
+  <label class="f"><span>Megnevezés (nem kötelező)</span><input id="stName" maxlength="40" value="${esc(s?s.name:'')}" placeholder="pl. márka és fajta"></label>
+  <div class="f"><span>Kiszerelés</span><div class="row" style="gap:8px"><input id="stG" inputmode="decimal" maxlength="7" style="flex:1" value="${s?(big?fmtKg(s.g/1000):s.g):''}" placeholder="${big?'pl. 12':'pl. 400'}"><select id="stU" style="width:96px">${[['kg','kg'],['g','g']].map(([v,n])=>`<option value="${v}"${(big?'kg':'g')===v?' selected':''}>${n}</option>`).join('')}</select></div></div>
+  <label class="f"><span>Napi adag (gramm)</span><input id="stD" inputmode="numeric" maxlength="4" value="${s?s.d:sg||''}" placeholder="pl. 250"></label>
+  ${sg&&!s?`<p class="sub" style="margin-top:-6px">A Táplálkozás lap becslése alapján kb. ${sg} g; ha mást adsz, írd át.</p>`:''}
+  <label class="f"><span>Mikor bontottad ki?</span><input type="date" id="stStart" value="${s?s.start:iso(today())}" max="${iso(today())}"></label>
+  <label class="f"><span>Mikor szóljunk?</span><select id="stW">${STOCK_W.map(n=>`<option value="${n}"${(s?+s.w:7)===n?' selected':''}>${n} nappal előtte</option>`).join('')}</select></label>
+  <p class="err" id="stErr" role="alert" hidden></p><button class="btn" data-act="stockSave" data-edit="${s?1:''}">Mentés</button>${s?'<button class="btn ghost" style="color:var(--alert)" data-act="stockDel">Készletfigyelés törlése</button>':''}<button class="btn ghost" data-act="close">Mégse</button>`)}
 function vFood(p){
   const F=FOOD[gkey(p)],st=stageOf(p),L=limitsFor(p);
   if(!F&&VARPICK[p.species])return`${BACK}<h1>Táplálkozás</h1>${varPick(p)}${infoNote('food',p,1)}`;
-  if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div>${foods(p).length?`<h2>Ajánlott eleségek és kiegészítők</h2>${tierChips()}<div style="height:10px"></div>${prodList(p,foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>`:PEMPTY[kitOf(p)]?`<p class="sub" style="margin-top:14px">${PEMPTY[kitOf(p)]}</p>`:''}${infoNote('food',p,1)}`;
+  if(!F)return`${BACK}<h1>Táplálkozás</h1><div class="card" style="margin-top:14px"><p>Ehhez a fajhoz (${esc(speciesLabel(p))}) nincs beépített etetési útmutató.</p><p class="sub">Az étrendről a fajhoz értő állatorvost kérdezd, általános tájékozódáshoz pedig a Tanácsadót.</p><button class="btn" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button></div>${stockHtml(p)}${foods(p).length?`<h2>Ajánlott eleségek és kiegészítők</h2>${tierChips()}<div style="height:10px"></div>${prodList(p,foods(p))}<p class="sub" style="margin-top:10px">${PNOTE}</p>`:PEMPTY[kitOf(p)]?`<p class="sub" style="margin-top:14px">${PEMPTY[kitOf(p)]}</p>`:''}${infoNote('food',p,1)}`;
   /* adatvezérelt adatlap: ami az adott fajnál hiányzik (táplista, szakasz szerinti gyakoriság), az a lapról is kimarad */
   const kc=kcalRange(p),k100=+p.kcal100||0,meals=F.meals&&st?F.meals[st]:0,fl=foods(p),freq=(F.freq&&st&&F.freq[st])||F.freqAll||'';let portion;
   if(F.base)portion=`<ul class="tips" style="margin-bottom:-12px">${F.base.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
@@ -3019,7 +3052,7 @@ function vFood(p){
     ${g?`<p><b>Ez kb. ${g[0]}–${g[1]} g naponta</b> ebből a tápból${meals?`, ${meals} étkezésre osztva alkalmanként kb. ${Math.round(g[0]/meals)}–${Math.round(g[1]/meals)} g`:''}. A jutalomfalatot is számold bele.</p>`:'<p class="sub">Írd be az értéket, és grammra váltom.</p>'}
     <p class="sub" style="margin:0">Tájékoztató becslés a testsúlyból, az életszakaszból és az ivartalanításból. Az egyéni igény eltérhet: a táp etetési táblázata és az állatorvos az irányadó.${st==='kolyok'||st==='novendek'?' Növésben a súly gyorsan változik, mérd és frissítsd gyakran.':''}</p>`}
   return`${BACK}<h1>Táplálkozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p>
-  <h2>${F.h||'Napi adag'}</h2><div class="card">${portion}</div>${fishFeed(p)}
+  <h2>${F.h||'Napi adag'}</h2><div class="card">${portion}</div>${stockHtml(p)}${fishFeed(p)}
   ${fl.length?`<h2>Ajánlott ${grp(p)==='emlos'?'tápok':'eleségek'}${STAGED_FOOD.has(p.species)&&st?` ${stHU(p,st).toLowerCase()} korra`:''}</h2>${tierChips()}<div style="height:10px"></div>${prodList(p,fl)}<p class="sub" style="margin-top:10px">${PNOTE}</p>${aiBox(p,'food','Személyre szabott tápajánlás kérése')}`:''}
   ${freq?`<h2>Etetési gyakoriság</h2><p>${freq}</p>`:''}
   ${F.sw===false?'':`<h2>Tápváltás</h2>${F.sw?`<p>${F.sw}</p>`:F.base?'<p>Kisemlősnél lassan, legalább 2 hét alatt válts, az új eleséget fokozatosan a régihez keverve.</p>'
@@ -3538,6 +3571,7 @@ function pushPlan(from=today()){
         par.filter(x=>sameDay(x.date,day)).forEach(x=>due.push(pre+PAR_SHORT[x.t]));
         if(wc&&sameDay(wc,day))due.push(pre+'Részleges vízcsere');
         if(premOK('remind'))remsOf(p).filter(r=>remOnDay(r,day)).forEach(r=>due.push(pre+String(r.title||'').slice(0,40)));
+        {const si=premOK('food')&&stockInfo(p,day);if(si&&(iso(si.warnDay)===key||iso(si.end)===key))due.push(pre+stockMsg(p,si))}
         S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&e.date===key).forEach(e=>due.push(pre+String(e.title||'').slice(0,60)));
       }
       /* okos figyelő: csak azon a napon, amikor a jelzést kiváltó bejegyzés (vagy a mérési határidő) esedékes */
@@ -3739,6 +3773,8 @@ function wizardNext(){
       const old=w.edit&&S.pets.find(x=>x.id===w.id),bs=iso(birth);
       const p={id:old?old.id:newId(),name:clean(w.name),species:w.species,speciesName:w.species==='egyeb'?clean(w.speciesName):'',breed:(w.species==='egyeb'?clean(w.breed):w.breed)||'mix',size:w.size,count:cnt,tankL:tank,birth:bs,
         est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:fish?'':w.sex,neutered:g==='emlos'||g==='egyeb'?w.neutered:'',weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{}};
+      /* okt. 28.: a profil szerkesztése ne veszítse el a máshol beállított értékeket (UVB-időköz, vízcsere, utazási lista, tápkészlet) */
+      if(old)for(const k of ['uvbM','uvbOn','wcW','tripChk','stock','stockHist'])if(old[k]!=null)p[k]=old[k];
       p.lastStage=old&&old.birth===bs&&old.species===p.species&&String(limitsFor(old))===String(limitsFor(p))?old.lastStage:stageOf(p);
       if(old)S.pets[S.pets.indexOf(old)]=p;else S.pets.push(p);
       if(kg&&(!old||old.weight!==kg)){S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===iso(t)));S.events.push({id:newId(),petId:p.id,kind:'w',date:iso(t),kg})}
@@ -4042,6 +4078,14 @@ const ACT={
   evDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Esemény törölve')},
   hTab(el){hTab=el.dataset.k;render()},
   vpOpen(){vpSheet()},
+  stockNew(){stockSheet(false)},stockEdit(){stockSheet(true)},
+  stockSave(el){const p=pet();if(!p||!premOK('food'))return;const edit=!!el.dataset.edit,u=$('#stU').value==='g'?1:1000,gv=parseFloat($('#stG').value.replace(',','.')),g=Math.round(gv*u),dRaw=$('#stD').value.trim(),d=+dRaw,start=$('#stStart').value,w=+$('#stW').value,name=clean($('#stName').value,40);
+    if(!(g>=10&&g<=100000))return showErr('#stErr','A kiszerelés 10 g és 100 kg között lehet.');if(!/^\d{1,4}$/.test(dRaw)||d<1||d>5000)return showErr('#stErr','A napi adagot egész grammban add meg (1–5000).');
+    if(d>g)return showErr('#stErr','A napi adag nem lehet több, mint a zsák.');if(!DATE_OK.test(start)||D(start)>today())return showErr('#stErr','A kibontás napja mai vagy korábbi legyen.');
+    const o={name,g,d,start,w:STOCK_W.includes(w)?w:7};
+    if(!edit&&p.stock){const old=p.stock,end=iso(today())>=old.start?iso(today()):old.start;p.stockHist=[{name:old.name,g:old.g,d:old.d,start:old.start,end},...(Array.isArray(p.stockHist)?p.stockHist:[])].slice(0,5)}
+    p.stock=o;save();closeSheet();render();const i=stockInfo(p);toast(i?`Mentve. Kb. ${Math.max(0,i.left)} napra elég.`:'Mentve')},
+  stockDel(){const p=pet();if(!p)return;delete p.stock;save();closeSheet();render();toast('Készletfigyelés törölve')},
   costAll(el){costAll=el.dataset.v==='1';render()},costNew(){costSheet()},costEdit(el){costSheet(el.dataset.id)},
   costSave(el){const p=pet(),old=S.events.find(e=>e.id===el.dataset.id&&e.kind==='cost'),raw=$('#coFt').value.replace(/[\s.]/g,''),ft=+raw,cat=$('#coCat').value,date=$('#coDate').value,note=clean($('#coNote').value,60);
     if(!p)return;if(!/^\d{1,7}$/.test(raw)||ft<1||ft>COST_MAX)return showErr('#coErr','Az összeget egész forintban add meg (1 és 5 000 000 között).');
