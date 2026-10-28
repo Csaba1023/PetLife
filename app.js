@@ -2458,6 +2458,7 @@ function fixState(st){
   for(const p of pets){if(!ID_OK.test(String(p.id))){const n=newId();map[String(p.id)]=n;p.id=n}numFix(p,PET_NUM);
     for(const k of ['name','speciesName','breed','species','size','sex','neutered','photo','birth','createdAt'])if(p[k]!=null&&typeof p[k]!=='string'&&typeof p[k]!=='number')delete p[k];
     {const ok=o=>isObj(o)&&+o.g>0&&+o.g<=100000&&+o.d>0&&+o.d<=5000&&DATE_OK.test(String(o.start))&&(o.name==null||typeof o.name==='string');
+     if(p.sitter!=null&&!(isObj(p.sitter)&&(p.sitter.note==null||typeof p.sitter.note==='string')&&(p.sitter.vet==null||typeof p.sitter.vet==='string')))delete p.sitter;
      if(p.stock!=null&&!ok(p.stock))delete p.stock;if(p.stockHist!=null)p.stockHist=Array.isArray(p.stockHist)?p.stockHist.filter(h=>ok(h)&&DATE_OK.test(String(h.end))).slice(0,5):[]}}
   const ids=new Set(pets.map(p=>p.id)),re=k=>map[k]||k;
   const events=(Array.isArray(st.events)?st.events:[]).filter(isObj).filter(e=>{e.petId=re(String(e.petId));
@@ -2859,7 +2860,7 @@ function vHealth(p){
    A4-es összesítő a böngésző nyomtatásával („Mentés PDF-ként” / megosztás), szerver nélkül. Mindig világos: a #print saját színeket kap (index.html, @media print).
    Nem kerül bele: a gazdi neve és e-mail-címe, a fotó, a Tanácsadó „lehetséges okai”. A „Kérdéseim” szöveg nem mentődik (csak az összesítőbe kerül).
    Prémium jelölés: amíg nincs PLAN_START, mindenkinek elérhető (a zárt tesztelők is kipróbálják). */
-const PREM_FEAT=new Set(['vetPdf','remind','watch','cost','food']);
+const PREM_FEAT=new Set(['vetPdf','remind','watch','cost','food','sitter']);
 const premOK=f=>!PREM_FEAT.has(f)||!planOn()||!!(plan&&['premium','trial','test'].includes(plan.tier));
 const VP_PER=[['3','3 hónap'],['6','6 hónap'],['12','12 hónap'],['0','Összes']];
 const VP_SEC={vacc:'Oltások',par:'Parazita elleni kezelések',w:'Súly',sym:'Tünetnapló',vet:'Állatorvosi látogatások',terra:'Terrárium',water:'Vízértékek'};
@@ -3351,7 +3352,7 @@ function vNoPet(){
 function vHub(p){
   const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
   return`<h1>Gondozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}</p>
-  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék, utazás')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}${row('cost','coin','Költségek','Kiadások havonta és kategóriánként')}</div>`}
+  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék, utazás')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}${row('cost','coin','Költségek','Kiadások havonta és kategóriánként')}<button data-act="sitterOpen"><i>${ic('memo')}</i><span><b>Átadó lap</b><small>Szitternek, panziónak: etetés, teendők, tudnivalók</small></span></button></div>`}
 /* ---------- Költségnapló (okt. 28.; 5. prémium funkció) ----------
    Adat: S.events, kind:'cost' {date, ft (egész Ft, 1–5 000 000), cat, note? (max. 60, clean)}. Szerver, SQL és AI nincs.
    Nézet: e havi és idei összeg, 12 havi oszlopgrafikon, kategóriánkénti bontás, lista; „ez az állat” / „minden állatom”.
@@ -3405,6 +3406,47 @@ function costPdfHtml(p,per){const t=today(),y=t.getFullYear(),from=per==='m'?mKe
 const csvCell=v=>{let s=String(v??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return/[";\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
 function costCsv(p){const l=costsOf(p),pn=id=>{const q=S.pets.find(x=>x.id===id);return q?petName(q):''};
   return'﻿'+[['Dátum','Állat','Kategória','Összeg (Ft)','Megjegyzés'],...[...l].reverse().map(e=>[e.date,pn(e.petId),COST_CAT[e.cat]||COST_CAT.other,e.ft,e.note||''])].map(r=>r.map(csvCell).join(';')).join('\r\n')}
+/* ---------- Szitter- és panzióátadó lap (okt. 28.; prémium, PDF) ----------
+   Csak a meglévő, forrásolt app-adatokból + a gazdi szövegéből. Mentődik állatonként (p.sitter): az egyéb tudnivalók (≤500, qClean) és az állatorvos neve (≤60, clean).
+   NEM mentődik: a gazdi neve és telefonszáma, az állatorvos telefonszáma (személyes adat, csak a lapra kerül). Időszak legfeljebb 60 nap. */
+const SIT_MAX=60;
+const telClean=s=>String(s??'').replace(/[^0-9+()\/\- ]/g,'').replace(/\s+/g,' ').trim().slice(0,20);
+function sitterSheet(){const p=pet();if(!p)return;if(!premOK('sitter'))return openSheet('<h2>Átadó lap</h2><p>Ez a Petavira prémium funkciója.</p><button class="btn ghost" data-act="close">Bezárás</button>');
+  const s=p.sitter||{},t=today();
+  openSheet(`<h2>Átadó lap</h2><p class="sub">A4-es lap annak, aki vigyáz az állatodra: etetés, teendők napokra bontva, tudnivalók. A nyomtatási ablakban PDF-ként mentheted vagy megoszthatod.</p>
+  <div class="row" style="gap:8px"><label class="f" style="flex:1"><span>Mettől?</span><input type="date" id="siFrom" value="${iso(t)}"></label><label class="f" style="flex:1"><span>Meddig?</span><input type="date" id="siTo" value="${iso(addDays(t,7))}"></label></div>
+  <label class="f"><span>A te neved (nem kötelező)</span><input id="siOwn" maxlength="40" autocomplete="off"></label>
+  <label class="f"><span>A te telefonszámod (nem kötelező)</span><input id="siOwnTel" inputmode="tel" maxlength="20" autocomplete="off"></label>
+  <label class="f"><span>Állatorvos neve (nem kötelező)</span><input id="siVet" maxlength="60" value="${esc(s.vet||'')}"></label>
+  <label class="f"><span>Állatorvos telefonszáma (nem kötelező)</span><input id="siVetTel" inputmode="tel" maxlength="20" autocomplete="off"></label>
+  <label class="f"><span>Egyéb tudnivalók (nem kötelező)</span><textarea id="siNote" rows="4" maxlength="500" placeholder="pl. fél a porszívótól, este 9-kor sétál, a póráz az ajtó mellett van">${esc(s.note||'')}</textarea></label>
+  <p class="sub">A tudnivalókat és az állatorvos nevét az app megjegyzi a következő alkalomra. A telefonszámokat és a neved nem menti el.</p>${sheetEnd('sitterGo','Átadó lap készítése')}`)}
+function sitterTasks(p,from,to){const out=[],items=buildItems(p).filter(i=>i.pending&&!i.unknown),par=parDue(p),rems=premOK('remind')?remsOf(p):[],si=premOK('food')&&stockInfo(p);
+  let wc=grp(p)==='hal'?wcNext(p):null;
+  for(let d=new Date(from);d<=to;d=addDays(d,1)){const k=iso(d),l=[];
+    items.filter(i=>iso(i.date)===k).forEach(i=>l.push(i.m.t));par.filter(x=>iso(x.date)===k).forEach(x=>l.push(PAR_SHORT[x.t]));
+    while(wc&&iso(wc)<k)wc=addDays(wc,7*wcWeeks(p));if(wc&&iso(wc)===k)l.push('Részleges vízcsere');
+    rems.filter(r=>remOnDay(r,d)).forEach(r=>l.push(r.title));
+    S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&e.date===k).forEach(e=>l.push(e.title));
+    if(si&&iso(si.end)===k)l.push(`Várhatóan ma fogy el a ${stockWord(p)}`);
+    if(l.length)out.push([d,l])}
+  return out}
+function sitterHtml(p,o){const st=stageOf(p),F=FOOD[gkey(p)],lw=recs(p,'w')[0],sex={him:'hím',nosteny:'nőstény'}[p.sex],meals=F&&F.meals&&st?F.meals[st]:0,s=p.stock;
+  const kv=[['Név',esc(petName(p))],['Faj',esc(speciesLabel(p))],['Fajta',esc(breedLabel(p))],['Ivar',sex],['Életkor',fmtAge(p)+(p.est?' (becsült)':'')],['Utolsó súly',!noWeight(p)&&lw?wTxt(p,lw.kg):'']].filter(r=>r[1]);
+  const tasks=sitterTasks(p,o.from,o.to),T=hasTerra(p)?TERRA[gkey(p)]:null,G=grp(p)==='hal'?wGoals(p):null;
+  const photo=okPhoto(p.photo)?`<img src="${esc(p.photo)}" alt="" style="width:110px;height:110px;object-fit:cover;border-radius:12px;float:right;margin:0 0 8px 12px">`:'';
+  return`<div class="ph"><img src="img/paw-144.webp" alt="" width="40" height="40"><div><h1>Átadó lap – ${esc(petName(p))}</h1><div class="pm">Petavira · ${fmtDate(o.from)} – ${fmtDate(o.to)} · készült: ${fmtDate(today())}</div></div></div>
+  ${photo}<h2>Az állat</h2><table class="kv"><tbody>${kv.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</tbody></table><div style="clear:both"></div>
+  <h2>Etetés</h2>${s&&s.d?`<p>${s.name?`<b>${esc(s.name)}</b>, `:''}napi kb. <b>${s.d} g</b>${meals?`, ${meals} étkezésre osztva (alkalmanként kb. ${Math.round(s.d/meals)} g)`:''}.</p>`:meals?`<p>Naponta ${meals} étkezés.</p>`:'<p class="pe">Az etetést a gazdi az egyéb tudnivalóknál írja le.</p>'}
+  ${F&&F.bad&&F.bad.length?`<h3>Tilos vagy kerülendő</h3><ul>${F.bad.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+  <h2>Teendők az időszak alatt</h2>${tasks.length?`<table><thead><tr><th>Nap</th><th>Teendő</th></tr></thead><tbody>${tasks.map(([d,l])=>`<tr><td>${fmtDate(d)}</td><td>${l.map(esc).join('<br>')}</td></tr>`).join('')}</tbody></table>`:'<p class="pe">Erre az időszakra nincs ütemezett teendő az appban.</p>'}
+  ${T?`<h2>Terrárium – célértékek</h2><p>${terraFields(p).filter(f=>T[f]).map(f=>`${tLabel(p,f)}: ${tGoal(T[f])} ${TF[f][1]}`).join('; ')}.</p>`:''}
+  ${G&&wFields(p).some(f=>G[f])?`<h2>Akvárium – célértékek</h2><p>${wFields(p).filter(f=>G[f]).map(f=>`${WF[f][0]}: ${wGoal(f,G[f])}${WF[f][1]?' '+WF[f][1]:''}`).join('; ')}.</p>`:''}
+  <h2>Ha baj van</h2><p>Sürgős tünetnél (pl. légzési nehézség, görcs, mérgezés gyanúja, erős vérzés) azonnal fordulj állatorvoshoz vagy ügyelethez.</p>
+  ${o.vet||o.vetTel?`<p><b>Állatorvos:</b> ${esc(o.vet)}${o.vet&&o.vetTel?', ':''}${esc(o.vetTel)}</p>`:''}
+  ${o.note?`<h2>Egyéb tudnivalók</h2><div class="pq">${esc(o.note)}</div>`:''}
+  ${o.own||o.ownTel?`<h2>A gazdi elérhetősége</h2><p>${esc(o.own)}${o.own&&o.ownTel?', ':''}${esc(o.ownTel)}</p>`:''}
+  <p class="pf">Az adatokat a gazdi rögzítette. A célértékek és a tilos ételek tájékoztató jellegűek. A Petavira nem helyettesíti az állatorvosi vizsgálatot.</p>`}
 /* chat */
 let chatBusy=null,chatCtl=null,streamText='',chatNote='',sampleP=null,chatSheet=false,chatTopic='';
 const chatLog=p=>S.chat[p.id]||[];
@@ -3774,7 +3816,7 @@ function wizardNext(){
       const p={id:old?old.id:newId(),name:clean(w.name),species:w.species,speciesName:w.species==='egyeb'?clean(w.speciesName):'',breed:(w.species==='egyeb'?clean(w.breed):w.breed)||'mix',size:w.size,count:cnt,tankL:tank,birth:bs,
         est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:fish?'':w.sex,neutered:g==='emlos'||g==='egyeb'?w.neutered:'',weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{}};
       /* okt. 28.: a profil szerkesztése ne veszítse el a máshol beállított értékeket (UVB-időköz, vízcsere, utazási lista, tápkészlet) */
-      if(old)for(const k of ['uvbM','uvbOn','wcW','tripChk','stock','stockHist'])if(old[k]!=null)p[k]=old[k];
+      if(old)for(const k of ['uvbM','uvbOn','wcW','tripChk','stock','stockHist','sitter'])if(old[k]!=null)p[k]=old[k];
       p.lastStage=old&&old.birth===bs&&old.species===p.species&&String(limitsFor(old))===String(limitsFor(p))?old.lastStage:stageOf(p);
       if(old)S.pets[S.pets.indexOf(old)]=p;else S.pets.push(p);
       if(kg&&(!old||old.weight!==kg)){S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===iso(t)));S.events.push({id:newId(),petId:p.id,kind:'w',date:iso(t),kg})}
@@ -4078,6 +4120,12 @@ const ACT={
   evDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Esemény törölve')},
   hTab(el){hTab=el.dataset.k;render()},
   vpOpen(){vpSheet()},
+  sitterOpen(){sitterSheet()},
+  sitterGo(){const p=pet();if(!p||!premOK('sitter'))return;const fs=$('#siFrom').value,ts=$('#siTo').value;
+    if(!DATE_OK.test(fs)||!DATE_OK.test(ts)||ts<fs)return showErr('#hErr','Add meg az időszakot (a vége nem lehet korábban, mint az eleje).');
+    const from=D(fs),to=D(ts);if(Math.round((to-from)/DAY)>SIT_MAX)return showErr('#hErr',`Legfeljebb ${SIT_MAX} napos időszakot adhatsz meg.`);
+    const o={from,to,own:clean($('#siOwn').value,40),ownTel:telClean($('#siOwnTel').value),vet:clean($('#siVet').value,60),vetTel:telClean($('#siVetTel').value),note:qClean($('#siNote').value).slice(0,500)};
+    p.sitter={note:o.note,vet:o.vet};save();closeSheet();vpPrint(sitterHtml(p,o),p,'atado-lap')},
   stockNew(){stockSheet(false)},stockEdit(){stockSheet(true)},
   stockSave(el){const p=pet();if(!p||!premOK('food'))return;const edit=!!el.dataset.edit,u=$('#stU').value==='g'?1:1000,gv=parseFloat($('#stG').value.replace(',','.')),g=Math.round(gv*u),dRaw=$('#stD').value.trim(),d=+dRaw,start=$('#stStart').value,w=+$('#stW').value,name=clean($('#stName').value,40);
     if(!(g>=10&&g<=100000))return showErr('#stErr','A kiszerelés 10 g és 100 kg között lehet.');if(!/^\d{1,4}$/.test(dRaw)||d<1||d>5000)return showErr('#stErr','A napi adagot egész grammban add meg (1–5000).');
