@@ -3824,7 +3824,7 @@ const aiLeftHtml=()=>{if(!cloud.uid)return'';aiAcct();if(aiRate.unl===true)retur
   if(q&&q.limit){const n=aiLeft();if(n===null)return'';return`<p class="pleft${n?'':' none'}">${n?`Ma még ${n} kérdésed van.`:`Mára elfogyott a napi ${q.limit} kérdésed. Holnap újra kérdezhetsz.`}</p>`}
   const n=aiLeft();if(n===null)return'';return`<p class="pleft${n?'':' none'}">${n?`Ma még ${n} kérdésed van.`:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`}</p>`};
 const AI_NEUTRAL='Most nem tudok válaszolni, próbáld újra később.';
-const ERR={login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
+const ERR={short:'Írd le bővebben, mire vagy kíváncsi, pl. „Hány gramm tápot adjak naponta?”',login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
   daily_limit:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`,hourly_limit:'Ebben az órában elérted a kérdéskeretet. Próbáld újra később.',
   /* okt. 21.: díjcsomag szerinti keret (a szerver PLAN_START után küldi) és a napi globális ingyenes keret */
   weekly_limit:'Ezen a héten elfogytak az ingyenes kérdéseid. Hétfőtől újra kérdezhetsz.',monthly_limit:'Ebben a hónapban elfogytak a Tanácsadó-kérdéseid. A következő hónap 1-jétől újra kérdezhetsz.',plan_ended:'Az ingyenes Tanácsadó-időszakod lejárt.',free_busy:'Ma már nagyon sokan kérdeztek, ezért az ingyenes Tanácsadó szünetel. Holnap újra kérdezhetsz.',too_fast:'Várj néhány másodpercet a következő kérdéssel.',
@@ -3939,9 +3939,12 @@ async function repSend(reason){
   try{j=await res.json()}catch(e){}
   if(res.ok&&j&&j.ok===true)return done('');
   done(REP_ERR[j&&j.code]||(res.status===401?ERR.session_expired:AI_NEUTRAL))}
+const chatShort=t=>String(t).split(/\s+/).filter(w=>/[\p{L}\p{N}]/u.test(w)).length<=2;
 async function sendChat(raw){
   const p=pet();if(!p||chatBusy)return;const text=aiClean(aiRedact(aiClean(raw,AI_Q)),AI_Q);if(!text)return;
   if(!aiAgreed()){chatNote=ERR.consent;redrawChat();return}
+  /* okt. 28.: 1–2 szavas kérdés nem megy a szerverre (a szűrő úgyis elutasítaná, és a keretből fogyna): helyette útmutatás */
+  if(chatShort(text)){chatNote=ERR.short;redrawChat();return}
   const log=S.chat[p.id]=S.chat[p.id]||[],lastU=[...log].reverse().find(m=>m.r==='u');
   if(lastU&&lastU.sig&&lastU.t===text){chatNote=ERR.dup;redrawChat();return}
   const lim=aiLimit();if(lim){chatNote=aiErrText(lim);redrawChat();return}
