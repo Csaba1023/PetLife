@@ -2912,7 +2912,7 @@ function vpPrint(html,p){let el=$('#print');if(!el){el=document.createElement('d
    Adat: S.events, kind:'rem' {date: első alkalom, title, ev:'once'|'d'|'w'|'m', n, until?, note?}; pipálás: kind:'remlog' {date, rem}.
    Állatonként legfeljebb 20 emlékeztető, emlékeztetőnként a legutóbbi 50 pipálás marad meg. Az értesítés a meglévő 19 órás push-tervben megy (pushPlan),
    szerverváltozás nincs. A sablonok általános gondozási teendők, időköz nélkül (a gyakoriságot a gazdi adja meg). */
-const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:30,w:12,m:12};
+const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:10,w:3,m:6};
 const REM_TPL={emlos:['Karomvágás','Fogmosás','Szőrápolás','Fekhely mosása','Alomcsere','Nagytakarítás'],
  madar:['Kalitka takarítása','Etető- és itatótál mosása','Ülőrudak tisztítása','Fürdetés'],
  hullo:['Terrárium takarítása','Itatótál cseréje','Aljzatcsere','Hőmérők ellenőrzése'],
@@ -2928,6 +2928,11 @@ const remStep=(r,d)=>r.ev==='d'?new Date(d.getFullYear(),d.getMonth(),d.getDate(
 /* a következő alkalom: pipálás nélkül az első dátum, utána a legutóbbi pipálástól; egyszerinél pipálás után nincs; a befejezés utáni nincs */
 function remNext(r){const l=remLogs(r)[0];let d=l?remStep(r,D(l.date)):D(r.date);if(!d)return null;if(l&&D(l.date)<D(r.date)&&r.ev!=='once')d=D(r.date);return r.until&&iso(d)>r.until?null:d}
 const remEvTxt=r=>r.ev==='once'?'Egyszeri':remN(r)>1?`${remN(r)} ${{d:'naponta',w:'hetente',m:'havonta'}[r.ev]}`:{d:'Naponta',w:'Hetente',m:'Havonta'}[r.ev];
+/* okt. 28. (Csaba kérésére): a gyakoriság egyetlen legördülő listából, természetes megfogalmazással */
+const REM_FREQ=[['once','Csak egyszer'],['d:1','Minden nap'],...[2,3,4,5,6,7,10].map(n=>['d:'+n,n+' naponta']),['w:1','Minden héten'],...[2,3].map(n=>['w:'+n,n+' hetente']),['m:1','Minden hónapban'],...[2,3,4,6].map(n=>['m:'+n,n+' havonta'])];
+const remKey=r=>r.ev==='once'?'once':r.ev+':'+remN(r);
+/* egy korábban mentett, listán kívüli gyakoriság (pl. 9 naponta) is megmarad szerkesztéskor */
+const remFreqOpts=r=>{const k=r&&remKey(r);return k&&!REM_FREQ.some(x=>x[0]===k)?[...REM_FREQ,[k,remEvTxt(r)]]:REM_FREQ};
 const remWhen=(d,t=today())=>{const dd=Math.round((d-t)/DAY);return`${fmtDate(d)}${dd<0?', elmaradt':dd===0?', ma':dd===1?', holnap':''}`};
 /* a push-tervhez: az alkalmak egy napon belül; a következő alkalomtól lépteti az időközt (feltételezve, hogy a gazdi elvégzi) */
 function remOnDay(r,day){let d=remNext(r);if(!d)return false;const k=iso(day);for(let i=0;i<120&&d&&iso(d)<=k;i++){if(iso(d)===k)return!(r.until&&k>r.until);if(r.ev==='once')return false;d=remStep(r,d)}return false}
@@ -2945,10 +2950,9 @@ function remSheet(id){const p=pet(),r=id?S.events.find(e=>e.id===id&&e.kind==='r
   openSheet(`<h2>${r?'Emlékeztető szerkesztése':'Új emlékeztető'}</h2>
   ${r?'':`<div class="chips" id="remTpl">${remTpl(p).map(x=>`<button type="button" class="chip" data-act="remTpl" data-t="${esc(x)}">${esc(x)}</button>`).join('')}</div>`}
   <label class="f"><span>Megnevezés</span><input id="remTitle" maxlength="40" value="${esc(r?r.title:'')}" placeholder="Válassz fent, vagy írd be"></label>
-  <label class="f"><span>${r?'Első alkalom':'Első alkalom (mikor szóljunk először?)'}</span><input type="date" id="remDate" value="${r?r.date:iso(today())}"></label>
-  <div class="f"><span>Ismétlés</span>${radio('remEv',Object.entries(REM_EV).map(([k,v])=>[k,k==='once'?v:v[0].toUpperCase()+v.slice(1)]),r?r.ev:'w')}</div>
-  <label class="f"><span>Hányanként? (1 = minden nap / hét / hónap, 3 = minden 3.; naponta legfeljebb 30)</span><input id="remN" inputmode="numeric" maxlength="2" value="${r?remN(r):1}"></label>
-  <label class="f"><span>Befejezés (nem kötelező)</span><input type="date" id="remUntil" value="${r&&r.until?r.until:''}"></label>
+  <label class="f"><span>Mikor esedékes először?</span><input type="date" id="remDate" value="${r?r.date:iso(today())}"></label>
+  <label class="f"><span>Milyen gyakran?</span><select id="remFreq">${remFreqOpts(r).map(([v,n])=>`<option value="${v}"${v===(r?remKey(r):'w:1')?' selected':''}>${n}</option>`).join('')}</select></label>
+  <label class="f"><span>Meddig ismételjük? (nem kötelező; ha üresen hagyod, nincs vége)</span><input type="date" id="remUntil" value="${r&&r.until?r.until:''}"></label>
   <label class="f"><span>Megjegyzés (nem kötelező)</span><textarea id="remNote" rows="2" maxlength="100">${esc(r?r.note:'')}</textarea></label>
   <p class="err" id="remErr" role="alert" hidden></p>
   <button class="btn" data-act="remSave" data-id="${r?r.id:''}">Mentés</button>${r?`<button class="btn ghost" style="color:var(--alert)" data-act="remDelAsk" data-id="${r.id}">Emlékeztető törlése</button>`:''}<button class="btn ghost" data-act="close">Mégse</button>`)}
@@ -3933,10 +3937,10 @@ const ACT={
   remNew(){remSheet()},remEdit(el){remSheet(el.dataset.id)},
   remTpl(el){const i=$('#remTitle');i.value=el.dataset.t;document.querySelectorAll('#remTpl .chip').forEach(b=>b.setAttribute('aria-pressed',String(b===el)))},
   remSave(el){const p=pet(),old=S.events.find(e=>e.id===el.dataset.id&&e.kind==='rem'),title=clean($('#remTitle').value,40),date=$('#remDate').value,until=$('#remUntil').value,
-    ev=($('#sheet input[name="remEv"]:checked')||{}).value||'w',nRaw=$('#remN').value.trim(),n=ev==='once'?1:+nRaw,note=qClean($('#remNote').value).replace(/\n/g,' ').slice(0,100);
+    [ev,nRaw='1']=($('#remFreq').value||'w:1').split(':'),n=ev==='once'?1:+nRaw,note=qClean($('#remNote').value).replace(/\n/g,' ').slice(0,100);
     if(!p)return;if(!title)return showErr('#remErr','Adj nevet az emlékeztetőnek, vagy válassz egy sablont.');if(!DATE_OK.test(date))return showErr('#remErr','Add meg az első alkalom dátumát.');
-    if(ev!=='once'&&(!/^\d{1,2}$/.test(nRaw)||n<1||n>REM_N[ev]))return showErr('#remErr',`Az ismétlés 1 és ${REM_N[ev]} között lehet.`);
-    if(until&&(!DATE_OK.test(until)||until<date))return showErr('#remErr','A befejezés nem lehet korábban, mint az első alkalom.');
+    if(!REM_EV[ev]||ev!=='once'&&(!/^\d{1,2}$/.test(nRaw)||n<1||n>REM_N[ev]))return showErr('#remErr','Válaszd ki, milyen gyakran legyen.');
+    if(until&&(!DATE_OK.test(until)||until<date))return showErr('#remErr','Az ismétlés vége nem lehet korábban, mint az első alkalom.');
     if(!old&&(!premOK('remind')||remsOf(p).length>=REM_MAX))return;
     const o={title,date,ev,n,note};if(until&&ev!=='once')o.until=until;
     if(old){Object.assign(old,o);if(!o.until)delete old.until}else S.events.push({id:newId(),petId:p.id,kind:'rem',...o});save();closeSheet();render();toast('Emlékeztető mentve')},
