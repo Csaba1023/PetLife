@@ -2449,7 +2449,7 @@ const AGE_ACTS=new Set(['age18','privAge','privBack']);/* okt. 26.: a 'tab' kike
    azonosító csak betű/szám/_/- lehet (HTML-attribútumba kerül), a mért értékek számok, ismeretlen kategória → „egyéb”,
    hibás dátumú vagy gazdátlan bejegyzés kimarad. Nem töröl érvényes adatot; a hibás azonosítót újra cseréli. */
 const ID_OK=/^[A-Za-z0-9_-]{1,64}$/,DATE_OK=/^\d{4}-\d{2}-\d{2}$/,NUM_OK=/^-?\d{1,6}([.,]\d{1,4})?$/;
-const EV_NUM=['ft','kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW'];
+const EV_NUM=['ft','min','kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW'];
 const numFix=(o,ks)=>ks.forEach(k=>{const v=o[k];if(v==null||v==='')return;if(typeof v==='number'?!Number.isFinite(v):!(typeof v==='string'&&NUM_OK.test(v)))delete o[k]});
 const isObj=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
 function fixState(st){
@@ -2468,6 +2468,7 @@ function fixState(st){
     if(e.kind==='own'&&!EVCAT[e.cat])e.cat='other';
     if(e.kind==='rem'){if(typeof e.title!=='string'||!REM_EV[e.ev])return false;if(e.until!=null&&!DATE_OK.test(String(e.until)))delete e.until}
     if(e.kind==='remlog'&&typeof e.rem!=='string')return false;
+    if(e.kind==='walk'){if(!(Number.isInteger(+e.min)&&+e.min>0&&+e.min<=WALK_MAX))return false;e.min=+e.min}
     if(e.kind==='cost'){if(!(Number.isInteger(+e.ft)&&+e.ft>0&&+e.ft<=COST_MAX))return false;e.ft=+e.ft;if(!COST_CAT[e.cat])e.cat='other'}return true});
   const byPet=o=>{const r={};if(isObj(o))for(const[k,v]of Object.entries(o)){const k2=re(k);if(ids.has(k2))r[k2]=v}return r};
   const chat=byPet(st.chat);for(const k in chat)if(!Array.isArray(chat[k]))delete chat[k];else chat[k]=chat[k].filter(m=>isObj(m)&&typeof m.t==='string');
@@ -2861,7 +2862,7 @@ function vHealth(p){
    A4-es összesítő a böngésző nyomtatásával („Mentés PDF-ként” / megosztás), szerver nélkül. Mindig világos: a #print saját színeket kap (index.html, @media print).
    Nem kerül bele: a gazdi neve és e-mail-címe, a fotó, a Tanácsadó „lehetséges okai”. A „Kérdéseim” szöveg nem mentődik (csak az összesítőbe kerül).
    Prémium jelölés: amíg nincs PLAN_START, mindenkinek elérhető (a zárt tesztelők is kipróbálják). */
-const PREM_FEAT=new Set(['vetPdf','remind','watch','cost','food','sitter']);
+const PREM_FEAT=new Set(['vetPdf','remind','watch','cost','food','sitter','walk']);
 const premOK=f=>!PREM_FEAT.has(f)||!planOn()||!!(plan&&['premium','trial','test'].includes(plan.tier));
 const VP_PER=[['3','3 hónap'],['6','6 hónap'],['12','12 hónap'],['0','Összes']];
 const VP_SEC={vacc:'Oltások',par:'Parazita elleni kezelések',w:'Súly',sym:'Tünetnapló',vet:'Állatorvosi látogatások',terra:'Terrárium',water:'Vízértékek'};
@@ -3353,7 +3354,7 @@ function vNoPet(){
 function vHub(p){
   const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
   return`<h1>Gondozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}</p>
-  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék, utazás')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}${row('cost','coin','Költségek','Kiadások havonta és kategóriánként')}<button data-act="sitterOpen"><i>${ic('memo')}</i><span><b>Átadó lap</b><small>Szitternek, panziónak: etetés, teendők, tudnivalók</small></span></button><button data-act="lostOpen"><i>${ic('pin')}</i><span><b>Elveszett az állatom</b><small>Nyomtatható plakát fotóval, letéphető telefonszámmal</small></span></button></div>`}
+  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék, utazás')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}${p.species==='kutya'?row('walk','paw','Sétanapló','Séták percre, heti áttekintés'):''}${row('cost','coin','Költségek','Kiadások havonta és kategóriánként')}<button data-act="sitterOpen"><i>${ic('memo')}</i><span><b>Átadó lap</b><small>Szitternek, panziónak: etetés, teendők, tudnivalók</small></span></button><button data-act="lostOpen"><i>${ic('pin')}</i><span><b>Elveszett az állatom</b><small>Nyomtatható plakát fotóval, letéphető telefonszámmal</small></span></button></div>`}
 /* ---------- Költségnapló (okt. 28.; 5. prémium funkció) ----------
    Adat: S.events, kind:'cost' {date, ft (egész Ft, 1–5 000 000), cat, note? (max. 60, clean)}. Szerver, SQL és AI nincs.
    Nézet: e havi és idei összeg, 12 havi oszlopgrafikon, kategóriánkénti bontás, lista; „ez az állat” / „minden állatom”.
@@ -3470,6 +3471,27 @@ function lostHtml(p,o){const sex={him:'hím',nosteny:'nőstény'}[p.sex],img=okP
   ${o.reward?`<p class="lr">${esc(o.reward)}</p>`:''}
   <div class="lc">Ha láttad, kérlek, hívj:<br><b>${esc(o.tel)}</b></div>
   <div class="ltr">${tear}</div></div>`}
+/* ---------- Sétanapló (okt. 28.; prémium, csak kutya) ----------
+   Adat: S.events, kind:'walk' {date, min (egész, 1–600), note? (≤40, clean)}; naponta több séta. Ajánlott percet/célt szándékosan nem írunk (forrás nélkül nem). */
+const WALK_MAX=600,WALK_Q=[15,30,45,60];
+const walksOf=p=>recs(p,'walk');
+function walkChart(l,t){const ds=[...Array(14)].map((_,i)=>iso(addDays(t,i-13))),sum=ds.map(k=>l.filter(e=>e.date===k).reduce((s,e)=>s+e.min,0)),hi=Math.max(...sum);
+  if(!hi)return'';const W=320,H=150,px=6,pb=24,pt=20,bw=(W-2*px)/14;
+  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Séták az utolsó 14 napban, legfeljebb ${hi} perc naponta" font-size="9" fill="var(--muted)">
+  ${sum.map((v,i)=>{const h=v/hi*(H-pt-pb),x=px+i*bw;return`<rect x="${(x+2).toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${(bw-4).toFixed(1)}" height="${Math.max(h,v?1.5:0).toFixed(1)}" rx="3" fill="var(--brand)"${i===13?'':' opacity=".55"'}/><text x="${(x+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${+ds[i].slice(8)}.</text>${v?`<text x="${(x+bw/2).toFixed(1)}" y="${(H-pb-h-4).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="600" fill="var(--ink)">${v}</text>`:''}`}).join('')}
+  <text x="${px}" y="10">perc / nap</text></svg>`}
+function walkHtml(p){const t=today(),l=walksOf(p),tk=iso(t),td=l.filter(e=>e.date===tk),mon=addDays(t,-((t.getDay()+6)%7)),wk=l.filter(e=>e.date>=iso(mon)&&e.date<=tk),wsum=wk.reduce((s,e)=>s+e.min,0),days=Math.round((t-mon)/DAY)+1;
+  return`${BACK}<h1>Sétanapló</h1><p class="sub" style="margin-top:6px">${esc(petName(p))} sétái. A mozgásigényről a Tartás és nevelés rész (Játék és mozgás) és az állatorvos ad eligazítást; az app nem ír elő napi célt.</p>
+  <div class="card" style="margin-top:14px" id="walkSum"><div class="tv"><div><span class="when">Ma</span><div class="num">${td.reduce((s,e)=>s+e.min,0)} perc</div><span class="when">${td.length} séta</span></div><div><span class="when">Ezen a héten</span><div class="num">${wsum} perc</div><span class="when">napi átlag: ${Math.round(wsum/days)} perc</span></div></div>${walkChart(l,t)}</div>
+  ${premOK('walk')?`<p style="margin-top:12px"><button class="btn" data-act="walkNew">Séta most</button></p>`:'<p class="sub">Új sétát a prémium csomagban rögzíthetsz.</p>'}
+  ${l.length?`<h2>Séták</h2><ul class="list" id="walkList">${l.slice(0,30).map(e=>`<li><div style="flex:1;min-width:0"><b>${e.min} perc</b><span class="when">${fmtDate(D(e.date))}${e.note?' · '+esc(e.note):''}</span></div><button class="btn text" data-act="walkEdit" data-id="${e.id}">Szerkesztés</button></li>`).join('')}</ul>`:'<p class="sub" style="margin-top:14px">Még nincs rögzített séta.</p>'}`}
+function walkSheet(id){const p=pet(),e=id?S.events.find(x=>x.id===id&&x.kind==='walk'):null;if(!p||(!e&&!premOK('walk')))return;
+  openSheet(`<h2>${e?'Séta szerkesztése':'Séta'}</h2>
+  <div class="chips" id="walkQ">${WALK_Q.map(n=>`<button type="button" class="chip" data-act="walkQ" data-n="${n}">${n} perc</button>`).join('')}</div>
+  <label class="f"><span>Hány percet sétáltatok?</span><input id="wkMin" inputmode="numeric" maxlength="3" value="${e?e.min:''}" placeholder="pl. 30"></label>
+  <label class="f"><span>Mikor?</span><input type="date" id="wkDate" value="${e?e.date:iso(today())}" max="${iso(today())}"></label>
+  <label class="f"><span>Megjegyzés (nem kötelező)</span><input id="wkNote" maxlength="40" value="${esc(e?e.note:'')}" placeholder="pl. futás a parkban"></label>
+  <p class="err" id="wkErr" role="alert" hidden></p><button class="btn" data-act="walkSave" data-id="${e?e.id:''}">Mentés</button>${e?`<button class="btn ghost" style="color:var(--alert)" data-act="walkDel" data-id="${e.id}">Törlés</button>`:''}<button class="btn ghost" data-act="close">Mégse</button>`)}
 /* chat */
 let chatBusy=null,chatCtl=null,streamText='',chatNote='',sampleP=null,chatSheet=false,chatTopic='';
 const chatLog=p=>S.chat[p.id]||[];
@@ -3733,7 +3755,7 @@ function auErr(e){const c=String((e&&e.code)||''),m=String((e&&e.message)||'').t
   return`Most nem sikerült. Próbáld újra kicsit később.${c?` (hibakód: ${c.slice(0,40)})`:''}`}
 function renderTop(){const p=pet(),b=$('#petPill');b.hidden=!p;if(p)b.innerHTML=`${ava(p)}<b>${esc(petName(p))}</b><span aria-hidden="true">▾</span>`;
   document.documentElement.style.setProperty('--acc',GROUPS[p?grp(p):'egyeb'].c);$('#gear').setAttribute('aria-pressed',tab==='more');
-  const cur={food:'hub',vets:'hub',care:'hub',prod:'hub',cost:'hub'}[tab]||tab;$('#fab').hidden=!p||tab==='ai';document.querySelectorAll('.tab').forEach(t=>t.dataset.tab===cur?t.setAttribute('aria-current','page'):t.removeAttribute('aria-current'))}
+  const cur={food:'hub',vets:'hub',care:'hub',prod:'hub',cost:'hub',walk:'hub'}[tab]||tab;$('#fab').hidden=!p||tab==='ai';document.querySelectorAll('.tab').forEach(t=>t.dataset.tab===cur?t.setAttribute('aria-current','page'):t.removeAttribute('aria-current'))}
 let fxKey='',fxAt=0;
 function render(opt={}){
   const p=pet(),v=$('#view'),draft=$('#chatIn')?$('#chatIn').value:'';
@@ -3754,6 +3776,7 @@ function render(opt={}){
   else if(tab==='care')v.innerHTML=vCare(p);
   else if(tab==='prod')v.innerHTML=vProd(p);
   else if(tab==='cost')v.innerHTML=costHtml(p);
+  else if(tab==='walk')v.innerHTML=p.species==='kutya'?walkHtml(p):vHub(p);
   else if(tab==='ai'){v.className='chatmode';v.innerHTML=vChat(p);if(!opt.clearDraft&&$('#chatIn'))$('#chatIn').value=draft;scrollChat();planGet()}
   if(opt.top)v.scrollTop=0;
   /* a vízszintesen görgethető fülsorokban a kiválasztott fül legyen látható */
@@ -4144,6 +4167,12 @@ const ACT={
   hTab(el){hTab=el.dataset.k;render()},
   vpOpen(){vpSheet()},
   sitterOpen(){sitterSheet()},
+  walkNew(){walkSheet()},walkEdit(el){walkSheet(el.dataset.id)},
+  walkQ(el){$('#wkMin').value=el.dataset.n;document.querySelectorAll('#walkQ .chip').forEach(b=>b.setAttribute('aria-pressed',String(b===el)))},
+  walkSave(el){const p=pet(),old=S.events.find(e=>e.id===el.dataset.id&&e.kind==='walk'),raw=$('#wkMin').value.trim(),min=+raw,date=$('#wkDate').value,note=clean($('#wkNote').value,40);
+    if(!p)return;if(!/^\d{1,3}$/.test(raw)||min<1||min>WALK_MAX)return showErr('#wkErr','A sétát percben add meg (1 és 600 között).');if(!DATE_OK.test(date)||D(date)>today())return showErr('#wkErr','Adj meg egy mai vagy korábbi dátumot.');
+    if(!old&&!premOK('walk'))return;const o={min,date,note};if(old)Object.assign(old,o);else S.events.push({id:newId(),petId:p.id,kind:'walk',...o});save();closeSheet();render();toast('Séta mentve')},
+  walkDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Séta törölve')},
   lostOpen(){lostSheet()},
   lostGo(){const p=pet();if(!p)return;const tel=telClean($('#loTel').value);if(tel.replace(/\D/g,'').length<6)return showErr('#hErr','Add meg a telefonszámot, amin hívhatnak.');
     const o={tel,where:clean($('#loWhere').value,80),marks:qClean($('#loMarks').value).replace(/\n/g,' ').slice(0,200),reward:clean($('#loReward').value,60)};
