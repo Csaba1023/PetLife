@@ -2459,6 +2459,7 @@ function fixState(st){
     for(const k of ['name','speciesName','breed','species','size','sex','neutered','photo','birth','createdAt'])if(p[k]!=null&&typeof p[k]!=='string'&&typeof p[k]!=='number')delete p[k];
     {const ok=o=>isObj(o)&&+o.g>0&&+o.g<=100000&&+o.d>0&&+o.d<=5000&&DATE_OK.test(String(o.start))&&(o.name==null||typeof o.name==='string');
      if(p.sitter!=null&&!(isObj(p.sitter)&&(p.sitter.note==null||typeof p.sitter.note==='string')&&(p.sitter.vet==null||typeof p.sitter.vet==='string')))delete p.sitter;
+     if(p.marks!=null&&typeof p.marks!=='string')delete p.marks;
      if(p.stock!=null&&!ok(p.stock))delete p.stock;if(p.stockHist!=null)p.stockHist=Array.isArray(p.stockHist)?p.stockHist.filter(h=>ok(h)&&DATE_OK.test(String(h.end))).slice(0,5):[]}}
   const ids=new Set(pets.map(p=>p.id)),re=k=>map[k]||k;
   const events=(Array.isArray(st.events)?st.events:[]).filter(isObj).filter(e=>{e.petId=re(String(e.petId));
@@ -3352,7 +3353,7 @@ function vNoPet(){
 function vHub(p){
   const row=(t,i,b,d)=>`<button data-act="tab" data-tab="${t}"><i>${ic(i)}</i><span><b>${b}</b><small>${d}</small></span></button>`;
   return`<h1>Gondozás</h1><p class="sub" style="margin-top:4px">${esc(petName(p))}, ${fmtAge(p)}</p>
-  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék, utazás')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}${row('cost','coin','Költségek','Kiadások havonta és kategóriánként')}<button data-act="sitterOpen"><i>${ic('memo')}</i><span><b>Átadó lap</b><small>Szitternek, panziónak: etetés, teendők, tudnivalók</small></span></button></div>`}
+  <div class="hub">${row('food','bowl','Táplálkozás','Adag, gyakoriság, tiltott ételek')}${row('care','home','Tartás és nevelés','Útmutatók, otthon, leckék, játék, utazás')}${row('prod','bag','Ajánlott termékek','Táp, alom, felszerelés, játék')}${row('vets','pin','Állatorvosok','Keresés a településed szerint')}${row('cost','coin','Költségek','Kiadások havonta és kategóriánként')}<button data-act="sitterOpen"><i>${ic('memo')}</i><span><b>Átadó lap</b><small>Szitternek, panziónak: etetés, teendők, tudnivalók</small></span></button><button data-act="lostOpen"><i>${ic('pin')}</i><span><b>Elveszett az állatom</b><small>Nyomtatható plakát fotóval, letéphető telefonszámmal</small></span></button></div>`}
 /* ---------- Költségnapló (okt. 28.; 5. prémium funkció) ----------
    Adat: S.events, kind:'cost' {date, ft (egész Ft, 1–5 000 000), cat, note? (max. 60, clean)}. Szerver, SQL és AI nincs.
    Nézet: e havi és idei összeg, 12 havi oszlopgrafikon, kategóriánkénti bontás, lista; „ez az állat” / „minden állatom”.
@@ -3413,7 +3414,7 @@ const SIT_MAX=60;
 const telClean=s=>String(s??'').replace(/[^0-9+()\/\- ]/g,'').replace(/\s+/g,' ').trim().slice(0,20);
 function sitterSheet(){const p=pet();if(!p)return;if(!premOK('sitter'))return openSheet('<h2>Átadó lap</h2><p>Ez a Petavira prémium funkciója.</p><button class="btn ghost" data-act="close">Bezárás</button>');
   const s=p.sitter||{},t=today();
-  openSheet(`<h2>Átadó lap</h2><p class="sub">A4-es lap annak, aki vigyáz az állatodra: etetés, teendők napokra bontva, tudnivalók. A nyomtatási ablakban PDF-ként mentheted vagy megoszthatod.</p>
+  openSheet(`<h2>Átadó lap</h2><p class="sub">A4-es lap annak, aki vigyáz az állatodra. Az etetést, a teendőket napokra bontva, a célértékeket és a sürgős teendőket az app magától beleteszi az adataidból; itt csak azt add meg, amit nem tudhat. A nyomtatási ablakban PDF-ként mentheted vagy megoszthatod.</p>
   <div class="row" style="gap:8px"><label class="f" style="flex:1"><span>Mettől?</span><input type="date" id="siFrom" value="${iso(t)}"></label><label class="f" style="flex:1"><span>Meddig?</span><input type="date" id="siTo" value="${iso(addDays(t,7))}"></label></div>
   <label class="f"><span>A te neved (nem kötelező)</span><input id="siOwn" maxlength="40" autocomplete="off"></label>
   <label class="f"><span>A te telefonszámod (nem kötelező)</span><input id="siOwnTel" inputmode="tel" maxlength="20" autocomplete="off"></label>
@@ -3447,6 +3448,28 @@ function sitterHtml(p,o){const st=stageOf(p),F=FOOD[gkey(p)],lw=recs(p,'w')[0],s
   ${o.note?`<h2>Egyéb tudnivalók</h2><div class="pq">${esc(o.note)}</div>`:''}
   ${o.own||o.ownTel?`<h2>A gazdi elérhetősége</h2><p>${esc(o.own)}${o.own&&o.ownTel?', ':''}${esc(o.ownTel)}</p>`:''}
   <p class="pf">Az adatokat a gazdi rögzítette. A célértékek és a tilos ételek tájékoztató jellegűek. A Petavira nem helyettesíti az állatorvosi vizsgálatot.</p>`}
+/* ---------- „Elveszett” plakát (okt. 28.; INGYENES – biztonsági funkció, ÁSZF 4.1) ----------
+   Mentődik állatonként: az ismertetőjegyek (p.marks, ≤200, qClean). NEM mentődik: a helyszín, a dátum, a telefonszám, a jutalom szövege.
+   A chip számát az app nem tárolja: csak azt írjuk ki, ha az Életútban a mikrochip ki van pipálva. */
+const lostChip=p=>S.events.some(e=>e.petId===p.id&&e.kind==='ms'&&e.key==='chip');
+function lostSheet(){const p=pet();if(!p)return;
+  openSheet(`<h2>Elveszett plakát</h2><p class="sub">A4-es, nyomtatható plakát ${esc(petName(p))} fotójával, letéphető telefonszámos cetlikkel. A nyomtatási ablakban PDF-ként is mentheted vagy megoszthatod.</p>
+  <label class="f"><span>Mikor és hol látták utoljára?</span><input id="loWhere" maxlength="80" placeholder="pl. okt. 28. este, Szeged, Tisza Lajos krt."></label>
+  <label class="f"><span>Telefonszám, amin hívhatnak</span><input id="loTel" inputmode="tel" maxlength="20" autocomplete="off"></label>
+  <label class="f"><span>Ismertetőjegyek (nem kötelező)</span><textarea id="loMarks" rows="2" maxlength="200" placeholder="pl. fehér folt a mellén, piros nyakörv">${esc(p.marks||'')}</textarea></label>
+  <label class="f"><span>Jutalom (nem kötelező)</span><input id="loReward" maxlength="60" placeholder="pl. Becsületes megtalálónak jutalom"></label>
+  <p class="sub">Az ismertetőjegyeket az app megjegyzi. A helyszínt, a telefonszámot és a jutalmat nem menti el.</p>${sheetEnd('lostGo','Plakát készítése')}`)}
+function lostHtml(p,o){const sex={him:'hím',nosteny:'nőstény'}[p.sex],img=okPhoto(p.photo)?p.photo:spImg(p.species);
+  const facts=[esc(speciesLabel(p)),esc(breedLabel(p)),sex,fmtAge(p)].filter(Boolean).join(' · '),tear=[...Array(8)].map(()=>`<div class="lt"><b>${esc(petName(p))}</b><br>${esc(o.tel)}</div>`).join('');
+  return`<div class="lost"><div class="lh">ELVESZETT – KERESSÜK</div>
+  ${img?`<img class="li" src="${esc(img)}" alt="">`:''}
+  <div class="ln">${esc(petName(p))}</div><div class="lf">${facts}</div>
+  ${o.marks?`<p class="lm"><b>Ismertetőjegyek:</b> ${esc(o.marks)}</p>`:''}
+  ${o.where?`<p class="lm"><b>Utoljára látták:</b> ${esc(o.where)}</p>`:''}
+  ${lostChip(p)?'<p class="lm"><b>Mikrochippel rendelkezik.</b></p>':''}
+  ${o.reward?`<p class="lr">${esc(o.reward)}</p>`:''}
+  <div class="lc">Ha láttad, kérlek, hívj:<br><b>${esc(o.tel)}</b></div>
+  <div class="ltr">${tear}</div></div>`}
 /* chat */
 let chatBusy=null,chatCtl=null,streamText='',chatNote='',sampleP=null,chatSheet=false,chatTopic='';
 const chatLog=p=>S.chat[p.id]||[];
@@ -3816,7 +3839,7 @@ function wizardNext(){
       const p={id:old?old.id:newId(),name:clean(w.name),species:w.species,speciesName:w.species==='egyeb'?clean(w.speciesName):'',breed:(w.species==='egyeb'?clean(w.breed):w.breed)||'mix',size:w.size,count:cnt,tankL:tank,birth:bs,
         est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:fish?'':w.sex,neutered:g==='emlos'||g==='egyeb'?w.neutered:'',weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{}};
       /* okt. 28.: a profil szerkesztése ne veszítse el a máshol beállított értékeket (UVB-időköz, vízcsere, utazási lista, tápkészlet) */
-      if(old)for(const k of ['uvbM','uvbOn','wcW','tripChk','stock','stockHist','sitter'])if(old[k]!=null)p[k]=old[k];
+      if(old)for(const k of ['uvbM','uvbOn','wcW','tripChk','stock','stockHist','sitter','marks'])if(old[k]!=null)p[k]=old[k];
       p.lastStage=old&&old.birth===bs&&old.species===p.species&&String(limitsFor(old))===String(limitsFor(p))?old.lastStage:stageOf(p);
       if(old)S.pets[S.pets.indexOf(old)]=p;else S.pets.push(p);
       if(kg&&(!old||old.weight!==kg)){S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===iso(t)));S.events.push({id:newId(),petId:p.id,kind:'w',date:iso(t),kg})}
@@ -4121,6 +4144,10 @@ const ACT={
   hTab(el){hTab=el.dataset.k;render()},
   vpOpen(){vpSheet()},
   sitterOpen(){sitterSheet()},
+  lostOpen(){lostSheet()},
+  lostGo(){const p=pet();if(!p)return;const tel=telClean($('#loTel').value);if(tel.replace(/\D/g,'').length<6)return showErr('#hErr','Add meg a telefonszámot, amin hívhatnak.');
+    const o={tel,where:clean($('#loWhere').value,80),marks:qClean($('#loMarks').value).replace(/\n/g,' ').slice(0,200),reward:clean($('#loReward').value,60)};
+    p.marks=o.marks;save();closeSheet();vpPrint(lostHtml(p,o),p,'elveszett')},
   sitterGo(){const p=pet();if(!p||!premOK('sitter'))return;const fs=$('#siFrom').value,ts=$('#siTo').value;
     if(!DATE_OK.test(fs)||!DATE_OK.test(ts)||ts<fs)return showErr('#hErr','Add meg az időszakot (a vége nem lehet korábban, mint az eleje).');
     const from=D(fs),to=D(ts);if(Math.round((to-from)/DAY)>SIT_MAX)return showErr('#hErr',`Legfeljebb ${SIT_MAX} napos időszakot adhatsz meg.`);
