@@ -457,7 +457,7 @@ function kcalRange(p){
     ?{kolyok:ageM(p)<4?[2.7,3]:[2,2.5],novendek:[1.8,2],felnott:n?[1.4,1.6]:[1.6,1.8],idos:[1.2,1.4]}
     :{kolyok:[2,2.5],novendek:[1.6,2],felnott:n?[1,1.2]:[1.2,1.4],idos:[1.1,1.4]};
   const rer=70*Math.pow(kg,.75);return F[st].map(f=>Math.round(rer*f/10)*10)}
-const HT={vacc:'Oltások',par:'Paraziták',w:'Súly',terra:'Terrárium',water:'Vízértékek',sym:'Tünetek',vit:'Vitaminok',vet:'Látogatások'};
+const HT={vacc:'Oltások',par:'Paraziták',w:'Súly',terra:'Terrárium',water:'Vízértékek',sym:'Tünetek',vit:'Vitaminok',vet:'Látogatások',rem:'Emlékeztetők'};
 const VACC=new Set(['combo','rabies1','rabies2','rabiesY','vacc','vaccY']);
 const PAR={kulso:'Külső paraziták (bolha, kullancs)',belso:'Belső paraziták (féreghajtás)'};
 const PAR_SHORT={kulso:'Bolha és kullancs elleni kezelés',belso:'Féreghajtás'};
@@ -677,7 +677,7 @@ const VITG={madar:'Változatos étrend mellett az egészséges díszmadárnak á
  keteltu:'A rovarevő kétéltűek eleségét kalcium- és vitaminporral szokás beszórni; az axolotlnál a változatos, teljes értékű eleség az alap. A készítményt és a gyakoriságot a fajhoz értő állatorvossal egyeztesd.'};
 const vitFor=p=>VIT[p.species]||VITG[grp(p)]||VIT.egyeb;
 /* az Egészség lap részei fajcsoportonként: halnál nincs oltás, parazitakezelés és súlymérés; madárnál, hüllőnél és kétéltűnél nincs rutinoltás és rutin parazitakezelés */
-const htFor=p=>{const g=grp(p);return Object.keys(HT).filter(k=>k==='terra'?hasTerra(p):k==='water'?g==='hal':g==='hal'||g==='gerinctelen'?k==='sym'||k==='vet':!['madar','hullo','keteltu'].includes(g)||(k!=='vacc'&&k!=='par'))};
+const htFor=p=>{const g=grp(p);return Object.keys(HT).filter(k=>k==='rem'||(k==='terra'?hasTerra(p):k==='water'?g==='hal':g==='hal'||g==='gerinctelen'?k==='sym'||k==='vet':!['madar','hullo','keteltu'].includes(g)||(k!=='vacc'&&k!=='par')))};
 const SMALL_YOUNG_GP=[['Megérkezés','Az első napokban hagyd megnyugodni, búvóhellyel. Kézből adott zölddel barátkozz vele.'],['Hely','Nagy, sík alapterület kell neki, nem emeletek. A rácsos aljzat nem való a lábának.']];
 const SMALL_YOUNG_H=[['Megérkezés','Az első napokban ne vedd kézbe, csak etesd és beszélj hozzá. Utána tenyérből kínálj falatot.'],['Hely','Nagy alapterületű ketrec vagy terrárium kell, vastag alommal az ásáshoz és zárt futófelületű kerékkel.']];
 const CARE={
@@ -2460,7 +2460,9 @@ function fixState(st){
   const events=(Array.isArray(st.events)?st.events:[]).filter(isObj).filter(e=>{e.petId=re(String(e.petId));
     if(!ids.has(e.petId)||!DATE_OK.test(String(e.date))||typeof e.kind!=='string')return false;
     if(!ID_OK.test(String(e.id)))e.id=newId();numFix(e,EV_NUM);
-    if(e.kind==='own'&&!EVCAT[e.cat])e.cat='other';return true});
+    if(e.kind==='own'&&!EVCAT[e.cat])e.cat='other';
+    if(e.kind==='rem'){if(typeof e.title!=='string'||!REM_EV[e.ev])return false;if(e.until!=null&&!DATE_OK.test(String(e.until)))delete e.until}
+    if(e.kind==='remlog'&&typeof e.rem!=='string')return false;return true});
   const byPet=o=>{const r={};if(isObj(o))for(const[k,v]of Object.entries(o)){const k2=re(k);if(ids.has(k2))r[k2]=v}return r};
   const chat=byPet(st.chat);for(const k in chat)if(!Array.isArray(chat[k]))delete chat[k];else chat[k]=chat[k].filter(m=>isObj(m)&&typeof m.t==='string');
   const ai=byPet(st.ai);for(const k in ai)if(!isObj(ai[k]))delete ai[k];
@@ -2647,7 +2649,7 @@ function vEmpty(){return`<div class="empty start"><img class="startpic" src="img
 function vHome(p){
   const st=stageOf(p),items=buildItems(p),due=dueList(p,items),t=today();
   const soon=S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&D(e.date)>=t&&D(e.date)-t<=30*DAY).sort((a,c)=>a.date<c.date?-1:1);
-  const tips=tipsFor(p,st),size=sizeOf(p),par=parDue(p).filter(x=>x.date-t<=30*DAY),wc=wcDue(p);
+  const tips=tipsFor(p,st),size=sizeOf(p),par=parDue(p).filter(x=>x.date-t<=30*DAY),wc=wcDue(p),rem=remsOf(p).map(r=>[r,remNext(r)]).filter(([,d])=>d&&d-t<=30*DAY).sort((a,c)=>a[1]-c[1]);
   const sex={him:'hím',nosteny:'nőstény'}[p.sex];
   return`${p.lastStage&&st&&p.lastStage!==st?`<div class="banner"><div style="flex:1">${esc(petName(p))} ${STAGE_INTO[st]||'új szakaszba'} lépett. A teendők és a tippek mostantól ehhez igazodnak.</div><button class="btn small" data-act="stageAck">Rendben</button></div>`:''}
   <section class="hero"><div class="who">${ava(p,1)}<div style="min-width:0"><h1>${esc(petName(p))}</h1>
@@ -2655,9 +2657,9 @@ function vHome(p){
    <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+stHU(p,st).toLowerCase():''}</div></div>
    <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">${ic('pen')}</button></div>${trail(p)}</section>${flagHtml(FLAG[gkey(p)]?gkey(p):p.species)}
   <h2>Teendők és emlékeztetők</h2>
-  ${due.length||soon.length||par.length||wc?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}${wc?`<li class="${wc<t?'late':''}" id="wcDue"><div><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(wc)}${wc<t?', már elmúlt':''}</span></div><button class="btn small" data-act="wcNew">Rögzítés</button></li>`:''}
+  ${due.length||soon.length||par.length||wc||rem.length?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}${wc?`<li class="${wc<t?'late':''}" id="wcDue"><div><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(wc)}${wc<t?', már elmúlt':''}</span></div><button class="btn small" data-act="wcNew">Rögzítés</button></li>`:''}
    ${par.map(x=>`<li class="${x.date<t?'late':''}"><div><b>${PAR_SHORT[x.t]} esedékes</b><span class="when">${fmtDate(x.date)}${x.date<t?', már elmúlt':''}</span></div><button class="btn small" data-act="parNew" data-t="${x.t}">Rögzítés</button></li>`).join('')}
-   ${soon.map(e=>`<li><div><b>${(EVCAT[e.cat]||EVCAT.other)[0]} ${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}</span></div><button class="btn ghost small" data-act="evEdit" data-id="${e.id}">Megnyitás</button></li>`).join('')}</ul>`
+   ${rem.map(([r,d])=>`<li class="${d<t?'late':''}"><div><b>${esc(r.title)}</b><span class="when">${remWhen(d,t)}</span></div><button class="btn small" data-act="remDone" data-id="${r.id}">Kész</button></li>`).join('')}${soon.map(e=>`<li><div><b>${(EVCAT[e.cat]||EVCAT.other)[0]} ${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}</span></div><button class="btn ghost small" data-act="evEdit" data-id="${e.id}">Megnyitás</button></li>`).join('')}</ul>`
    :'<p class="sub">A következő 30 napban nincs esedékes teendő. A teljes tervet az Életút fülön látod.</p>'}
   <h2>Tippek ${st?stHU(p,st).toLowerCase()+' korra':TIPS[p.species]?'a tartáshoz':'a kezdéshez'}</h2>
   <ul class="tips">${tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
@@ -2831,6 +2833,7 @@ function vHealth(p){
     <p style="margin-top:12px"><button class="btn" data-act="wNew">Súly rögzítése</button></p>
     ${l.length?`<h2>Mérések</h2><ul class="list">${l.slice(0,12).map(e=>`<li><div style="flex:1"><b>${wTxt(p,e.kg)}</b><span class="when">${fmtDate(D(e.date))}</span></div>${delBtn(e.id)}</li>`).join('')}</ul>`:''}
     <p class="sub" style="margin-top:14px">Hirtelen fogyás vagy hízás esetén kérj állatorvosi tanácsot.</p>`}
+  if(hTab==='rem')b=remHtml(p);
   if(hTab==='terra')b=terraHtml(p);
   if(hTab==='water')b=waterHtml(p);
   if(hTab==='sym'){
@@ -2852,7 +2855,7 @@ function vHealth(p){
    A4-es összesítő a böngésző nyomtatásával („Mentés PDF-ként” / megosztás), szerver nélkül. Mindig világos: a #print saját színeket kap (index.html, @media print).
    Nem kerül bele: a gazdi neve és e-mail-címe, a fotó, a Tanácsadó „lehetséges okai”. A „Kérdéseim” szöveg nem mentődik (csak az összesítőbe kerül).
    Prémium jelölés: amíg nincs PLAN_START, mindenkinek elérhető (a zárt tesztelők is kipróbálják). */
-const PREM_FEAT=new Set(['vetPdf']);
+const PREM_FEAT=new Set(['vetPdf','remind']);
 const premOK=f=>!PREM_FEAT.has(f)||!planOn()||!!(plan&&['premium','trial','test'].includes(plan.tier));
 const VP_PER=[['3','3 hónap'],['6','6 hónap'],['12','12 hónap'],['0','Összes']];
 const VP_SEC={vacc:'Oltások',par:'Parazita elleni kezelések',w:'Súly',sym:'Tünetnapló',vet:'Állatorvosi látogatások',terra:'Terrárium',water:'Vízértékek'};
@@ -2904,6 +2907,51 @@ function vpPrint(html,p){let el=$('#print');if(!el){el=document.createElement('d
   document.title=`Petavira-osszesito-${slug}-${iso(today())}`; /* a „Mentés PDF-ként” ezt ajánlja fájlnévnek */
   addEventListener('afterprint',()=>{clearTimeout(vpT);vpT=setTimeout(()=>{document.title=t0},1500)},{once:true});
   setTimeout(()=>{try{window.print()}catch(e){toast('A nyomtatás most nem érhető el.')}},60)}
+/* ---------- Saját ismétlődő emlékeztetők (okt. 28.; 2. prémium funkció) ----------
+   Csaba döntése: a következő alkalom a legutóbbi pipálástól számol (mint a parazitakezelésnél); gyors sablonok fajcsoportonként + szabad megnevezés.
+   Adat: S.events, kind:'rem' {date: első alkalom, title, ev:'once'|'d'|'w'|'m', n, until?, note?}; pipálás: kind:'remlog' {date, rem}.
+   Állatonként legfeljebb 20 emlékeztető, emlékeztetőnként a legutóbbi 50 pipálás marad meg. Az értesítés a meglévő 19 órás push-tervben megy (pushPlan),
+   szerverváltozás nincs. A sablonok általános gondozási teendők, időköz nélkül (a gyakoriságot a gazdi adja meg). */
+const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:30,w:12,m:12};
+const REM_TPL={emlos:['Karomvágás','Fogmosás','Szőrápolás','Fekhely mosása','Alomcsere','Nagytakarítás'],
+ madar:['Kalitka takarítása','Etető- és itatótál mosása','Ülőrudak tisztítása','Fürdetés'],
+ hullo:['Terrárium takarítása','Itatótál cseréje','Aljzatcsere','Hőmérők ellenőrzése'],
+ keteltu:['Terrárium takarítása','Víz cseréje','Aljzatcsere','Hőmérők ellenőrzése'],
+ hal:['Szűrőtisztítás','Üvegtisztítás','Vízpróba','Aljzat szívózása'],
+ gerinctelen:['Párásítás','Terrárium takarítása','Itatótál cseréje','Aljzatcsere'],
+ egyeb:['Takarítás','Fekhely tisztítása']};
+const remTpl=p=>REM_TPL[grp(p)]||REM_TPL.egyeb; /* okt. 28.: gyógyszer-sablon nincs (Csaba döntése; ÁSZF 4.1: egészségügyi funkció nem fizetős) */
+const remsOf=p=>S.events.filter(e=>e.petId===p.id&&e.kind==='rem').sort((a,c)=>a.title<c.title?-1:1);
+const remLogs=r=>S.events.filter(e=>e.kind==='remlog'&&e.rem===r.id).sort((a,c)=>a.date<c.date?1:a.date>c.date?-1:0);
+const remN=r=>Math.min(REM_N[r.ev]||1,Math.max(1,Math.round(+r.n)||1));
+const remStep=(r,d)=>r.ev==='d'?new Date(d.getFullYear(),d.getMonth(),d.getDate()+remN(r)):r.ev==='w'?new Date(d.getFullYear(),d.getMonth(),d.getDate()+7*remN(r)):r.ev==='m'?addM(d,remN(r)):null;
+/* a következő alkalom: pipálás nélkül az első dátum, utána a legutóbbi pipálástól; egyszerinél pipálás után nincs; a befejezés utáni nincs */
+function remNext(r){const l=remLogs(r)[0];let d=l?remStep(r,D(l.date)):D(r.date);if(!d)return null;if(l&&D(l.date)<D(r.date)&&r.ev!=='once')d=D(r.date);return r.until&&iso(d)>r.until?null:d}
+const remEvTxt=r=>r.ev==='once'?'Egyszeri':remN(r)>1?`${remN(r)} ${{d:'naponta',w:'hetente',m:'havonta'}[r.ev]}`:{d:'Naponta',w:'Hetente',m:'Havonta'}[r.ev];
+const remWhen=(d,t=today())=>{const dd=Math.round((d-t)/DAY);return`${fmtDate(d)}${dd<0?', elmaradt':dd===0?', ma':dd===1?', holnap':''}`};
+/* a push-tervhez: az alkalmak egy napon belül; a következő alkalomtól lépteti az időközt (feltételezve, hogy a gazdi elvégzi) */
+function remOnDay(r,day){let d=remNext(r);if(!d)return false;const k=iso(day);for(let i=0;i<120&&d&&iso(d)<=k;i++){if(iso(d)===k)return!(r.until&&k>r.until);if(r.ev==='once')return false;d=remStep(r,d)}return false}
+function remHtml(p){const t=today(),l=remsOf(p),on=l.filter(r=>remNext(r)),off=l.filter(r=>!remNext(r)),prem=premOK('remind');
+  const row=r=>{const n=remNext(r),g=remLogs(r);return`<li class="${n&&n<t?'late':n&&n-t<=DAY?'now':''}" style="display:block"><div class="row"><div style="flex:1;min-width:0"><b>${esc(r.title)}</b>
+    <span class="when">${remEvTxt(r)}${n?' · következő: '+remWhen(n,t):' · befejezve'}${r.until&&n?` · eddig: ${fmtDate(D(r.until))}`:''}</span>${r.note?`<span class="when">${esc(r.note)}</span>`:''}</div>
+    ${n?`<button class="btn small" data-act="remDone" data-id="${r.id}">Kész</button>`:''}</div>
+    ${g.length?`<details class="acc" style="margin:8px 0 0"><summary>Napló (${g.length})</summary><ul class="list">${g.slice(0,10).map(e=>`<li><div style="flex:1">${fmtDate(D(e.date))}</div>${delBtn(e.id)}</li>`).join('')}</ul></details>`:''}
+    <p style="margin:8px 0 0"><button class="btn text" style="padding:0;min-height:0" data-act="remEdit" data-id="${r.id}">Szerkesztés</button></p></li>`};
+  return`<p class="sub" style="margin-top:14px">Saját teendőid (pl. karomvágás, takarítás) ismétlődő emlékeztetővel. A következő alkalom a legutóbbi „Kész” jelöléstől számol. Ha be vannak kapcsolva az értesítések, 19 órakor szólunk.</p>
+  ${prem?l.length<REM_MAX?`<p style="margin-top:12px"><button class="btn" data-act="remNew">Új emlékeztető</button></p>`:`<p class="sub">Állatonként legfeljebb ${REM_MAX} emlékeztető lehet.</p>`:'<p class="sub">Új emlékeztetőt a prémium csomagban vehetsz fel.</p>'}
+  ${on.length?`<ul class="tasks" id="remList" style="margin-top:14px">${on.sort((a,c)=>remNext(a)-remNext(c)).map(row).join('')}</ul>`:l.length?'':'<p class="sub" style="margin-top:14px">Még nincs emlékeztetőd.</p>'}
+  ${off.length?`<h2>Befejezett</h2><ul class="tasks">${off.map(row).join('')}</ul>`:''}`}
+function remSheet(id){const p=pet(),r=id?S.events.find(e=>e.id===id&&e.kind==='rem'):null;if(!p||(!r&&(!premOK('remind')||remsOf(p).length>=REM_MAX)))return;
+  openSheet(`<h2>${r?'Emlékeztető szerkesztése':'Új emlékeztető'}</h2>
+  ${r?'':`<div class="chips" id="remTpl">${remTpl(p).map(x=>`<button type="button" class="chip" data-act="remTpl" data-t="${esc(x)}">${esc(x)}</button>`).join('')}</div>`}
+  <label class="f"><span>Megnevezés</span><input id="remTitle" maxlength="40" value="${esc(r?r.title:'')}" placeholder="Válassz fent, vagy írd be"></label>
+  <label class="f"><span>${r?'Első alkalom':'Első alkalom (mikor szóljunk először?)'}</span><input type="date" id="remDate" value="${r?r.date:iso(today())}"></label>
+  <div class="f"><span>Ismétlés</span>${radio('remEv',Object.entries(REM_EV).map(([k,v])=>[k,k==='once'?v:v[0].toUpperCase()+v.slice(1)]),r?r.ev:'w')}</div>
+  <label class="f"><span>Hányanként? (1 = minden nap / hét / hónap, 3 = minden 3.; naponta legfeljebb 30)</span><input id="remN" inputmode="numeric" maxlength="2" value="${r?remN(r):1}"></label>
+  <label class="f"><span>Befejezés (nem kötelező)</span><input type="date" id="remUntil" value="${r&&r.until?r.until:''}"></label>
+  <label class="f"><span>Megjegyzés (nem kötelező)</span><textarea id="remNote" rows="2" maxlength="100">${esc(r?r.note:'')}</textarea></label>
+  <p class="err" id="remErr" role="alert" hidden></p>
+  <button class="btn" data-act="remSave" data-id="${r?r.id:''}">Mentés</button>${r?`<button class="btn ghost" style="color:var(--alert)" data-act="remDelAsk" data-id="${r.id}">Emlékeztető törlése</button>`:''}<button class="btn ghost" data-act="close">Mégse</button>`)}
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
 function vFood(p){
   const F=FOOD[gkey(p)],st=stageOf(p),L=limitsFor(p);
@@ -3384,6 +3432,7 @@ function pushPlan(from=today()){
         items.filter(i=>i.pending&&!i.unknown&&sameDay(i.date,day)).forEach(i=>due.push(pre+i.m.t));
         par.filter(x=>sameDay(x.date,day)).forEach(x=>due.push(pre+PAR_SHORT[x.t]));
         if(wc&&sameDay(wc,day))due.push(pre+'Részleges vízcsere');
+        if(premOK('remind'))remsOf(p).filter(r=>remOnDay(r,day)).forEach(r=>due.push(pre+String(r.title||'').slice(0,40)));
         S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&e.date===key).forEach(e=>due.push(pre+String(e.title||'').slice(0,60)));
       }
       if(pushT('stage')){const a=stageAt(p,day),b=stageAt(p,next);if(a&&b&&a!==b)stage.push(`${n} holnap ${STAGE_INTO[b]} lép. A teendők és a tippek ehhez igazodnak.`)}
@@ -3654,7 +3703,7 @@ const AI_Q=500,AI_HIST=10,AI_GAP=3000,AI_HOUR=20,AI_DAY=3,AI_HOUR_UNL=100;
    null → semmi nem változik (nincs plan-hívás, nincs korlát). A keretet mindig a szerver tartja be; az app csak kijelez,
    és a 2 állatos korlátot alkalmazza (ez csak appoldali). Fiókkal a csomag a szervertől jön ({task:'plan'}, naponta egyszer);
    ismeretlen állapotnál (hiba, offline, még nincs válasz) nem korlátoz. Fiók nélkül a dátum dönt (PLAN_START után 2 állat). */
-const PLAN_START=null,PLAN_PETS=2,PLAN_LS='petvia.plan';
+const PLAN_START=null,PLAN_PETS=2,PLAN_PETS_MAX=10,PLAN_LS='petvia.plan'; /* okt. 28.: a prémium csomagban is legfeljebb 10 állat (Csaba döntése) */
 const planOn=()=>!!PLAN_START&&iso(today())>=PLAN_START;
 let plan=(()=>{try{const r=JSON.parse(localStorage.getItem(PLAN_LS)||'null');return r&&typeof r==='object'?r:null}catch(e){return null}})(),planBusy=false;
 const planSave=()=>{try{if(plan)localStorage.setItem(PLAN_LS,JSON.stringify(plan));else localStorage.removeItem(PLAN_LS)}catch(e){}};
@@ -3688,11 +3737,11 @@ async function planGet(force){
 const planLapsed=()=>{const q=planCur();if(!q||q.tier!=='free')return false;if(q.limit===0)return true;const d=dayDiff(q.ends);return d!==null&&d<=0};
 const lapseHtml=()=>`<div class="composer lapse"><p class="pleft">Az ingyenes Tanácsadó-időszakod lejárt. Az app többi része továbbra is ingyenesen használható.</p></div>`;
 /* 2 állatos korlát: csak új állat felvételét tiltja; a meglévők maradnak és szerkeszthetők */
-const petCapped=()=>{if(!planOn()||S.pets.length<PLAN_PETS)return false;
+const petCapped=()=>{if(!planOn()||S.pets.length<PLAN_PETS)return false;if(S.pets.length>=PLAN_PETS_MAX)return true;
   if(!cloud.uid)return true;
   aiAcct();if(aiRate.unl===true)return false;
   const q=planCur();return!!q&&q.tier==='free'};
-const capSheet=()=>openSheet(`<h2>Új állat felvétele</h2><p>Az ingyenes csomagban ${PLAN_PETS} állatot kezelhetsz. A meglévő állataid megmaradnak, és továbbra is szerkesztheted őket.</p><button class="btn ghost" data-act="close">Bezárás</button>`);
+const capSheet=()=>openSheet(`<h2>Új állat felvétele</h2><p>${S.pets.length>=PLAN_PETS_MAX?`Legfeljebb ${PLAN_PETS_MAX} állatot kezelhetsz.`:`Az ingyenes csomagban ${PLAN_PETS} állatot kezelhetsz.`} A meglévő állataid megmaradnak, és továbbra is szerkesztheted őket.</p><button class="btn ghost" data-act="close">Bezárás</button>`);
 /* tesztfiók (okt. 18.): ha a szerver 'unl: true'-t küld, nincs napi keret, és az óránkénti 100; ezt csak a szerver dönti el (UNLIMITED_UIDS),
    az itt tárolt jelzés csak a kijelzéshez és a kliensoldali óránkénti számlálóhoz kell. */
 const aiHour=()=>aiRate.unl===true?AI_HOUR_UNL:AI_HOUR;
@@ -3881,6 +3930,20 @@ const ACT={
   evDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Esemény törölve')},
   hTab(el){hTab=el.dataset.k;render()},
   vpOpen(){vpSheet()},
+  remNew(){remSheet()},remEdit(el){remSheet(el.dataset.id)},
+  remTpl(el){const i=$('#remTitle');i.value=el.dataset.t;document.querySelectorAll('#remTpl .chip').forEach(b=>b.setAttribute('aria-pressed',String(b===el)))},
+  remSave(el){const p=pet(),old=S.events.find(e=>e.id===el.dataset.id&&e.kind==='rem'),title=clean($('#remTitle').value,40),date=$('#remDate').value,until=$('#remUntil').value,
+    ev=($('#sheet input[name="remEv"]:checked')||{}).value||'w',nRaw=$('#remN').value.trim(),n=ev==='once'?1:+nRaw,note=qClean($('#remNote').value).replace(/\n/g,' ').slice(0,100);
+    if(!p)return;if(!title)return showErr('#remErr','Adj nevet az emlékeztetőnek, vagy válassz egy sablont.');if(!DATE_OK.test(date))return showErr('#remErr','Add meg az első alkalom dátumát.');
+    if(ev!=='once'&&(!/^\d{1,2}$/.test(nRaw)||n<1||n>REM_N[ev]))return showErr('#remErr',`Az ismétlés 1 és ${REM_N[ev]} között lehet.`);
+    if(until&&(!DATE_OK.test(until)||until<date))return showErr('#remErr','A befejezés nem lehet korábban, mint az első alkalom.');
+    if(!old&&(!premOK('remind')||remsOf(p).length>=REM_MAX))return;
+    const o={title,date,ev,n,note};if(until&&ev!=='once')o.until=until;
+    if(old){Object.assign(old,o);if(!o.until)delete old.until}else S.events.push({id:newId(),petId:p.id,kind:'rem',...o});save();closeSheet();render();toast('Emlékeztető mentve')},
+  remDone(el){const r=S.events.find(e=>e.id===el.dataset.id&&e.kind==='rem');if(!r)return;S.events.push({id:newId(),petId:r.petId,kind:'remlog',rem:r.id,date:iso(today())});
+    const old=remLogs(r).slice(REM_LOG).map(e=>e.id);if(old.length)S.events=S.events.filter(e=>!old.includes(e.id));save();render();const n=remNext(r);toast(n?`Kész. Következő: ${fmtDate(n)}`:'Kész')},
+  remDelAsk(el){confirmSheet('Biztosan törlöd?','Az emlékeztető és a naplója törlődik.','Igen, törlöm','remDel',el.dataset.id)},
+  remDel(el){const id=el.dataset.id;S.events=S.events.filter(e=>e.id!==id&&!(e.kind==='remlog'&&e.rem===id));save();closeSheet();render();toast('Emlékeztető törölve')},
   vpGo(){const p=pet();if(!p||!premOK('vetPdf'))return;const per=($('#sheet input[name="vpPer"]:checked')||{}).value||'6',on=new Set([...document.querySelectorAll('#sheet .vpSec:checked')].map(e=>e.value)),q=qClean($('#vpQ').value);
     closeSheet();vpPrint(vpHtml(p,per,vpSecs(p).filter(k=>on.has(k)),q),p)},
   wNew(){wSheet()},symNew(){symSheet()},parNew(el){parSheet(el.dataset.t)},
