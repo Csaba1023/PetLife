@@ -2912,7 +2912,7 @@ function vpPrint(html,p){let el=$('#print');if(!el){el=document.createElement('d
    Adat: S.events, kind:'rem' {date: első alkalom, title, ev:'once'|'d'|'w'|'m', n, until?, note?}; pipálás: kind:'remlog' {date, rem}.
    Állatonként legfeljebb 20 emlékeztető, emlékeztetőnként a legutóbbi 50 pipálás marad meg. Az értesítés a meglévő 19 órás push-tervben megy (pushPlan),
    szerverváltozás nincs. A sablonok általános gondozási teendők, időköz nélkül (a gyakoriságot a gazdi adja meg). */
-const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:30,w:12,m:12};
+const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:10,w:3,m:6};
 const REM_TPL={emlos:['Karomvágás','Fogmosás','Szőrápolás','Fekhely mosása','Alomcsere','Nagytakarítás'],
  madar:['Kalitka takarítása','Etető- és itatótál mosása','Ülőrudak tisztítása','Fürdetés'],
  hullo:['Terrárium takarítása','Itatótál cseréje','Aljzatcsere','Hőmérők ellenőrzése'],
@@ -2929,7 +2929,7 @@ const remStep=(r,d)=>r.ev==='d'?new Date(d.getFullYear(),d.getMonth(),d.getDate(
 function remNext(r){const l=remLogs(r)[0];let d=l?remStep(r,D(l.date)):D(r.date);if(!d)return null;if(l&&D(l.date)<D(r.date)&&r.ev!=='once')d=D(r.date);return r.until&&iso(d)>r.until?null:d}
 const remEvTxt=r=>r.ev==='once'?'Egyszeri':remN(r)>1?`${remN(r)} ${{d:'naponta',w:'hetente',m:'havonta'}[r.ev]}`:{d:'Naponta',w:'Hetente',m:'Havonta'}[r.ev];
 /* okt. 28. (Csaba kérésére): a gyakoriság egyetlen legördülő listából, természetes megfogalmazással */
-const REM_FREQ=[['once','Csak egyszer'],['d:1','Minden nap'],...[2,3,4,5,6,7,10,14,21,30].map(n=>['d:'+n,n+' naponta']),['w:1','Minden héten'],...[2,3,4,6,8,12].map(n=>['w:'+n,n+' hetente']),['m:1','Minden hónapban'],...[2,3,4,6,12].map(n=>['m:'+n,n+' havonta'])];
+const REM_FREQ=[['once','Csak egyszer'],['d:1','Minden nap'],...[2,3,4,5,6,7,10].map(n=>['d:'+n,n+' naponta']),['w:1','Minden héten'],...[2,3].map(n=>['w:'+n,n+' hetente']),['m:1','Minden hónapban'],...[2,3,4,6].map(n=>['m:'+n,n+' havonta'])];
 const remKey=r=>r.ev==='once'?'once':r.ev+':'+remN(r);
 /* egy korábban mentett, listán kívüli gyakoriság (pl. 9 naponta) is megmarad szerkesztéskor */
 const remFreqOpts=r=>{const k=r&&remKey(r);return k&&!REM_FREQ.some(x=>x[0]===k)?[...REM_FREQ,[k,remEvTxt(r)]]:REM_FREQ};
