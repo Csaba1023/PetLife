@@ -343,6 +343,28 @@ textarea{padding:12px 14px}
   .tl>li.stage:first-child::after{display:none}
   #bgfx .pt{opacity:.5}
 }
+/* okt. 28.: Állatorvosi összesítő – csak nyomtatáskor látszik, mindig világos (A4) */
+#print{display:none}
+@media print{
+@page{size:A4;margin:14mm 12mm}
+html,body{background:#fff!important;margin:0!important;padding:0!important}
+body>*:not(#print){display:none!important}
+#print{display:block!important;color-scheme:light;color:#14201C;background:#fff;font:10pt/1.45 "Plus Jakarta Sans",system-ui,sans-serif;--line:#DDE5DE;--brand:#0F3D33;--card:#FFFFFF;--muted:#5B6B64;--ink:#14201C;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#print .ph{display:flex;align-items:center;gap:12px;border-bottom:2px solid #0F3D33;padding-bottom:8px;margin-bottom:6px}
+#print h1{font:600 19pt/1.1 Fraunces,Georgia,serif;margin:0;color:#0F3D33}
+#print h2{font:600 12.5pt/1.2 Fraunces,Georgia,serif;margin:16px 0 6px;color:#0F3D33;break-after:avoid}
+#print h3{font-size:10pt;margin:10px 0 4px;break-after:avoid}
+#print .pm,#print .pe{color:#5B6B64;font-size:9pt;margin:3px 0}
+#print table{width:100%;border-collapse:collapse;font-size:9.5pt}
+#print th,#print td{border-bottom:1px solid #DDE5DE;padding:4px 6px;text-align:left;vertical-align:top}
+#print th{color:#5B6B64;font-weight:600;font-size:8.5pt}
+#print tr{break-inside:avoid}
+#print .kv td:first-child{width:32%;color:#5B6B64}
+#print .chart{max-width:120mm;margin:4px 0 8px}
+#print .bad{color:#B93661;font-weight:600}
+#print .pq{white-space:pre-wrap;border:1px solid #DDE5DE;border-radius:6px;padding:8px 10px}
+#print .pf{margin-top:18px;border-top:1px solid #DDE5DE;padding-top:6px;color:#5B6B64;font-size:8.5pt}
+}
 </style>
 </head>
 <body>
