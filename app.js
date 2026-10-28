@@ -2661,7 +2661,7 @@ function vHome(p){
    ${par.map(x=>`<li class="${x.date<t?'late':''}"><div><b>${PAR_SHORT[x.t]} esedékes</b><span class="when">${fmtDate(x.date)}${x.date<t?', már elmúlt':''}</span></div><button class="btn small" data-act="parNew" data-t="${x.t}">Rögzítés</button></li>`).join('')}
    ${rem.map(([r,d])=>`<li class="${d<t?'late':''}"><div><b>${esc(r.title)}</b><span class="when">${remWhen(d,t)}</span></div><button class="btn small" data-act="remDone" data-id="${r.id}">Kész</button></li>`).join('')}${soon.map(e=>`<li><div><b>${(EVCAT[e.cat]||EVCAT.other)[0]} ${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}</span></div><button class="btn ghost small" data-act="evEdit" data-id="${e.id}">Megnyitás</button></li>`).join('')}</ul>`
    :'<p class="sub">A következő 30 napban nincs esedékes teendő. A teljes tervet az Életút fülön látod.</p>'}
-  <h2>Tippek ${st?stHU(p,st).toLowerCase()+' korra':TIPS[p.species]?'a tartáshoz':'a kezdéshez'}</h2>
+  ${watchHtml(p)}<h2>Tippek ${st?stHU(p,st).toLowerCase()+' korra':TIPS[p.species]?'a tartáshoz':'a kezdéshez'}</h2>
   <ul class="tips">${tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
   <button class="btn ghost" style="margin-top:6px" data-act="tab" data-tab="ai">Kérdezd a Tanácsadót</button>${infoNote('home',p)}`}
 function vPath(p){
@@ -2855,7 +2855,7 @@ function vHealth(p){
    A4-es összesítő a böngésző nyomtatásával („Mentés PDF-ként” / megosztás), szerver nélkül. Mindig világos: a #print saját színeket kap (index.html, @media print).
    Nem kerül bele: a gazdi neve és e-mail-címe, a fotó, a Tanácsadó „lehetséges okai”. A „Kérdéseim” szöveg nem mentődik (csak az összesítőbe kerül).
    Prémium jelölés: amíg nincs PLAN_START, mindenkinek elérhető (a zárt tesztelők is kipróbálják). */
-const PREM_FEAT=new Set(['vetPdf','remind']);
+const PREM_FEAT=new Set(['vetPdf','remind','watch']);
 const premOK=f=>!PREM_FEAT.has(f)||!planOn()||!!(plan&&['premium','trial','test'].includes(plan.tier));
 const VP_PER=[['3','3 hónap'],['6','6 hónap'],['12','12 hónap'],['0','Összes']];
 const VP_SEC={vacc:'Oltások',par:'Parazita elleni kezelések',w:'Súly',sym:'Tünetnapló',vet:'Állatorvosi látogatások',terra:'Terrárium',water:'Vízértékek'};
@@ -2956,6 +2956,40 @@ function remSheet(id){const p=pet(),r=id?S.events.find(e=>e.id===id&&e.kind==='r
   <label class="f"><span>Megjegyzés (nem kötelező)</span><textarea id="remNote" rows="2" maxlength="100">${esc(r?r.note:'')}</textarea></label>
   <p class="err" id="remErr" role="alert" hidden></p>
   <button class="btn" data-act="remSave" data-id="${r?r.id:''}">Mentés</button>${r?`<button class="btn ghost" style="color:var(--alert)" data-act="remDelAsk" data-id="${r.id}">Emlékeztető törlése</button>`:''}<button class="btn ghost" data-act="close">Mégse</button>`)}
+/* ---------- Okos figyelő (okt. 28.; 3. prémium funkció) ----------
+   A naplókból jelez, NEM diagnosztizál. Minden a telefonon fut (AI-hívás, szerver és SQL nincs). Csaba döntése (a): küszöb csak forrásból;
+   ahol nincs megbízható forrás, ott nincs jelzés.
+   Források (megnyitva 2026. okt. 28.):
+   - kutya, macska: VCA Animal Hospitals, „Abnormal Weight Loss in Dogs” / „… in Cats”: a testsúly 10%-ot meghaladó csökkenése klinikailag jelentős
+     (a folyadékvesztés okozta nem számít). https://vcahospitals.com/know-your-pet/weight-loss-abnormal-in-dogs , …/abnormal-weight-loss-in-cats
+   - nyúl: MediRabbit (Dr. Amir Maurer): havi mérés javasolt; a stabil testsúly 10%-os csökkenésénél állatorvosi vizsgálat. https://www.medirabbit.com/EN/Transport/Weigh/owner_help.htm
+   - terrárium és víz: az app meglévő, forrásolt célértékei (TERRA, wGoals); tünetnapló: a gazdi saját bejegyzései.
+   A „normál” súly itt: az utolsó mérést megelőző 180 nap legnagyobb mért értéke (következtetés, nem forrásadat). */
+const WATCH_W={kutya:'VCA',macska:'VCA',nyul:'MediRabbit'},WATCH_GAP={nyul:31};
+function watchFor(p,t=today()){const out=[],sp=p.species,tdS=iso(t);
+  /* súlycsökkenés */
+  if(WATCH_W[sp]){const l=recs(p,'w'),last=l[0];
+    if(last){const from=iso(new Date(D(last.date)-180*DAY)),prev=l.slice(1).filter(e=>e.date>=from);
+      if(prev.length){const ref=Math.max(...prev.map(e=>e.kg)),pct=(ref-last.kg)/ref*100;
+        if(pct>10)out.push({k:'w',tab:'w',d:last.date,t:`Súlycsökkenés: ${wTxt(p,ref)} → ${wTxt(p,last.kg)} (−${Math.round(pct)}%)`,b:`A források szerint a testsúly 10%-ot meghaladó csökkenése miatt érdemes állatorvoshoz fordulni (forrás: ${WATCH_W[sp]}).`})}}
+    const gap=WATCH_GAP[sp];if(gap&&last){const dd=Math.round((t-D(last.date))/DAY);if(dd>gap)out.push({k:'wgap',tab:'w',d:iso(new Date(D(last.date).getFullYear(),D(last.date).getMonth(),D(last.date).getDate()+gap+1)),t:'Több mint egy hónapja nincs súlymérés',b:`Az utolsó mérés: ${fmtDate(D(last.date))}. A forrás szerint nyúlnál havi mérés javasolt (MediRabbit).`})}}
+  /* terrárium: ugyanaz az érték az utolsó 3 mérésben mind a célon kívül */
+  if(hasTerra(p)){const T=TERRA[gkey(p)],l=recs(p,'terra').slice(0,3),tod=e=>e.tod||'d';
+    if(T&&l.length===3)terraFields(p).forEach(f=>{const st=l.map(e=>tStat(e[f],tRange(T,f,tod(e))));if(st.every(s=>s==='lo'||s==='hi')){const r=T[f];
+      out.push({k:'terra:'+f,tab:'terra',d:l[0].date,t:`${tLabel(p,f)}: az utolsó 3 mérés a célértéken kívül`,b:`Mért értékek: ${l.map(e=>tNum(e[f])+' '+TF[f][1]).join(', ')}; nappali cél: ${tGoal(r)} ${TF[f][1]}. Ellenőrizd a beállítást és a mérőeszközt.`})}})}
+  /* víz: az utolsó mérésben a célon kívüli értékek */
+  if(grp(p)==='hal'){const G=wGoals(p),e=recs(p,'water')[0];
+    if(e){const bad=wFields(p).filter(f=>e[f]!=null&&G[f]&&['lo','hi'].includes(wStat(e[f],G[f])));
+      if(bad.length)out.push({k:'water',tab:'water',d:e.date,t:`Vízértékek a célon kívül (${fmtDate(D(e.date))})`,b:bad.map(f=>`${WF[f][2]} ${aqNum(f,e[f])}${WF[f][1]?' '+WF[f][1]:''} (cél: ${wGoal(f,G[f])})`).join('; ')+'.'})}}
+  /* tünetnapló: az utolsó 7 nap */
+  const from7=iso(new Date(t-7*DAY)),sym=recs(p,'sym').filter(e=>e.date>=from7&&e.date<=tdS),cnt={};
+  sym.forEach(e=>{const k=String(e.text||'').trim().toLowerCase();if(k)(cnt[k]=cnt[k]||[]).push(e)});
+  Object.values(cnt).filter(a=>a.length>1).forEach(a=>out.push({k:'sym:'+a[0].id,tab:'sym',d:a[0].date,t:`Ismétlődő tünet: „${a[0].text}” (${a.length}× az utolsó 7 napban)`,b:'Ha nem múlik el, kérdezd az állatorvost.'}));
+  const sev=sym.find(e=>e.sev==='sulyos');if(sev)out.push({k:'sev',tab:'sym',d:sev.date,t:`Súlyos tünetet rögzítettél (${fmtDate(D(sev.date))})`,b:'Ha még fennáll, fordulj állatorvoshoz vagy ügyelethez.'});
+  return out}
+function watchHtml(p){if(!premOK('watch'))return'';const l=watchFor(p);if(!l.length)return'';
+  return`<h2>Figyelő</h2><ul class="tasks" id="watchList">${l.map(a=>`<li class="late"><div style="flex:1;min-width:0"><b>${esc(a.t)}</b><span class="when">${esc(a.b)}</span></div><button class="btn ghost small" data-act="watchGo" data-k="${a.tab}">Megnézem</button></li>`).join('')}</ul>
+  <p class="sub" style="margin-top:8px">A figyelő a naplóidból jelez, nem diagnosztizál. ${DISC}</p>`}
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
 function vFood(p){
   const F=FOOD[gkey(p)],st=stageOf(p),L=limitsFor(p);
@@ -3439,6 +3473,9 @@ function pushPlan(from=today()){
         if(premOK('remind'))remsOf(p).filter(r=>remOnDay(r,day)).forEach(r=>due.push(pre+String(r.title||'').slice(0,40)));
         S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&e.date===key).forEach(e=>due.push(pre+String(e.title||'').slice(0,60)));
       }
+      /* okos figyelő: csak azon a napon, amikor a jelzést kiváltó bejegyzés (vagy a mérési határidő) esedékes */
+      if(pushT('watch')&&premOK('watch')&&d===1){watchFor(p,day).filter(a=>a.d===key).forEach(a=>due.push(pre+'Figyelő: '+a.t.slice(0,70)))
+      }
       if(pushT('stage')){const a=stageAt(p,day),b=stageAt(p,next);if(a&&b&&a!==b)stage.push(`${n} holnap ${STAGE_INTO[b]} lép. A teendők és a tippek ehhez igazodnak.`)}
       if(pushT('tip')){const T=tipsFor(p,stageAt(p,day));if(T!==TIPS_OTHER&&T.length)tips.push([n,T[Math.floor(day.getTime()/DAY)%T.length]])}
     }
@@ -3493,7 +3530,7 @@ function pushHtml(){
   const L=pushLocal(),perm=Notification.permission;
   if(!L.on)return intro+(perm==='denied'?'<p class="sub">Az értesítéseket a telefon vagy a böngésző beállításaiban letiltottad. Ott engedélyezd, utána itt kapcsold be.</p>':'')+`<button class="btn ghost" data-act="pushOn"${pushBusy?' disabled':''}>${pushBusy?'Egy pillanat…':'Értesítések bekapcsolása'}</button>`;
   return intro+`<p class="sub" style="margin-top:4px"><b>Bekapcsolva ezen az eszközön.</b></p>
-  ${[['due','Esedékes teendők (oltás, féreghajtás, kezelés, vízcsere, saját esemény)'],['stage','Szakaszváltás (az előtte lévő napon)'],['tip','Napi tipp (ha aznap nincs más)']].map(([k,t])=>`<label class="ck"><input type="checkbox" data-act="pushType" data-k="${k}"${pushT(k)?' checked':''}><span>${t}</span></label>`).join('')}
+  ${[['due','Esedékes teendők (oltás, féreghajtás, kezelés, vízcsere, saját esemény)'],['stage','Szakaszváltás (az előtte lévő napon)'],['watch','Figyelő jelzései (pl. nagy súlycsökkenés, célon kívüli értékek)'],['tip','Napi tipp (ha aznap nincs más)']].map(([k,t])=>`<label class="ck"><input type="checkbox" data-act="pushType" data-k="${k}"${pushT(k)?' checked':''}><span>${t}</span></label>`).join('')}
   <button class="btn ghost" style="margin-top:10px" data-act="pushTest">Próbaértesítés most</button><button class="btn text" style="margin-top:6px" data-act="pushOffBtn">Kikapcsolás</button>`}
 async function pushTest(){
   try{const reg=await navigator.serviceWorker.ready,plan=pushPlan(),n=plan[iso(today())]||Object.values(plan)[0];
@@ -3934,6 +3971,7 @@ const ACT={
   evDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Esemény törölve')},
   hTab(el){hTab=el.dataset.k;render()},
   vpOpen(){vpSheet()},
+  watchGo(el){tab='health';hTab=el.dataset.k;render({top:true})},
   remNew(){remSheet()},remEdit(el){remSheet(el.dataset.id)},
   remTpl(el){const i=$('#remTitle');i.value=el.dataset.t;document.querySelectorAll('#remTpl .chip').forEach(b=>b.setAttribute('aria-pressed',String(b===el)))},
   remSave(el){const p=pet(),old=S.events.find(e=>e.id===el.dataset.id&&e.kind==='rem'),title=clean($('#remTitle').value,40),date=$('#remDate').value,until=$('#remUntil').value,
