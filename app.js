@@ -2847,7 +2847,63 @@ function vHealth(p){
     b=`<p style="margin-top:14px"><button class="btn" data-act="evNew" data-cat="vet">Látogatás rögzítése</button></p>
     ${l.length?`<ul class="tasks" style="margin-top:14px">${l.map(e=>`<li><div><b>${esc(e.title)}</b><span class="when">${fmtDate(D(e.date))}${D(e.date)>t?', tervezett':''}</span>${e.note?`<span class="when">${esc(e.note)}</span>`:''}</div><button class="btn text" data-act="evEdit" data-id="${e.id}">Szerkesztés</button></li>`).join('')}</ul>`:'<p class="sub" style="margin-top:14px">Még nincs rögzített látogatás. A jövőbeli időpont emlékeztetőként megjelenik a Főoldalon.</p>'}
     <p style="margin-top:12px"><button class="btn ghost" data-act="tab" data-tab="vets">Állatorvos keresése</button></p>`}
-  return`<h1>Egészség</h1><div class="seg2" role="group" aria-label="Az Egészség részei">${tabs.map(k=>[k,htName(p,k)]).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}${infoNote(hTab==='terra'||hTab==='water'?'health:'+hTab:'health',p,1)}`}
+  return`<h1>Egészség</h1>${vpBtn(p)}<div class="seg2" role="group" aria-label="Az Egészség részei">${tabs.map(k=>[k,htName(p,k)]).map(([k,n])=>`<button data-act="hTab" data-k="${k}" aria-pressed="${hTab===k}">${n}</button>`).join('')}</div>${b}${infoNote(hTab==='terra'||hTab==='water'?'health:'+hTab:'health',p,1)}`}
+/* ---------- Állatorvosi összesítő (okt. 28.; 1. prémium funkció) ----------
+   A4-es összesítő a böngésző nyomtatásával („Mentés PDF-ként” / megosztás), szerver nélkül. Mindig világos: a #print saját színeket kap (index.html, @media print).
+   Nem kerül bele: a gazdi neve és e-mail-címe, a fotó, a Tanácsadó „lehetséges okai”. A „Kérdéseim” szöveg nem mentődik (csak az összesítőbe kerül).
+   Prémium jelölés: amíg nincs PLAN_START, mindenkinek elérhető (a zárt tesztelők is kipróbálják). */
+const PREM_FEAT=new Set(['vetPdf']);
+const premOK=f=>!PREM_FEAT.has(f)||!planOn()||!!(plan&&['premium','trial','test'].includes(plan.tier));
+const VP_PER=[['3','3 hónap'],['6','6 hónap'],['12','12 hónap'],['0','Összes']];
+const VP_SEC={vacc:'Oltások',par:'Parazita elleni kezelések',w:'Súly',sym:'Tünetnapló',vet:'Állatorvosi látogatások',terra:'Terrárium',water:'Vízértékek'};
+const vpName=(p,k)=>k==='terra'&&terraKind(p)==='viz'?'Vízhőmérséklet':VP_SEC[k];
+/* a terrárium- és vízértékek csak akkor választhatók, ha van rögzített mérés */
+const vpSecs=p=>htFor(p).filter(k=>k in VP_SEC&&(k!=='terra'&&k!=='water'||recs(p,k).length>0));
+/* BIZTONSÁG – A réteg: a kérdés szövegéből a vezérlő-, láthatatlan és irányváltó karakterek kimaradnak, csak betű, szám, szóköz, sortörés és alapvető írásjel marad, legfeljebb 300 karakter; megjelenítés esc()-pel */
+const qClean=s=>String(s??'').normalize('NFC').replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F­​-‏‪-‮⁠-⁩﻿]/g,'').replace(/[^\p{L}\p{N} \n.,;:!?'"()\-–\/%+]/gu,'').replace(/ +/g,' ').replace(/\n{3,}/g,'\n\n').trim().slice(0,300);
+const vpBtn=p=>p?`<p style="margin:10px 0 0"><button class="btn ghost small" data-act="vpOpen">Állatorvosi összesítő (PDF)</button></p>`:'';
+function vpSheet(){const p=pet();if(!p)return;
+  if(!premOK('vetPdf'))return openSheet('<h2>Állatorvosi összesítő</h2><p>Ez a Petavira prémium funkciója.</p><button class="btn ghost" data-act="close">Bezárás</button>');
+  openSheet(`<h2>Állatorvosi összesítő</h2><p class="sub">${esc(petName(p))} adataiból A4-es összesítő készül. A megnyíló nyomtatási ablakban PDF-ként mentheted vagy megoszthatod. A neved és az e-mail-címed nem kerül bele.</p>
+  <div class="f"><span>Időszak</span>${radio('vpPer',VP_PER,'6')}</div>
+  <div class="f"><span>Mi kerüljön bele?</span>${vpSecs(p).map(k=>`<label class="ck"><input type="checkbox" class="vpSec" value="${k}" checked style="min-height:0"><span>${vpName(p,k)}</span></label>`).join('')}</div>
+  <label class="f"><span>Kérdéseim az állatorvoshoz (nem kötelező)</span><textarea id="vpQ" rows="3" maxlength="300" placeholder="pl. Normális, hogy sokat vakarózik?"></textarea></label>
+  <p class="sub">A kérdéseidet az app nem menti el, csak az összesítőbe kerülnek.</p>${sheetEnd('vpGo','Összesítő készítése')}`)}
+function vpHtml(p,per,secs,q){
+  const t=today(),from=+per?iso(addM(t,-per)):'',inP=d=>!from||d>=from,fd=s=>fmtDate(D(s)),g=grp(p),st=stageOf(p),lw=recs(p,'w')[0];
+  const tbl=(head,rows)=>rows.length?`<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p class="pe">Ebben az időszakban nincs rögzített adat.</p>';
+  const bad=s=>s?` <span class="bad">(${s})</span>`:'',sec={};
+  sec.vacc=()=>{const it=buildItems(p).filter(i=>VACC.has(i.m.key)),
+    got=[...it.filter(i=>i.done).map(i=>[i.done.date,i.m.t,i.done.note]),...recs(p,'own').filter(e=>e.cat==='vacc').map(e=>[e.date,e.title,e.note])].filter(r=>inP(r[0])).sort((a,c)=>a[0]<c[0]?1:-1),
+    pend=it.filter(i=>i.pending).sort((a,c)=>a.date-c.date),SL={late:'lejárt',missed:'elmaradt?',now:'esedékes',later:'tervezett'};
+    return`<h3>Beadott</h3>${tbl(['Dátum','Oltás','Megjegyzés'],got.map(r=>[fd(r[0]),esc(r[1]),esc(r[2]||'')]))}
+    ${pend.length?`<h3>Esedékes és várható (tájékoztató)</h3>${tbl(['Időpont','Oltás','Állapot'],pend.map(i=>[i.unknown?'nincs rögzítve':fmtDate(i.date),esc(i.m.t),i.unknown?'ha megvolt, nincs rögzítve':SL[statusOf(i)]]))}`:''}`};
+  sec.par=()=>tbl(['Dátum','Kezelés','Készítmény','Következő'],recs(p,'par').filter(e=>inP(e.date)).map(e=>[fd(e.date),PAR_SHORT[e.ptype]||'Kezelés',esc(e.product||'–'),e.next?fd(e.next):'–']));
+  sec.w=()=>{const l=recs(p,'w').filter(e=>inP(e.date));return(l.length>1?chart([...l].reverse(),p):'')+tbl(['Dátum','Súly'],l.slice(0,12).map(e=>[fd(e.date),wTxt(p,e.kg)]))+(l.length>12?`<p class="pe">Az utolsó 12 mérés (összesen ${l.length}).</p>`:'')};
+  sec.sym=()=>tbl(['Dátum','Tünet','Súlyosság'],recs(p,'sym').filter(e=>inP(e.date)).map(e=>[fd(e.date),esc(e.text),SEV[e.sev]||'nincs besorolva']));
+  sec.vet=()=>tbl(['Dátum','Látogatás','Megjegyzés'],recs(p,'own').filter(e=>e.cat==='vet'&&inP(e.date)).map(e=>[fd(e.date)+(D(e.date)>t?' (tervezett)':''),esc(e.title),esc(e.note||'')]));
+  sec.terra=()=>{const T=TERRA[gkey(p)],F=terraFields(p),tod=e=>e.tod||'d',l=recs(p,'terra').filter(e=>inP(e.date));
+    return(T?`<p class="pe">Célértékek (tájékoztató, nappal): ${F.filter(f=>T[f]).map(f=>`${tLabel(p,f).toLowerCase()} ${tGoal(T[f])} ${TF[f][1]}`).join('; ')}.</p>`:'')+
+    tbl(['Dátum','Napszak',...F.map(f=>`${tLabel(p,f)} (${TF[f][1]})`)],l.slice(0,12).map(e=>[fd(e.date),tod(e)==='n'?'éjjel':'nappal',...F.map(f=>e[f]==null?'–':tNum(e[f])+bad(TBAD[tStat(e[f],tRange(T,f,tod(e)))]))]))+(l.length>12?`<p class="pe">Az utolsó 12 mérés (összesen ${l.length}).</p>`:'')};
+  sec.water=()=>{const G=wGoals(p),F=wFields(p),l=recs(p,'water').filter(e=>inP(e.date)),u=f=>WF[f][1]?` (${WF[f][1]})`:'',U=F.filter(f=>l.some(e=>e[f]!=null));
+    return(F.some(f=>G[f])?`<p class="pe">Célértékek (tájékoztató): ${F.filter(f=>G[f]).map(f=>`${WF[f][2]} ${wGoal(f,G[f])}${WF[f][1]?' '+WF[f][1]:''}`).join('; ')}.</p>`:'')+
+    tbl(['Dátum',...U.map(f=>WF[f][0]+u(f))],l.slice(0,12).map(e=>[fd(e.date),...U.map(f=>e[f]==null?'–':aqNum(f,e[f])+bad(TBAD[wStat(e[f],G[f])]))]))+(l.length>12?`<p class="pe">Az utolsó 12 mérés (összesen ${l.length}).</p>`:'')};
+  const sex={him:'hím',nosteny:'nőstény'}[p.sex],size=sizeOf(p),kv=[['Név',esc(petName(p))],['Faj',esc(speciesLabel(p))],['Fajta',esc(breedLabel(p))],['Méret',size&&SIZE_HU[size]],['Ivar',sex],
+    ['Ivartalanított',(g==='emlos'||g==='egyeb')&&{igen:'igen',nem:'nem'}[p.neutered]],['Születési dátum',fmtDate(D(p.birth))+(p.est?' (becsült)':'')],['Életkor',fmtAge(p)+(p.est?' (becsült)':'')],
+    ['Életszakasz',st&&stHU(p,st)],['Állomány',g==='hal'&&p.count&&`${p.count} db${p.tankL?', '+fmtKg(p.tankL)+' literes akvárium':''}`],
+    ['Utolsó súly',!noWeight(p)&&(lw?`${wTxt(p,lw.kg)} (${fd(lw.date)})`:p.weight?`${wTxt(p,p.weight)} (a profilban megadott)`:'')]].filter(r=>r[1]);
+  const perTxt=+per?`az utolsó ${per} hónap (${fmtDate(D(from))} – ${fmtDate(t)})`:'az összes rögzített adat';
+  return`<div class="ph"><img src="img/paw-144.webp" alt="" width="40" height="40"><div><h1>Állatorvosi összesítő</h1><div class="pm">Petavira · készült: ${fmtDate(t)} · időszak: ${perTxt}</div></div></div>
+  <h2>Az állat adatai</h2><table class="kv"><tbody>${kv.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</tbody></table>
+  ${secs.map(k=>`<section><h2>${vpName(p,k)}</h2>${sec[k]()}</section>`).join('')}
+  ${q?`<section><h2>Kérdéseim az állatorvoshoz</h2><div class="pq">${esc(q)}</div></section>`:''}
+  <p class="pf">Az adatokat a gazdi rögzítette. A Petavira nem helyettesíti az állatorvosi vizsgálatot.</p>`}
+let vpT=0,vpT0='';
+function vpPrint(html,p){let el=$('#print');if(!el){el=document.createElement('div');el.id='print';document.body.appendChild(el)}
+  el.innerHTML=html;clearTimeout(vpT);const t0=vpT0||(vpT0=document.title),slug=String(petName(p)).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30)||'allat';
+  document.title=`Petavira-osszesito-${slug}-${iso(today())}`; /* a „Mentés PDF-ként” ezt ajánlja fájlnévnek */
+  addEventListener('afterprint',()=>{clearTimeout(vpT);vpT=setTimeout(()=>{document.title=t0},1500)},{once:true});
+  setTimeout(()=>{try{window.print()}catch(e){toast('A nyomtatás most nem érhető el.')}},60)}
 const BACK='<button class="btn text back" data-act="tab" data-tab="hub">‹ Gondozás</button>';
 function vFood(p){
   const F=FOOD[gkey(p)],st=stageOf(p),L=limitsFor(p);
@@ -2940,7 +2996,7 @@ function vProd(p){
   ${l.length?`<h2>Személyre szabott ajánlás</h2>${aiBox(p,'prod_'+pCat,'AI-ajánlás kérése ebben a kategóriában')}`:''}${infoNote('prod',p)}`}
 function vVets(){
   const p=pet(),ex=!!p&&['hullo','keteltu','hal','madar','gerinctelen'].includes(grp(p)),c=S.settings.city||'',a=(q,l,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${l}</a>`;
-  return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A Petavira nem ajánl és nem tárol állatorvosokat.${ex?' Ennél a fajnál egzotikus állatokhoz értő állatorvost keresünk.':''}</p>
+  return`${BACK}<h1>Állatorvosok</h1><p class="sub" style="margin-top:6px">Írd be a településed, és a Google Térkép megmutatja a közeli rendelőket. A Petavira nem ajánl és nem tárol állatorvosokat.${ex?' Ennél a fajnál egzotikus állatokhoz értő állatorvost keresünk.':''}</p>${vpBtn(p)}
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
   <div id="mapBtns">${a(ex?'egzotikus állatorvos':'állatorvos',ex?'Egzotikus állatorvos keresése a térképen':'Állatorvos keresése a térképen','')}<div style="height:10px"></div>${a('állatorvosi ügyelet','Ügyelet keresése a térképen','ghost')}</div>
   <p class="sub" style="margin-top:12px">A térkép új lapon nyílik meg, a település megadása után.</p>`}
@@ -3824,6 +3880,9 @@ const ACT={
     if(old)Object.assign(old,{title,date,cat,note});else S.events.push({id:newId(),petId:pet().id,kind:'own',title,date,cat,note});save();closeSheet();render();toast('Esemény mentve')},
   evDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Esemény törölve')},
   hTab(el){hTab=el.dataset.k;render()},
+  vpOpen(){vpSheet()},
+  vpGo(){const p=pet();if(!p||!premOK('vetPdf'))return;const per=($('#sheet input[name="vpPer"]:checked')||{}).value||'6',on=new Set([...document.querySelectorAll('#sheet .vpSec:checked')].map(e=>e.value)),q=qClean($('#vpQ').value);
+    closeSheet();vpPrint(vpHtml(p,per,vpSecs(p).filter(k=>on.has(k)),q),p)},
   wNew(){wSheet()},symNew(){symSheet()},parNew(el){parSheet(el.dataset.t)},
   terraNew(){terraSheet()},
   terraSave(){const p=pet(),d=$('#hDate').value,tod=(document.querySelector('[name=trTod]:checked')||{}).value==='n'?'n':'d',e={id:newId(),petId:p.id,kind:'terra',date:d,tod};let n=0;
