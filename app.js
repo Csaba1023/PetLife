@@ -2966,11 +2966,23 @@ function remSheet(id){const p=pet(),r=id?S.events.find(e=>e.id===id&&e.kind==='r
    - terrárium és víz: az app meglévő, forrásolt célértékei (TERRA, wGoals); tünetnapló: a gazdi saját bejegyzései.
    A „normál” súly itt: az utolsó mérést megelőző 180 nap legnagyobb mért értéke (következtetés, nem forrásadat). */
 const WATCH_W={kutya:'VCA',macska:'VCA',nyul:'MediRabbit'},WATCH_GAP={nyul:31};
+/* okt. 28. (Csaba kérésére): súlynövekedés – kutya, macska, csak felnőtt és idős korban (a növekedés kölyökkorban természetes).
+   Forrás: VCA „Obesity in Dogs” / „Obesity in Cats”: az ideális testsúlynál 10–20%-kal nagyobb súly túlsúly, 20% fölött elhízás.
+   https://vcahospitals.com/ark/know-your-pet/obesity-in-dogs , https://vcahospitals.com/know-your-pet/obesity-in-cats
+   Az ideális súlyt az app nem ismeri: az összevetés alapja az előző 180 nap legkisebb mért értéke (következtetés, nem forrásadat). */
+const WATCH_GAIN={kutya:1,macska:1};
+/* kutya: a megadott testméret szerinti tájékoztató súlysávtól (SIZE_HINT) nagyon eltérő mérésnél egyszer rákérdezünk (nem tiltjuk: a fajták eltérnek);
+   a sáv fele alatti / másfélszerese feletti érték számít nagyon eltérőnek; kölyök- és növendékkorban csak a felső határt nézzük */
+const DOG_KG={kicsi:[0,10],kozepes:[10,25],nagy:[25,45],orias:[45,null]};
+function dogWarn(p,kg,d){if(!p||p.species!=='kutya')return'';const z=sizeOf(p),r=DOG_KG[z];if(!r)return'';const st=stageAt(p,D(d)),young=st==='kolyok'||st==='novendek';
+  return r[1]!=null&&kg>r[1]*1.5||!young&&r[0]&&kg<r[0]*.5?`Ez szokatlan súly egy ${SIZE_HU[z]} kutyánál (${SIZE_HINT[z].replace(/^\S+ /,'').replace(/[()]/g,'')}). Ellenőrizd a beírt számot. Ha biztosan jó, nyomd meg újra a mentést.`:''}
 function watchFor(p,t=today()){const out=[],sp=p.species,tdS=iso(t);
   /* súlycsökkenés */
   if(WATCH_W[sp]){const l=recs(p,'w'),last=l[0];
     if(last){const from=iso(new Date(D(last.date)-180*DAY)),prev=l.slice(1).filter(e=>e.date>=from);
       if(prev.length){const ref=Math.max(...prev.map(e=>e.kg)),pct=(ref-last.kg)/ref*100;
+        const lo=Math.min(...prev.map(e=>e.kg)),gain=(last.kg-lo)/lo*100,st=stageAt(p,D(last.date));
+        if(WATCH_GAIN[sp]&&(st==='felnott'||st==='idos')&&gain>10)out.push({k:'wup',tab:'w',d:last.date,t:`Súlynövekedés: ${wTxt(p,lo)} → ${wTxt(p,last.kg)} (+${Math.round(gain)}%)`,b:'A forrás szerint az ideális testsúlynál 10–20%-kal nagyobb súly már túlsúly (VCA). Kérdezd meg az állatorvost, mennyi az ideális súlya, és ellenőrizd a beírt értéket.'});
         if(pct>10)out.push({k:'w',tab:'w',d:last.date,t:`Súlycsökkenés: ${wTxt(p,ref)} → ${wTxt(p,last.kg)} (−${Math.round(pct)}%)`,b:`A források szerint a testsúly 10%-ot meghaladó csökkenése miatt érdemes állatorvoshoz fordulni (forrás: ${WATCH_W[sp]}).`})}}
     const gap=WATCH_GAP[sp];if(gap&&last){const dd=Math.round((t-D(last.date))/DAY);if(dd>gap)out.push({k:'wgap',tab:'w',d:iso(new Date(D(last.date).getFullYear(),D(last.date).getMonth(),D(last.date).getDate()+gap+1)),t:'Több mint egy hónapja nincs súlymérés',b:`Az utolsó mérés: ${fmtDate(D(last.date))}. A forrás szerint nyúlnál havi mérés javasolt (MediRabbit).`})}}
   /* terrárium: ugyanaz az érték az utolsó 3 mérésben mind a célon kívül */
@@ -3996,6 +4008,7 @@ const ACT={
     S.events=S.events.filter(x=>!(x.petId===p.id&&x.kind==='terra'&&x.date===d&&(x.tod||'d')===tod));S.events.push(e);save();closeSheet();render();toast('Mérés mentve')},
   uvbOn(){pet().uvbOn=true;save();render()},uvbOff(){pet().uvbOn=false;save();render()},
   wSave(){const p=pet(),gr=gramSp(p),kg=parseFloat($('#wKg').value.replace(',','.'))/(gr?1000:1),d=$('#hDate').value;if(!(kg>0&&kg<200))return showErr('#hErr',gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
+    {const w=dogWarn(p,kg,d),btn=$('#sheet [data-act="wSave"]');if(w&&btn&&btn.dataset.ok!==String(kg)){btn.dataset.ok=String(kg);return showErr('#hErr',w)}}
     S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===d));S.events.push({id:newId(),petId:p.id,kind:'w',date:d,kg});syncWeight(p);save();closeSheet();render();toast('Súly mentve')},
   symSave(el){const text=$('#syText').value.trim(),d=$('#hDate').value,ai=el.dataset.ai;if(!text)return showErr('#hErr','Írd le röviden, mit vettél észre.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     const e={id:newId(),petId:pet().id,kind:'sym',date:d,text,sev:($('input[name=sySev]:checked')||{}).value||''};S.events.push(e);save();closeSheet();render();toast('Tünet mentve');if(ai)symAsk(e)},
