@@ -3330,10 +3330,12 @@ const ftTxt=n=>new Intl.NumberFormat('hu-HU').format(Math.round(n))+' Ft';
 const costsOf=p=>S.events.filter(e=>e.kind==='cost'&&(costAll||e.petId===p.id)).sort((a,c)=>a.date<c.date?1:a.date>c.date?-1:0);
 const mKey=d=>iso(d).slice(0,7);
 function costChart(l,t,n=12){const ms=[...Array(n)].map((_,i)=>mKey(new Date(t.getFullYear(),t.getMonth()-n+1+i,1))),sum=ms.map(m=>l.filter(e=>e.date.slice(0,7)===m).reduce((s,e)=>s+e.ft,0)),hi=Math.max(...sum);
-  if(!hi)return'';const W=320,H=150,px=8,pb=24,pt=16,bw=(W-2*px)/n;
+  if(!hi)return'';const W=320,H=150,px=8,pb=24,pt=20,bw=(W-2*px)/n,lab=n<=12;
   return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Havi költségek az utolsó ${n} hónapban, legfeljebb ${ftTxt(hi)}" font-size="10" fill="var(--muted)">
-  ${sum.map((v,i)=>{const h=v/hi*(H-pt-pb),x=px+i*bw;return`<rect x="${(x+3).toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${(bw-6).toFixed(1)}" height="${Math.max(h,v?1.5:0).toFixed(1)}" rx="3" fill="var(--brand)"${i===n-1?'':' opacity=".55"'}/><text x="${(x+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${+ms[i].slice(5)}.</text>`}).join('')}
-  <text x="${W-px}" y="11" text-anchor="end">max. ${ftTxt(hi)}</text></svg>`}
+  ${sum.map((v,i)=>{const h=v/hi*(H-pt-pb),x=px+i*bw;return`<rect x="${(x+3).toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${(bw-6).toFixed(1)}" height="${Math.max(h,v?1.5:0).toFixed(1)}" rx="3" fill="var(--brand)"${i===n-1?'':' opacity=".55"'}/><text x="${(x+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${+ms[i].slice(5)}.</text>${lab&&v?`<text x="${(x+bw/2).toFixed(1)}" y="${(H-pb-h-4).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--ink)">${ftShort(v)}</text>`:''}`}).join('')}
+  ${lab?`<text x="${px}" y="10" font-size="9">e = ezer Ft</text>`:`<text x="${W-px}" y="11" text-anchor="end">max. ${ftTxt(hi)}</text>`}</svg>`}
+/* okt. 28. (Csaba kérésére): összeg az oszlopok fölött, röviden: 850 · 13e · 1,2M */
+const ftShort=v=>v<1000?String(Math.round(v)):v<1e6?Math.round(v/1000)+'e':String(Math.round(v/1e5)/10).replace('.',',')+'M';
 function costHtml(p){const t=today(),l=costsOf(p),mk=mKey(t),yr=String(t.getFullYear()),month=l.filter(e=>e.date.slice(0,7)===mk).reduce((s,e)=>s+e.ft,0),yl=l.filter(e=>e.date.slice(0,4)===yr),year=yl.reduce((s,e)=>s+e.ft,0),multi=S.pets.length>1;
   const by=Object.keys(COST_CAT).map(k=>[k,yl.filter(e=>e.cat===k).reduce((s,e)=>s+e.ft,0)]).filter(x=>x[1]).sort((a,c)=>c[1]-a[1]);
   const pn=id=>{const q=S.pets.find(x=>x.id===id);return q?petName(q):''};
@@ -3363,7 +3365,7 @@ function costPdfHtml(p,per){const t=today(),y=t.getFullYear(),from=per==='m'?mKe
   const perTxt={m:'ez a hónap',y:'idei év',12:'utolsó 12 hónap',0:'összes rögzített kiadás'}[per]+(from?` (${fmtDate(D(from))} – ${fmtDate(t)})`:'');
   return`<div class="ph"><img src="img/paw-144.webp" alt="" width="40" height="40"><div><h1>Költség-kimutatás</h1><div class="pm">Petavira · ${multi?'minden állatom':esc(petName(p))} · készült: ${fmtDate(t)} · időszak: ${perTxt}</div></div></div>
   <h2>Összesen: ${ftTxt(sum)}</h2>${l.length?'':'<p class="pe">Ebben az időszakban nincs rögzített kiadás.</p>'}
-  ${n>1&&sum?`<h3>Havonta</h3>${costChart(l,t,n)}`:''}
+  ${n>1&&sum?`<h3>Havonta</h3>${costChart(l,t,n)}<table><thead><tr><th>Hónap</th><th>Összeg</th></tr></thead><tbody>${[...Array(n)].map((_,i)=>new Date(y,t.getMonth()-n+1+i,1)).map(d=>[d,l.filter(e=>e.date.slice(0,7)===mKey(d)).reduce((s,e)=>s+e.ft,0)]).filter(x=>x[1]).reverse().map(([d,v])=>`<tr><td>${d.toLocaleDateString('hu-HU',{year:'numeric',month:'long'})}</td><td>${ftTxt(v)}</td></tr>`).join('')}</tbody></table>`:''}
   ${by.length?`<h2>Kategóriánként</h2><table><thead><tr><th>Kategória</th><th>Összeg</th><th>Arány</th></tr></thead><tbody>${by.map(([k,v])=>`<tr><td>${COST_CAT[k]}</td><td>${ftTxt(v)}</td><td>${Math.round(v/sum*100)}%</td></tr>`).join('')}</tbody></table>`:''}
   ${l.length?`<h2>Tételesen</h2><table><thead><tr><th>Dátum</th>${multi?'<th>Állat</th>':''}<th>Kategória</th><th>Összeg</th><th>Megjegyzés</th></tr></thead><tbody>${l.map(e=>`<tr><td>${fmtDate(D(e.date))}</td>${multi?`<td>${esc(pn(e.petId))}</td>`:''}<td>${COST_CAT[e.cat]||COST_CAT.other}</td><td>${ftTxt(e.ft)}</td><td>${esc(e.note||'')}</td></tr>`).join('')}</tbody></table>`:''}
   <p class="pf">Az adatokat a gazdi rögzítette a Petavira költségnaplójában.</p>`}
