@@ -2904,9 +2904,9 @@ function vpHtml(p,per,secs,q){
   ${q?`<section><h2>Kérdéseim az állatorvoshoz</h2><div class="pq">${esc(q)}</div></section>`:''}
   <p class="pf">Az adatokat a gazdi rögzítette. A Petavira nem helyettesíti az állatorvosi vizsgálatot.</p>`}
 let vpT=0,vpT0='';
-function vpPrint(html,p){let el=$('#print');if(!el){el=document.createElement('div');el.id='print';document.body.appendChild(el)}
+function vpPrint(html,p,kind='osszesito'){let el=$('#print');if(!el){el=document.createElement('div');el.id='print';document.body.appendChild(el)}
   el.innerHTML=html;clearTimeout(vpT);const t0=vpT0||(vpT0=document.title),slug=String(petName(p)).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30)||'allat';
-  document.title=`Petavira-osszesito-${slug}-${iso(today())}`; /* a „Mentés PDF-ként” ezt ajánlja fájlnévnek */
+  document.title=`Petavira-${kind}-${slug}-${iso(today())}`; /* a „Mentés PDF-ként” ezt ajánlja fájlnévnek */
   addEventListener('afterprint',()=>{clearTimeout(vpT);vpT=setTimeout(()=>{document.title=t0},1500)},{once:true});
   setTimeout(()=>{try{window.print()}catch(e){toast('A nyomtatás most nem érhető el.')}},60)}
 /* ---------- Saját ismétlődő emlékeztetők (okt. 28.; 2. prémium funkció) ----------
@@ -3329,10 +3329,10 @@ let costAll=false;
 const ftTxt=n=>new Intl.NumberFormat('hu-HU').format(Math.round(n))+' Ft';
 const costsOf=p=>S.events.filter(e=>e.kind==='cost'&&(costAll||e.petId===p.id)).sort((a,c)=>a.date<c.date?1:a.date>c.date?-1:0);
 const mKey=d=>iso(d).slice(0,7);
-function costChart(l,t){const ms=[...Array(12)].map((_,i)=>mKey(new Date(t.getFullYear(),t.getMonth()-11+i,1))),sum=ms.map(m=>l.filter(e=>e.date.slice(0,7)===m).reduce((s,e)=>s+e.ft,0)),hi=Math.max(...sum);
-  if(!hi)return'';const W=320,H=150,px=8,pb=24,pt=16,bw=(W-2*px)/12;
-  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Havi költségek az utolsó 12 hónapban, legfeljebb ${ftTxt(hi)}" font-size="10" fill="var(--muted)">
-  ${sum.map((v,i)=>{const h=v/hi*(H-pt-pb),x=px+i*bw;return`<rect x="${(x+3).toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${(bw-6).toFixed(1)}" height="${Math.max(h,v?1.5:0).toFixed(1)}" rx="3" fill="var(--brand)"${i===11?'':' opacity=".55"'}/><text x="${(x+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${+ms[i].slice(5)}.</text>`}).join('')}
+function costChart(l,t,n=12){const ms=[...Array(n)].map((_,i)=>mKey(new Date(t.getFullYear(),t.getMonth()-n+1+i,1))),sum=ms.map(m=>l.filter(e=>e.date.slice(0,7)===m).reduce((s,e)=>s+e.ft,0)),hi=Math.max(...sum);
+  if(!hi)return'';const W=320,H=150,px=8,pb=24,pt=16,bw=(W-2*px)/n;
+  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Havi költségek az utolsó ${n} hónapban, legfeljebb ${ftTxt(hi)}" font-size="10" fill="var(--muted)">
+  ${sum.map((v,i)=>{const h=v/hi*(H-pt-pb),x=px+i*bw;return`<rect x="${(x+3).toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${(bw-6).toFixed(1)}" height="${Math.max(h,v?1.5:0).toFixed(1)}" rx="3" fill="var(--brand)"${i===n-1?'':' opacity=".55"'}/><text x="${(x+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${+ms[i].slice(5)}.</text>`}).join('')}
   <text x="${W-px}" y="11" text-anchor="end">max. ${ftTxt(hi)}</text></svg>`}
 function costHtml(p){const t=today(),l=costsOf(p),mk=mKey(t),yr=String(t.getFullYear()),month=l.filter(e=>e.date.slice(0,7)===mk).reduce((s,e)=>s+e.ft,0),yl=l.filter(e=>e.date.slice(0,4)===yr),year=yl.reduce((s,e)=>s+e.ft,0),multi=S.pets.length>1;
   const by=Object.keys(COST_CAT).map(k=>[k,yl.filter(e=>e.cat===k).reduce((s,e)=>s+e.ft,0)]).filter(x=>x[1]).sort((a,c)=>c[1]-a[1]);
@@ -3343,7 +3343,7 @@ function costHtml(p){const t=today(),l=costsOf(p),mk=mKey(t),yr=String(t.getFull
   ${premOK('cost')?'<p style="margin-top:12px"><button class="btn" data-act="costNew">Kiadás rögzítése</button></p>':'<p class="sub">Új kiadást a prémium csomagban rögzíthetsz.</p>'}
   ${by.length?`<h2>Idén kategóriánként</h2><ul class="list" id="costCat">${by.map(([k,v])=>`<li style="display:block"><div class="row"><div style="flex:1">${COST_CAT[k]}</div><b>${ftTxt(v)}</b></div><div style="height:6px;border-radius:3px;background:var(--soft);margin-top:6px"><div style="height:6px;border-radius:3px;background:var(--brand);width:${Math.max(2,Math.round(v/year*100))}%"></div></div><span class="when">${Math.round(v/year*100)}%</span></li>`).join('')}</ul>`:''}
   ${l.length?`<h2>Kiadások</h2><ul class="list" id="costList">${l.slice(0,30).map(e=>`<li><div style="flex:1;min-width:0"><b>${ftTxt(e.ft)}</b><span class="when">${fmtDate(D(e.date))} · ${COST_CAT[e.cat]||COST_CAT.other}${costAll&&multi?' · '+esc(pn(e.petId)):''}${e.note?' · '+esc(e.note):''}</span></div><button class="btn text" data-act="costEdit" data-id="${e.id}">Szerkesztés</button></li>`).join('')}</ul>${l.length>30?`<p class="sub">A legutóbbi 30 kiadás látszik (összesen ${l.length}); a táblázatban mind benne van.</p>`:''}
-  <p style="margin-top:12px"><button class="btn ghost" data-act="costCsv">Letöltés táblázatként (CSV)</button></p>`:'<p class="sub" style="margin-top:14px">Még nincs rögzített kiadás.</p>'}`}
+  <p style="margin-top:12px"><button class="btn ghost" data-act="costPdfOpen">Kimutatás (PDF)</button></p><p style="margin-top:8px"><button class="btn ghost" data-act="costCsv">Letöltés táblázatként (CSV)</button></p>`:'<p class="sub" style="margin-top:14px">Még nincs rögzített kiadás.</p>'}`}
 function costSheet(id){const p=pet(),e=id?S.events.find(x=>x.id===id&&x.kind==='cost'):null;if(!p||(!e&&!premOK('cost')))return;
   openSheet(`<h2>${e?'Kiadás szerkesztése':'Kiadás rögzítése'}</h2>
   <label class="f"><span>Összeg (Ft)</span><input id="coFt" inputmode="numeric" maxlength="9" placeholder="pl. 12500" value="${e?e.ft:''}"></label>
@@ -3352,6 +3352,21 @@ function costSheet(id){const p=pet(),e=id?S.events.find(x=>x.id===id&&x.kind==='
   <label class="f"><span>Megjegyzés (nem kötelező)</span><input id="coNote" maxlength="60" value="${esc(e?e.note:'')}" placeholder="pl. 12 kg felnőtt táp"></label>
   <p class="err" id="coErr" role="alert" hidden></p>
   <button class="btn" data-act="costSave" data-id="${e?e.id:''}">Mentés</button>${e?`<button class="btn ghost" style="color:var(--alert)" data-act="costDel" data-id="${e.id}">Törlés</button>`:''}<button class="btn ghost" data-act="close">Mégse</button>`)}
+/* okt. 28. (Csaba kérésére): költség-kimutatás PDF-ben – ugyanúgy, mint az állatorvosi összesítő (#print + böngésző-nyomtatás) */
+const COST_PER=[['m','Ez a hónap'],['y','Idei év'],['12','Utolsó 12 hónap'],['0','Összes']];
+function costPdfSheet(){const p=pet();if(!p)return;openSheet(`<h2>Költség-kimutatás</h2><p class="sub">A4-es kimutatás ${costAll?'minden állatodról':esc(petName(p))+' kiadásairól'}: összeg, havi grafikon, kategóriák, tételes lista. A nyomtatási ablakban PDF-ként mentheted vagy megoszthatod.</p>
+  <div class="f"><span>Időszak</span>${radio('coPer',COST_PER,'y')}</div>${sheetEnd('costPdfGo','Kimutatás készítése')}`)}
+function costPdfHtml(p,per){const t=today(),y=t.getFullYear(),from=per==='m'?mKey(t)+'-01':per==='y'?y+'-01-01':per==='12'?iso(new Date(y,t.getMonth()-11,1)):'',
+  l=costsOf(p).filter(e=>!from||e.date>=from),sum=l.reduce((s,e)=>s+e.ft,0),multi=costAll&&S.pets.length>1,pn=id=>{const q=S.pets.find(x=>x.id===id);return q?petName(q):''};
+  const by=Object.keys(COST_CAT).map(k=>[k,l.filter(e=>e.cat===k).reduce((s,e)=>s+e.ft,0)]).filter(x=>x[1]).sort((a,c)=>c[1]-a[1]);
+  const n=per==='m'?0:per==='y'?t.getMonth()+1:per==='12'?12:Math.min(24,l.length?(y-+l[l.length-1].date.slice(0,4))*12+t.getMonth()-(+l[l.length-1].date.slice(5,7)-1)+1:0);
+  const perTxt={m:'ez a hónap',y:'idei év',12:'utolsó 12 hónap',0:'összes rögzített kiadás'}[per]+(from?` (${fmtDate(D(from))} – ${fmtDate(t)})`:'');
+  return`<div class="ph"><img src="img/paw-144.webp" alt="" width="40" height="40"><div><h1>Költség-kimutatás</h1><div class="pm">Petavira · ${multi?'minden állatom':esc(petName(p))} · készült: ${fmtDate(t)} · időszak: ${perTxt}</div></div></div>
+  <h2>Összesen: ${ftTxt(sum)}</h2>${l.length?'':'<p class="pe">Ebben az időszakban nincs rögzített kiadás.</p>'}
+  ${n>1&&sum?`<h3>Havonta</h3>${costChart(l,t,n)}`:''}
+  ${by.length?`<h2>Kategóriánként</h2><table><thead><tr><th>Kategória</th><th>Összeg</th><th>Arány</th></tr></thead><tbody>${by.map(([k,v])=>`<tr><td>${COST_CAT[k]}</td><td>${ftTxt(v)}</td><td>${Math.round(v/sum*100)}%</td></tr>`).join('')}</tbody></table>`:''}
+  ${l.length?`<h2>Tételesen</h2><table><thead><tr><th>Dátum</th>${multi?'<th>Állat</th>':''}<th>Kategória</th><th>Összeg</th><th>Megjegyzés</th></tr></thead><tbody>${l.map(e=>`<tr><td>${fmtDate(D(e.date))}</td>${multi?`<td>${esc(pn(e.petId))}</td>`:''}<td>${COST_CAT[e.cat]||COST_CAT.other}</td><td>${ftTxt(e.ft)}</td><td>${esc(e.note||'')}</td></tr>`).join('')}</tbody></table>`:''}
+  <p class="pf">Az adatokat a gazdi rögzítette a Petavira költségnaplójában.</p>`}
 const csvCell=v=>{let s=String(v??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return/[";\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
 function costCsv(p){const l=costsOf(p),pn=id=>{const q=S.pets.find(x=>x.id===id);return q?petName(q):''};
   return'﻿'+[['Dátum','Állat','Kategória','Összeg (Ft)','Megjegyzés'],...[...l].reverse().map(e=>[e.date,pn(e.petId),COST_CAT[e.cat]||COST_CAT.other,e.ft,e.note||''])].map(r=>r.map(csvCell).join(';')).join('\r\n')}
@@ -4030,6 +4045,7 @@ const ACT={
     if(!p)return;if(!/^\d{1,7}$/.test(raw)||ft<1||ft>COST_MAX)return showErr('#coErr','Az összeget egész forintban add meg (1 és 5 000 000 között).');
     if(!COST_CAT[cat])return;if(!DATE_OK.test(date)||D(date)>today())return showErr('#coErr','Adj meg egy mai vagy korábbi dátumot.');
     if(!old&&!premOK('cost'))return;const o={ft,cat,date,note};if(old)Object.assign(old,o);else S.events.push({id:newId(),petId:p.id,kind:'cost',...o});save();closeSheet();render();toast('Kiadás mentve')},
+  costPdfOpen(){costPdfSheet()},costPdfGo(){const p=pet();if(!p)return;const per=($('#sheet input[name="coPer"]:checked')||{}).value||'y';closeSheet();vpPrint(costPdfHtml(p,['m','y','12','0'].includes(per)?per:'y'),costAll&&S.pets.length>1?{name:'allataim'}:p,'koltsegek')},
   costDel(el){S.events=S.events.filter(e=>e.id!==el.dataset.id);save();closeSheet();render();toast('Kiadás törölve')},
   costCsv(){const p=pet();if(!p)return;try{const u=URL.createObjectURL(new Blob([costCsv(p)],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download=`petavira-koltsegek-${iso(today())}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}catch(e){toast('A letöltés most nem sikerült.')}},
   watchGo(el){tab='health';hTab=el.dataset.k;render({top:true})},
