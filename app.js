@@ -2912,7 +2912,7 @@ function vpPrint(html,p){let el=$('#print');if(!el){el=document.createElement('d
    Adat: S.events, kind:'rem' {date: első alkalom, title, ev:'once'|'d'|'w'|'m', n, until?, note?}; pipálás: kind:'remlog' {date, rem}.
    Állatonként legfeljebb 20 emlékeztető, emlékeztetőnként a legutóbbi 50 pipálás marad meg. Az értesítés a meglévő 19 órás push-tervben megy (pushPlan),
    szerverváltozás nincs. A sablonok általános gondozási teendők, időköz nélkül (a gyakoriságot a gazdi adja meg). */
-const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:90,w:12,m:12};
+const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:30,w:12,m:12};
 const REM_TPL={emlos:['Karomvágás','Fogmosás','Szőrápolás','Fekhely mosása','Alomcsere','Nagytakarítás'],
  madar:['Kalitka takarítása','Etető- és itatótál mosása','Ülőrudak tisztítása','Fürdetés'],
  hullo:['Terrárium takarítása','Itatótál cseréje','Aljzatcsere','Hőmérők ellenőrzése'],
@@ -2947,7 +2947,7 @@ function remSheet(id){const p=pet(),r=id?S.events.find(e=>e.id===id&&e.kind==='r
   <label class="f"><span>Megnevezés</span><input id="remTitle" maxlength="40" value="${esc(r?r.title:'')}" placeholder="Válassz fent, vagy írd be"></label>
   <label class="f"><span>${r?'Első alkalom':'Első alkalom (mikor szóljunk először?)'}</span><input type="date" id="remDate" value="${r?r.date:iso(today())}"></label>
   <div class="f"><span>Ismétlés</span>${radio('remEv',Object.entries(REM_EV).map(([k,v])=>[k,k==='once'?v:v[0].toUpperCase()+v.slice(1)]),r?r.ev:'w')}</div>
-  <label class="f"><span>Időköz (pl. 2 és „Hetente” = kéthetente)</span><input id="remN" inputmode="numeric" maxlength="2" value="${r?remN(r):1}"></label>
+  <label class="f"><span>Hányanként? (1 = minden nap / hét / hónap, 3 = minden 3.; naponta legfeljebb 30)</span><input id="remN" inputmode="numeric" maxlength="2" value="${r?remN(r):1}"></label>
   <label class="f"><span>Befejezés (nem kötelező)</span><input type="date" id="remUntil" value="${r&&r.until?r.until:''}"></label>
   <label class="f"><span>Megjegyzés (nem kötelező)</span><textarea id="remNote" rows="2" maxlength="100">${esc(r?r.note:'')}</textarea></label>
   <p class="err" id="remErr" role="alert" hidden></p>
