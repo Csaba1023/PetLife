@@ -2460,6 +2460,7 @@ function fixState(st){
     {const ok=o=>isObj(o)&&+o.g>0&&+o.g<=100000&&+o.d>0&&+o.d<=5000&&DATE_OK.test(String(o.start))&&(o.name==null||typeof o.name==='string');
      if(p.sitter!=null&&!(isObj(p.sitter)&&(p.sitter.note==null||typeof p.sitter.note==='string')&&(p.sitter.vet==null||typeof p.sitter.vet==='string')))delete p.sitter;
      if(p.marks!=null&&typeof p.marks!=='string')delete p.marks;
+     if(p.home!=null&&!DATE_OK.test(String(p.home)))delete p.home;
      if(p.stock!=null&&!ok(p.stock))delete p.stock;if(p.stockHist!=null)p.stockHist=Array.isArray(p.stockHist)?p.stockHist.filter(h=>ok(h)&&DATE_OK.test(String(h.end))).slice(0,5):[]}}
   const ids=new Set(pets.map(p=>p.id)),re=k=>map[k]||k;
   const events=(Array.isArray(st.events)?st.events:[]).filter(isObj).filter(e=>{e.petId=re(String(e.petId));
@@ -2658,7 +2659,7 @@ function vHome(p){
   const soon=S.events.filter(e=>e.petId===p.id&&e.kind==='own'&&D(e.date)>=t&&D(e.date)-t<=30*DAY).sort((a,c)=>a.date<c.date?-1:1);
   const tips=tipsFor(p,st),size=sizeOf(p),par=parDue(p).filter(x=>x.date-t<=30*DAY),wc=wcDue(p),sk=stockDue(p),rem=remsOf(p).map(r=>[r,remNext(r)]).filter(([,d])=>d&&d-t<=30*DAY).sort((a,c)=>a[1]-c[1]);
   const sex={him:'hím',nosteny:'nőstény'}[p.sex];
-  return`${p.lastStage&&st&&p.lastStage!==st?`<div class="banner"><div style="flex:1">${esc(petName(p))} ${STAGE_INTO[st]||'új szakaszba'} lépett. A teendők és a tippek mostantól ehhez igazodnak.</div><button class="btn small" data-act="stageAck">Rendben</button></div>`:''}
+  return`${annivHtml(p)}${p.lastStage&&st&&p.lastStage!==st?`<div class="banner"><div style="flex:1">${esc(petName(p))} ${STAGE_INTO[st]||'új szakaszba'} lépett. A teendők és a tippek mostantól ehhez igazodnak.</div><button class="btn small" data-act="stageAck">Rendben</button></div>`:''}
   <section class="hero"><div class="who">${ava(p,1)}<div style="min-width:0"><h1>${esc(petName(p))}</h1>
    <div class="meta">${esc([p.name?speciesLabel(p).toLowerCase():'',breedLabel(p),size?SIZE_HU[size]:'',sex,p.count?p.count+' db':'',p.tankL?fmtKg(p.tankL)+' literes akvárium':''].filter(Boolean).join(', '))}</div>
    <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+stHU(p,st).toLowerCase():''}</div></div>
@@ -3492,6 +3493,16 @@ function walkSheet(id){const p=pet(),e=id?S.events.find(x=>x.id===id&&x.kind==='
   <label class="f"><span>Mikor?</span><input type="date" id="wkDate" value="${e?e.date:iso(today())}" max="${iso(today())}"></label>
   <label class="f"><span>Megjegyzés (nem kötelező)</span><input id="wkNote" maxlength="40" value="${esc(e?e.note:'')}" placeholder="pl. futás a parkban"></label>
   <p class="err" id="wkErr" role="alert" hidden></p><button class="btn" data-act="walkSave" data-id="${e?e.id:''}">Mentés</button>${e?`<button class="btn ghost" style="color:var(--alert)" data-act="walkDel" data-id="${e.id}">Törlés</button>`:''}<button class="btn ghost" data-act="close">Mégse</button>`)}
+/* ---------- Évfordulók (okt. 28.; ingyenes) ----------
+   Születésnap: csak valódi (nem becsült) születési dátumnál. „Mióta van veled”: a profil p.home mezőjéből („Mikor került hozzád?”).
+   Febr. 29. nem szökőévben febr. 28-án. Halaknál (állomány) nincs. A Főoldal kártyája aznap „Köszönöm” gombbal elrejthető (S.settings.annivSeen). */
+const annivDay=(src,y)=>{const d=D(src),m=d.getMonth(),dd=d.getDate();return m===1&&dd===29&&new Date(y,1,29).getMonth()!==1?new Date(y,1,28):new Date(y,m,dd)};
+function annivFor(p,day=today()){if(grp(p)==='hal')return[];const out=[],y=day.getFullYear(),k=iso(day),n=petName(p);
+  if(!p.est&&DATE_OK.test(String(p.birth))){const age=y-D(p.birth).getFullYear();if(age>0&&iso(annivDay(p.birth,y))===k)out.push({k:'b',t:`Ma ${age} éves ${n}! Boldog születésnapot!`})}
+  if(DATE_OK.test(String(p.home))){const yrs=y-D(p.home).getFullYear();if(yrs>0&&iso(annivDay(p.home,y))===k)out.push({k:'h',t:`Ma ${yrs} éve van veled ${n}.`})}
+  return out}
+function annivHtml(p){const l=annivFor(p),seen=S.settings.annivSeen||{};const v=l.filter(a=>seen[p.id+':'+a.k]!==iso(today()));
+  return v.length?`<div class="banner" id="anniv"><div style="flex:1">${v.map(a=>`<b>${esc(a.t)}</b>`).join('<br>')}</div><button class="btn small" data-act="annivOk">Köszönöm</button></div>`:''}
 /* chat */
 let chatBusy=null,chatCtl=null,streamText='',chatNote='',sampleP=null,chatSheet=false,chatTopic='';
 const chatLog=p=>S.chat[p.id]||[];
@@ -3650,7 +3661,7 @@ function pushPlan(from=today()){
   const per=S.pets.map(p=>({p,items:buildItems(p),par:parDue(p),wc:wcDue(p)}));
   for(let d=1;d<=PUSH_DAYS;d++){
     const day=new Date(from.getFullYear(),from.getMonth(),from.getDate()+d-1),next=new Date(day.getFullYear(),day.getMonth(),day.getDate()+1),key=iso(day);
-    const due=[],stage=[],tips=[];
+    const due=[],stage=[],tips=[],anv=[];
     for(const{p,items,par,wc}of per){
       const n=petName(p),pre=multi?n+': ':'';
       if(pushT('due')){
@@ -3664,11 +3675,14 @@ function pushPlan(from=today()){
       /* okos figyelő: csak azon a napon, amikor a jelzést kiváltó bejegyzés (vagy a mérési határidő) esedékes */
       if(pushT('watch')&&premOK('watch')&&d===1){watchFor(p,day).filter(a=>a.d===key).forEach(a=>due.push(pre+'Figyelő: '+a.t.slice(0,70)))
       }
+      if(pushT('anniv'))annivFor(p,day).forEach(a=>anv.push(a.t));
       if(pushT('stage')){const a=stageAt(p,day),b=stageAt(p,next);if(a&&b&&a!==b)stage.push(`${n} holnap ${STAGE_INTO[b]} lép. A teendők és a tippek ehhez igazodnak.`)}
       if(pushT('tip')){const T=tipsFor(p,stageAt(p,day));if(T!==TIPS_OTHER&&T.length)tips.push([n,T[Math.floor(day.getTime()/DAY)%T.length]])}
     }
     const one=S.pets.length===1?' – '+petName(S.pets[0]):'';
-    if(due.length)out[key]={t:'Ma esedékes'+one,b:due.slice(0,3).join('\n')+(due.length>3?`\n…és még ${due.length-3}`:'')};
+    if(anv.length&&due.length)due.unshift(...anv);
+    if(anv.length&&!due.length)out[key]={t:'Évforduló',b:anv.join('\n')};
+    else if(due.length)out[key]={t:'Ma esedékes'+one,b:due.slice(0,3).join('\n')+(due.length>3?`\n…és még ${due.length-3}`:'')};
     else if(stage.length)out[key]={t:'Holnap szakaszváltás',b:stage.join('\n')};
     else if(tips.length){const[n,t]=tips[Math.floor(day.getTime()/DAY)%tips.length];out[key]={t:'Napi tipp – '+n,b:t}}
   }
@@ -3718,7 +3732,7 @@ function pushHtml(){
   const L=pushLocal(),perm=Notification.permission;
   if(!L.on)return intro+(perm==='denied'?'<p class="sub">Az értesítéseket a telefon vagy a böngésző beállításaiban letiltottad. Ott engedélyezd, utána itt kapcsold be.</p>':'')+`<button class="btn ghost" data-act="pushOn"${pushBusy?' disabled':''}>${pushBusy?'Egy pillanat…':'Értesítések bekapcsolása'}</button>`;
   return intro+`<p class="sub" style="margin-top:4px"><b>Bekapcsolva ezen az eszközön.</b></p>
-  ${[['due','Esedékes teendők (oltás, féreghajtás, kezelés, vízcsere, saját esemény)'],['stage','Szakaszváltás (az előtte lévő napon)'],['watch','Figyelő jelzései (pl. nagy súlycsökkenés, célon kívüli értékek)'],['tip','Napi tipp (ha aznap nincs más)']].map(([k,t])=>`<label class="ck"><input type="checkbox" data-act="pushType" data-k="${k}"${pushT(k)?' checked':''}><span>${t}</span></label>`).join('')}
+  ${[['due','Esedékes teendők (oltás, féreghajtás, kezelés, vízcsere, saját esemény)'],['stage','Szakaszváltás (az előtte lévő napon)'],['watch','Figyelő jelzései (pl. nagy súlycsökkenés, célon kívüli értékek)'],['anniv','Évfordulók (születésnap, mióta van veled)'],['tip','Napi tipp (ha aznap nincs más)']].map(([k,t])=>`<label class="ck"><input type="checkbox" data-act="pushType" data-k="${k}"${pushT(k)?' checked':''}><span>${t}</span></label>`).join('')}
   <button class="btn ghost" style="margin-top:10px" data-act="pushTest">Próbaértesítés most</button><button class="btn text" style="margin-top:6px" data-act="pushOffBtn">Kikapcsolás</button>`}
 async function pushTest(){
   try{const reg=await navigator.serviceWorker.ready,plan=pushPlan(),n=plan[iso(today())]||Object.values(plan)[0];
@@ -3805,7 +3819,7 @@ let W=null,wzStep=0,wzPop='';
 function wizard(id){
   const p=id&&S.pets.find(x=>x.id===id);
   W=p?{...p,group:tileOf(p),count:p.count??'',tankL:p.tankL??'',weight:p.weight==null?'':gramSp(p)?Math.round(p.weight*1000):p.weight,step:3,mode:'date',edit:true,ey:'',em:'',ew:'',err:''}
-     :{group:'',species:'',speciesName:'',breed:'mix',size:'',count:'',tankL:'',birth:'',est:false,mode:'date',ey:'',em:'',ew:'',name:'',sex:'',neutered:'',weight:'',photo:'',step:1,err:''};
+     :{group:'',species:'',speciesName:'',breed:'mix',size:'',count:'',tankL:'',birth:'',est:false,mode:'date',ey:'',em:'',ew:'',name:'',sex:'',neutered:'',weight:'',photo:'',home:'',step:1,err:''};
   drawWizard();
 }
 function readWizard(){const f=$('#wz');if(!f)return;f.querySelectorAll('[name]').forEach(el=>{if(el.type==='radio'){if(el.checked)W[el.name]=el.value}else if(el.type!=='file')W[el.name]=el.value.trim()})}
@@ -3836,7 +3850,8 @@ function drawWizard(){
     <label class="f"><span>Az akvárium mérete literben</span><input name="tankL" inputmode="decimal" value="${esc(w.tankL)}" placeholder="pl. 60"></label>`
     :`<div class="f"><span>Ivar (nem kötelező)</span>${radio('sex',[['him','Hím'],['nosteny','Nőstény'],['','Nem tudom']],w.sex)}</div>
     ${g==='emlos'||g==='egyeb'?`<div class="f"><span>Ivartalanított? (nem kötelező)</span>${radio('neutered',[['igen','Igen'],['nem','Nem'],['','Nem tudom']],w.neutered)}</div>`:''}
-    ${noWeight(w)?'':`<label class="f"><span>Súly ${gramSp(w)?'grammban':'kg-ban'} (nem kötelező)</span><input name="weight" inputmode="decimal" value="${esc(w.weight)}" placeholder="${gramSp(w)?'pl. 65':'pl. 12,5'}"></label>`}`}`;
+    ${noWeight(w)?'':`<label class="f"><span>Súly ${gramSp(w)?'grammban':'kg-ban'} (nem kötelező)</span><input name="weight" inputmode="decimal" value="${esc(w.weight)}" placeholder="${gramSp(w)?'pl. 65':'pl. 12,5'}"></label>`}
+    <label class="f"><span>Mikor került hozzád? (nem kötelező)</span><input type="date" name="home" value="${esc(w.home||'')}" max="${iso(today())}"></label>`}`;
   openSheet(`<div id="wz"><div class="steps" aria-label="${w.step}. lépés a 3-ból">${[1,2,3].map(n=>`<i class="${n<=w.step?'on':''}"></i>`).join('')}</div>${body}
     ${w.err?`<p class="err" role="alert">${esc(w.err)}</p>`:''}
     <button class="btn" data-act="wzNext">${w.step<3?'Tovább':w.edit?'Változások mentése':'Állat mentése'}</button>
@@ -3857,10 +3872,11 @@ function wizardNext(){
     if(fish){cnt=parseInt(w.count,10);tank=parseFloat(String(w.tankL).replace(',','.'));
       if(!w.err&&!(cnt>=1&&cnt<=999))w.err='Add meg, hány hal él az akváriumban (1 és 999 között).';else if(!w.err&&!(tank>0&&tank<=10000))w.err='Add meg az akvárium méretét literben, pl. 60.'}
     else if(w.weight!==''&&!noWeight(w)){kg=parseFloat(String(w.weight).replace(',','.'));if(gr)kg/=1000;if(!(kg>0&&kg<200))w.err=gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.'}
+    if(!w.err&&!fish&&w.home&&(!DATE_OK.test(w.home)||w.home>iso(t)||(birth&&w.home<iso(birth))))w.err='A „Mikor került hozzád?” dátum nem lehet jövőbeli, és nem lehet korábbi a születésnél.';
     if(!w.err){
       const old=w.edit&&S.pets.find(x=>x.id===w.id),bs=iso(birth);
       const p={id:old?old.id:newId(),name:clean(w.name),species:w.species,speciesName:w.species==='egyeb'?clean(w.speciesName):'',breed:(w.species==='egyeb'?clean(w.breed):w.breed)||'mix',size:w.size,count:cnt,tankL:tank,birth:bs,
-        est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:fish?'':w.sex,neutered:g==='emlos'||g==='egyeb'?w.neutered:'',weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{}};
+        est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:fish?'':w.sex,neutered:g==='emlos'||g==='egyeb'?w.neutered:'',weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{},...(!fish&&w.home?{home:w.home}:{})};
       /* okt. 28.: a profil szerkesztése ne veszítse el a máshol beállított értékeket (UVB-időköz, vízcsere, utazási lista, tápkészlet) */
       if(old)for(const k of ['uvbM','uvbOn','wcW','tripChk','stock','stockHist','sitter','marks'])if(old[k]!=null)p[k]=old[k];
       p.lastStage=old&&old.birth===bs&&old.species===p.species&&String(limitsFor(old))===String(limitsFor(p))?old.lastStage:stageOf(p);
@@ -4167,6 +4183,7 @@ const ACT={
   hTab(el){hTab=el.dataset.k;render()},
   vpOpen(){vpSheet()},
   sitterOpen(){sitterSheet()},
+  annivOk(){const p=pet();if(!p)return;const seen={...(S.settings.annivSeen||{})},k=iso(today());for(const x in seen)if(seen[x]!==k)delete seen[x];annivFor(p).forEach(a=>seen[p.id+':'+a.k]=k);S.settings.annivSeen=seen;save();render()},
   walkNew(){walkSheet()},walkEdit(el){walkSheet(el.dataset.id)},
   walkQ(el){$('#wkMin').value=el.dataset.n;document.querySelectorAll('#walkQ .chip').forEach(b=>b.setAttribute('aria-pressed',String(b===el)))},
   walkSave(el){const p=pet(),old=S.events.find(e=>e.id===el.dataset.id&&e.kind==='walk'),raw=$('#wkMin').value.trim(),min=+raw,date=$('#wkDate').value,note=clean($('#wkNote').value,40);
