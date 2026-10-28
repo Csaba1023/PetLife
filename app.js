@@ -2920,7 +2920,7 @@ const REM_TPL={emlos:['Karomvágás','Fogmosás','Szőrápolás','Fekhely mosás
  hal:['Szűrőtisztítás','Üvegtisztítás','Vízpróba','Aljzat szívózása'],
  gerinctelen:['Párásítás','Terrárium takarítása','Itatótál cseréje','Aljzatcsere'],
  egyeb:['Takarítás','Fekhely tisztítása']};
-const remTpl=p=>[...(REM_TPL[grp(p)]||REM_TPL.egyeb),'Gyógyszer beadása'];
+const remTpl=p=>REM_TPL[grp(p)]||REM_TPL.egyeb; /* okt. 28.: gyógyszer-sablon nincs (Csaba döntése; ÁSZF 4.1: egészségügyi funkció nem fizetős) */
 const remsOf=p=>S.events.filter(e=>e.petId===p.id&&e.kind==='rem').sort((a,c)=>a.title<c.title?-1:1);
 const remLogs=r=>S.events.filter(e=>e.kind==='remlog'&&e.rem===r.id).sort((a,c)=>a.date<c.date?1:a.date>c.date?-1:0);
 const remN=r=>Math.min(REM_N[r.ev]||1,Math.max(1,Math.round(+r.n)||1));
