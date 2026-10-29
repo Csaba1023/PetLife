@@ -1,0 +1,17 @@
+# Petavira – ami SOHA nem kerülhet a nyilvános tárolóba (okt. 29.)
+# Titkok és kulcsok
+.env
+.env.*
+*.keystore
+*.jks
+signing-key-info.txt
+*.pem
+*.key
+*.p12
+# Mentések, visszafejtett adatok
+*.backup.json
+mentes-*.json
+# Fejlesztői és rendszerfájlok
+node_modules/
+.DS_Store
+Thumbs.db
