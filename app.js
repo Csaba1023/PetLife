@@ -2452,6 +2452,11 @@ const ID_OK=/^[A-Za-z0-9_-]{1,64}$/,DATE_OK=/^\d{4}-\d{2}-\d{2}$/,NUM_OK=/^-?\d{
 const EV_NUM=['ft','min','kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW'];
 const numFix=(o,ks)=>ks.forEach(k=>{const v=o[k];if(v==null||v==='')return;if(typeof v==='number'?!Number.isFinite(v):!(typeof v==='string'&&NUM_OK.test(v)))delete o[k]});
 const isObj=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
+/* okt. 29.: a betöltéskor (fixState) használt állandók ITT, a fixState előtt – később definiálva az induláskori betöltés hibára futott (TDZ), és az app üresen indult */
+const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:10,w:3,m:6};
+const COST_CAT={food:'Táp és eleség',vet:'Állatorvos',med:'Gyógyszer és kiegészítő',gear:'Felszerelés',groom:'Ápolás',board:'Panzió és utazás',ins:'Biztosítás',other:'Egyéb'};
+const COST_MAX=5000000;
+const WALK_MAX=600,WALK_Q=[15,30,45,60];
 function fixState(st){
   if(!isObj(st))return blank();
   const pets=Array.isArray(st.pets)?st.pets.filter(isObj):[],map={};
@@ -2479,7 +2484,11 @@ function fixState(st){
   if(typeof settings.city!=='string')settings.city='';
   return Object.assign(blank(),st,{pets,events,chat,ai,settings});
 }
-try{const r=localStorage.getItem(LS);if(r)S=fixState(JSON.parse(r))}catch(e){}
+/* okt. 29.: ha a mentett adat betöltése hibára fut, a tárolt adatot NEM írjuk felül üres állapottal (loadFail: a mentés tiltva, figyelmeztetés látszik);
+   belépett felhasználónál a felhőből sikeresen betöltött állapot feloldja */
+let loadFail=false;
+try{const r=localStorage.getItem(LS);if(r){try{S=fixState(JSON.parse(r))}catch(e){loadFail=true;console.warn('[Betöltés]',e)}}}catch(e){}
+const LOAD_FAIL_MSG='A mentett adatok betöltése nem sikerült. Az adataid megvannak a telefonon; ne töröld az appot, és szólj nekünk (petavira@csabastudio.com).';
 const HOST_THEME=document.documentElement.getAttribute('data-theme');
 /* ---------- fiók és szinkron (Supabase) ----------
    SB_URL: a projekt címe. SB_KEY: a NYILVÁNOS (publishable / anon) kulcs. Titkos (secret / service_role) kulcs ide soha nem kerülhet. */
@@ -2503,8 +2512,8 @@ const cdoc=k=>{const uid=cloud.uid,q=()=>cloud.sb.from(SB_TABLE);return{
   get:async()=>{const{data}=un(await q().select('data').eq('user_id',uid).eq('key',k).maybeSingle());return{exists:!!data,data:()=>data.data}},
   set:async v=>{un(await q().upsert({user_id:uid,key:k,data:v,updated_at:new Date().toISOString()},{onConflict:'user_id,key'}))},
   delete:async()=>{un(await q().delete().eq('user_id',uid).eq('key',k))}}};
-function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-function save(...keys){S.updatedAt=Date.now();S.pend=true;saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200);try{pushLater()}catch(e){}}
+function saveLocal(){if(loadFail)return;try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+function save(...keys){if(loadFail){toast(LOAD_FAIL_MSG);return}S.updatedAt=Date.now();S.pend=true;saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200);try{pushLater()}catch(e){}}
 /* a Tanácsadó fülön csak akkor rajzolunk újra, ha épp nem ír és nem vár válaszra */
 const soft=()=>{if(!$('#sheet').hidden||(tab==='ai'&&(chatBusy||document.activeElement===$('#chatIn'))))renderTop();else render()};
 async function flush(){
@@ -2537,7 +2546,7 @@ async function pull(){
       if(cloud.uid!==uid)return false;
       pets.forEach((p,i)=>{if(ph[i]&&ph[i].exists){const v=ph[i].data().data;if(okPhoto(v))p.photo=v}delete p.hasPhoto});
       const mine=S,keep=anon||mine.pend;
-      S={pets,events:R.events||[],chat:(cs.exists&&cs.data().byPet)||{},ai:(cs.exists&&cs.data().ai)||{},settings:Object.assign(blank().settings,R.settings),updatedAt:R.updatedAt||Date.now(),owner:uid,pend:false};S=fixState(S);/* B1–B2 */
+      S={pets,events:R.events||[],chat:(cs.exists&&cs.data().byPet)||{},ai:(cs.exists&&cs.data().ai)||{},settings:Object.assign(blank().settings,R.settings),updatedAt:R.updatedAt||Date.now(),owner:uid,pend:false};S=fixState(S);loadFail=false;/* B1–B2 */
       cloud.dirty.clear();
       const have=new Set(S.pets.map(p=>p.id)),extra=keep?mine.pets.filter(p=>!have.has(p.id)):[];
       if(extra.length){S.pets.push(...extra);S.events.push(...mine.events.filter(e=>!have.has(e.petId)));
@@ -2920,7 +2929,6 @@ function vpPrint(html,p,kind='osszesito'){let el=$('#print');if(!el){el=document
    Adat: S.events, kind:'rem' {date: első alkalom, title, ev:'once'|'d'|'w'|'m', n, until?, note?}; pipálás: kind:'remlog' {date, rem}.
    Állatonként legfeljebb 20 emlékeztető, emlékeztetőnként a legutóbbi 50 pipálás marad meg. Az értesítés a meglévő 19 órás push-tervben megy (pushPlan),
    szerverváltozás nincs. A sablonok általános gondozási teendők, időköz nélkül (a gyakoriságot a gazdi adja meg). */
-const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:10,w:3,m:6};
 const REM_TPL={emlos:['Karomvágás','Fogmosás','Szőrápolás','Fekhely mosása','Alomcsere','Nagytakarítás'],
  madar:['Kalitka takarítása','Etető- és itatótál mosása','Ülőrudak tisztítása','Fürdetés'],
  hullo:['Terrárium takarítása','Itatótál cseréje','Aljzatcsere','Hőmérők ellenőrzése'],
@@ -3360,8 +3368,6 @@ function vHub(p){
    Adat: S.events, kind:'cost' {date, ft (egész Ft, 1–5 000 000), cat, note? (max. 60, clean)}. Szerver, SQL és AI nincs.
    Nézet: e havi és idei összeg, 12 havi oszlopgrafikon, kategóriánkénti bontás, lista; „ez az állat” / „minden állatom”.
    CSV-letöltés a telefonon (Blob), pontosvesszővel, UTF-8 BOM-mal (Excel); képlet-injekció ellen a =,+,-,@ kezdetű cellák elé ' kerül. */
-const COST_CAT={food:'Táp és eleség',vet:'Állatorvos',med:'Gyógyszer és kiegészítő',gear:'Felszerelés',groom:'Ápolás',board:'Panzió és utazás',ins:'Biztosítás',other:'Egyéb'};
-const COST_MAX=5000000;
 let costAll=false;
 const ftTxt=n=>new Intl.NumberFormat('hu-HU').format(Math.round(n))+' Ft';
 const costsOf=p=>S.events.filter(e=>e.kind==='cost'&&(costAll||e.petId===p.id)).sort((a,c)=>a.date<c.date?1:a.date>c.date?-1:0);
@@ -3474,7 +3480,6 @@ function lostHtml(p,o){const sex={him:'hím',nosteny:'nőstény'}[p.sex],img=okP
   <div class="ltr">${tear}</div></div>`}
 /* ---------- Sétanapló (okt. 28.; prémium, csak kutya) ----------
    Adat: S.events, kind:'walk' {date, min (egész, 1–600), note? (≤40, clean)}; naponta több séta. Ajánlott percet/célt szándékosan nem írunk (forrás nélkül nem). */
-const WALK_MAX=600,WALK_Q=[15,30,45,60];
 const walksOf=p=>recs(p,'walk');
 function walkChart(l,t){const ds=[...Array(14)].map((_,i)=>iso(addDays(t,i-13))),sum=ds.map(k=>l.filter(e=>e.date===k).reduce((s,e)=>s+e.min,0)),hi=Math.max(...sum);
   if(!hi)return'';const W=320,H=150,px=6,pb=24,pt=20,bw=(W-2*px)/14;
@@ -3792,6 +3797,7 @@ function render(opt={}){
   else if(tab==='cost')v.innerHTML=costHtml(p);
   else if(tab==='walk')v.innerHTML=p.species==='kutya'?walkHtml(p):vHub(p);
   else if(tab==='ai'){v.className='chatmode';v.innerHTML=vChat(p);if(!opt.clearDraft&&$('#chatIn'))$('#chatIn').value=draft;scrollChat();planGet()}
+  if(loadFail&&!v.querySelector('#loadFail'))v.insertAdjacentHTML('afterbegin',`<p class="note warn" id="loadFail" role="alert">${LOAD_FAIL_MSG}</p>`);
   if(opt.top)v.scrollTop=0;
   /* a vízszintesen görgethető fülsorokban a kiválasztott fül legyen látható */
   v.querySelectorAll('.seg2 [aria-pressed="true"]').forEach(b=>{const s=b.parentElement;s.scrollLeft+=b.getBoundingClientRect().left-s.getBoundingClientRect().left-(s.clientWidth-b.offsetWidth)/2});
