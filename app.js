@@ -22,11 +22,14 @@ function capDrop(){if(capId!==null&&window.turnstile)try{turnstile.remove(capId)
 const CAP_FAIL='A biztonsági ellenőrzés nem töltött be. Ha reklám- vagy követésblokkolót használsz, engedélyezd ennél az oldalnál, ellenőrizd az internetkapcsolatot, majd nyomd meg az „Újra” gombot.';
 const CAP_EXP='A biztonsági ellenőrzés lejárt, újraindítottam. Várj pár másodpercet, majd próbáld újra.';
 const capBtn=()=>$('#auBtn')||$('#delBtn');
-function capFail(){capSt='fail';capTok='';const box=$('#capBox');if(!box)return;box.innerHTML='';const p=document.createElement('p');p.className='err';p.setAttribute('role','alert');p.textContent=CAP_FAIL;
-  const b=document.createElement('button');b.type='button';b.className='btn ghost';b.dataset.act='capRetry';b.textContent='Újra';box.append(p,b);const x=capBtn();if(x)x.disabled=true}
-async function capMount(){capDrop();capSt='load';try{await capLib()}catch(e){return capFail()}
-  const box=$('#capBox');if(!box)return;if(!window.turnstile)return capFail();box.innerHTML='';const x=capBtn();if(x)x.disabled=false;const t=S.settings.theme;
-  try{capId=turnstile.render(box,{sitekey:TS_KEY,theme:t==='dark'||t==='light'?t:'auto',size:'flexible',appearance:'interaction-only',callback:v=>{capTok=v;capSt='ok'},'expired-callback':()=>{capTok='';capSt='exp'},'error-callback':()=>{capTok='';capFail()}})}catch(e){capId=null;capFail()}}
+function capErrDrop(){const e=$('#capErr');if(e)e.remove()}
+function capFail(){capSt='fail';capTok='';const box=$('#capBox');if(!box)return;capErrDrop();const w=document.createElement('div');w.id='capErr';
+  const p=document.createElement('p');p.className='err';p.setAttribute('role','alert');p.textContent=CAP_FAIL;
+  const b=document.createElement('button');b.type='button';b.className='btn ghost';b.dataset.act='capRetry';b.textContent='Újra';w.append(p,b);box.after(w);const x=capBtn();if(x)x.disabled=true}
+function capOk(v){capTok=v;capSt='ok';capErrDrop();const x=capBtn();if(x&&x.textContent!=='Egy pillanat…'&&x.textContent!=='Törlés…')x.disabled=false}
+async function capMount(){capDrop();capErrDrop();capSt='load';try{await capLib()}catch(e){return capFail()}
+  const box=$('#capBox');if(!box)return;if(!window.turnstile)return capFail();const x=capBtn();if(x)x.disabled=false;const t=S.settings.theme;
+  try{capId=turnstile.render(box,{sitekey:TS_KEY,theme:t==='dark'||t==='light'?t:'auto',size:'flexible',appearance:'interaction-only',callback:capOk,'expired-callback':()=>{capTok='';capSt='exp'},'error-callback':()=>{capTok='';capFail()}})}catch(e){capId=null;capFail()}}
 /* a token kivárása (legfeljebb CAP_WAIT ms); üres, ha nincs */
 async function capToken(){for(let i=0;i<CAP_WAIT/100&&!capTok&&capId!==null&&capSt!=='fail';i++)await sleep(100);return capTok}
 /* a küldés előtt: van-e érvényes token; ha nincs, mit írjunk ki (null = mehet) */
@@ -34,7 +37,7 @@ const capMsg=()=>capSt==='fail'?CAP_FAIL:capSt==='exp'?CAP_EXP:'A biztonsági el
 /* használat után új ellenőrzés */
 function capReset(){capTok='';if(capSt==='ok')capSt='load';if(capId!==null&&window.turnstile)try{turnstile.reset(capId)}catch(e){}}
 /* D kör (nov. 2., F11): magyar számbevitel – tizedesvessző vagy -pont; ezres tagolás (szóköz, „1.000” vagy „1.000,5”) */
-function numHU(v){let t=String(v==null?'':v).trim().replace(/[\s\u00a0\u202f]/g,'');if(!t)return NaN;
+function numHU(v){let t=String(v==null?'':v).trim().replace(/[\s\u00a0\u202f]/g,'').replace(/[.,]$/,'').replace(/^(-?)([.,])/,'$10$2');if(!t)return NaN;
   const c=t.lastIndexOf(','),d=t.lastIndexOf('.');
   if(c>=0&&d>=0){const dec=c>d?',':'.',th=dec===','?'.':',';t=t.split(th).join('').replace(dec,'.')}
   else if(c>=0){if(t.indexOf(',')!==c)return NaN;t=t.replace(',','.')}
@@ -2470,7 +2473,7 @@ const ID_OK=/^[A-Za-z0-9_-]{1,64}$/,DATE_OK=/^\d{4}-\d{2}-\d{2}$/,NUM_OK=/^-?\d{
 const ID_BAD=new Set(['__proto__','constructor','prototype','hasOwnProperty','toString','valueOf']);
 const idOk=v=>ID_OK.test(String(v))&&!ID_BAD.has(String(v));
 const dateOk=v=>{if(!DATE_OK.test(String(v)))return false;const[y,m,d]=String(v).split('-').map(Number),t=new Date(Date.UTC(y,m-1,d));return y>=1900&&y<=2200&&t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d};
-const MS_KEY=/^[a-z][a-z0-9_]{0,39}$/;
+const MS_KEY=/^[A-Za-z][A-Za-z0-9_-]{0,39}$/;/* a valódi kulcsok: pl. chip, rabies1, rabiesY, vaccY, molt1 */
 const EV_NUM=['ft','min','kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW'];
 const numFix=(o,ks)=>ks.forEach(k=>{const v=o[k];if(v==null||v==='')return;if(typeof v==='number'?!Number.isFinite(v):!(typeof v==='string'&&NUM_OK.test(v)))delete o[k];else if(typeof v==='string')o[k]=Number(v.replace(',','.'))});
 const isObj=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
