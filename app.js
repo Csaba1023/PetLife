@@ -13,17 +13,36 @@ const pwOk=s=>typeof s==='string'&&s.length>=10&&/[a-z]/.test(s)&&/[A-Z]/.test(s
    A site key nyilvános; a titkos kulcs csak a Supabase-ben van. A token egyszer használható, ezért minden kísérlet után új kell.
    Ha a szűrő nem tölt be, a kérés token nélkül megy: a Supabase dönt (bekapcsolt CAPTCHA mellett elutasítja). */
 const TS_KEY='0x4AAAAAAFWRSy3NW3tIvK-j',TS_URL='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-let capLoad=null,capId=null,capTok='',CAP_WAIT=8000;
+let capLoad=null,capId=null,capTok='',capSt='',CAP_WAIT=8000;
 const capLib=()=>capLoad||(capLoad=new Promise((ok,no)=>{if(window.turnstile)return ok();const el=document.createElement('script');el.src=TS_URL;el.async=true;el.onload=()=>window.turnstile?ok():no(new Error('ts'));el.onerror=()=>{capLoad=null;no(new Error('ts'))};document.head.appendChild(el)}));
 const capBox='<div id="capBox" class="capbox"></div>';
-function capDrop(){if(capId!==null&&window.turnstile)try{turnstile.remove(capId)}catch(e){}capId=null;capTok=''}
-async function capMount(){capDrop();try{await capLib()}catch(e){return}
-  const box=$('#capBox');if(!box||!window.turnstile)return;const t=S.settings.theme;
-  try{capId=turnstile.render(box,{sitekey:TS_KEY,theme:t==='dark'||t==='light'?t:'auto',size:'flexible',appearance:'interaction-only',callback:v=>{capTok=v},'expired-callback':()=>{capTok=''},'error-callback':()=>{capTok=''}})}catch(e){capId=null}}
+function capDrop(){if(capId!==null&&window.turnstile)try{turnstile.remove(capId)}catch(e){}capId=null;capTok='';capSt=''}
+/* D kör (nov. 2., K4): ha a robotszűrő nem tölt be (pl. reklámblokkoló) vagy hibára fut, ezt érthetően kiírjuk, a küldés gomb tiltva,
+   és van „Újra” gomb – nem megy token nélküli kérés félrevezető hibaüzenettel. */
+const CAP_FAIL='A biztonsági ellenőrzés nem töltött be. Ha reklám- vagy követésblokkolót használsz, engedélyezd ennél az oldalnál, ellenőrizd az internetkapcsolatot, majd nyomd meg az „Újra” gombot.';
+const CAP_EXP='A biztonsági ellenőrzés lejárt, újraindítottam. Várj pár másodpercet, majd próbáld újra.';
+const capBtn=()=>$('#auBtn')||$('#delBtn');
+function capErrDrop(){const e=$('#capErr');if(e)e.remove()}
+function capFail(){capSt='fail';capTok='';const box=$('#capBox');if(!box)return;capErrDrop();const w=document.createElement('div');w.id='capErr';
+  const p=document.createElement('p');p.className='err';p.setAttribute('role','alert');p.textContent=CAP_FAIL;
+  const b=document.createElement('button');b.type='button';b.className='btn ghost';b.dataset.act='capRetry';b.textContent='Újra';w.append(p,b);box.after(w);const x=capBtn();if(x)x.disabled=true}
+function capOk(v){capTok=v;capSt='ok';capErrDrop();const x=capBtn();if(x&&x.textContent!=='Egy pillanat…'&&x.textContent!=='Törlés…')x.disabled=false}
+async function capMount(){capDrop();capErrDrop();capSt='load';try{await capLib()}catch(e){return capFail()}
+  const box=$('#capBox');if(!box)return;if(!window.turnstile)return capFail();const x=capBtn();if(x)x.disabled=false;const t=S.settings.theme;
+  try{capId=turnstile.render(box,{sitekey:TS_KEY,theme:t==='dark'||t==='light'?t:'auto',size:'flexible',appearance:'interaction-only',callback:capOk,'expired-callback':()=>{capTok='';capSt='exp'},'error-callback':()=>{capTok='';capFail()}})}catch(e){capId=null;capFail()}}
 /* a token kivárása (legfeljebb CAP_WAIT ms); üres, ha nincs */
-async function capToken(){for(let i=0;i<CAP_WAIT/100&&!capTok&&capId!==null;i++)await sleep(100);return capTok}
+async function capToken(){for(let i=0;i<CAP_WAIT/100&&!capTok&&capId!==null&&capSt!=='fail';i++)await sleep(100);return capTok}
+/* a küldés előtt: van-e érvényes token; ha nincs, mit írjunk ki (null = mehet) */
+const capMsg=()=>capSt==='fail'?CAP_FAIL:capSt==='exp'?CAP_EXP:'A biztonsági ellenőrzés még nem fejeződött be. Várj pár másodpercet, majd próbáld újra.';
 /* használat után új ellenőrzés */
-function capReset(){capTok='';if(capId!==null&&window.turnstile)try{turnstile.reset(capId)}catch(e){}}
+function capReset(){capTok='';if(capSt==='ok')capSt='load';if(capId!==null&&window.turnstile)try{turnstile.reset(capId)}catch(e){}}
+/* D kör (nov. 2., F11): magyar számbevitel – tizedesvessző vagy -pont; ezres tagolás (szóköz, „1.000” vagy „1.000,5”) */
+function numHU(v){let t=String(v==null?'':v).trim().replace(/[\s\u00a0\u202f]/g,'').replace(/[.,]$/,'').replace(/^(-?)([.,])/,'$10$2');if(!t)return NaN;
+  const c=t.lastIndexOf(','),d=t.lastIndexOf('.');
+  if(c>=0&&d>=0){const dec=c>d?',':'.',th=dec===','?'.':',';t=t.split(th).join('').replace(dec,'.')}
+  else if(c>=0){if(t.indexOf(',')!==c)return NaN;t=t.replace(',','.')}
+  else if(d>=0&&t.indexOf('.')!==d)t=/^-?\d{1,3}(\.\d{3})+$/.test(t)?t.split('.').join(''):'x';
+  return /^-?\d+(\.\d+)?$/.test(t)?Number(t):NaN}
 const newId=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const DAY=864e5;
 const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
@@ -2449,8 +2468,14 @@ const AGE_ACTS=new Set(['age18','privAge','privBack']);/* okt. 26.: a 'tab' kike
    azonosító csak betű/szám/_/- lehet (HTML-attribútumba kerül), a mért értékek számok, ismeretlen kategória → „egyéb”,
    hibás dátumú vagy gazdátlan bejegyzés kimarad. Nem töröl érvényes adatot; a hibás azonosítót újra cseréli. */
 const ID_OK=/^[A-Za-z0-9_-]{1,64}$/,DATE_OK=/^\d{4}-\d{2}-\d{2}$/,NUM_OK=/^-?\d{1,6}([.,]\d{1,4})?$/;
+/* D kör (nov. 2., F7): az objektum-kulcsként is használt azonosító nem lehet a JS beépített neve; a dátum valódi naptári nap legyen;
+   a mérföldkő-kulcs csak biztonságos formájú lehet; a szövegként tárolt szám ("1,5") számmá alakul */
+const ID_BAD=new Set(['__proto__','constructor','prototype','hasOwnProperty','toString','valueOf']);
+const idOk=v=>ID_OK.test(String(v))&&!ID_BAD.has(String(v));
+const dateOk=v=>{if(!DATE_OK.test(String(v)))return false;const[y,m,d]=String(v).split('-').map(Number),t=new Date(Date.UTC(y,m-1,d));return y>=1900&&y<=2200&&t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d};
+const MS_KEY=/^[A-Za-z][A-Za-z0-9_-]{0,39}$/;/* a valódi kulcsok: pl. chip, rabies1, rabiesY, vaccY, molt1 */
 const EV_NUM=['ft','min','kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW'];
-const numFix=(o,ks)=>ks.forEach(k=>{const v=o[k];if(v==null||v==='')return;if(typeof v==='number'?!Number.isFinite(v):!(typeof v==='string'&&NUM_OK.test(v)))delete o[k]});
+const numFix=(o,ks)=>ks.forEach(k=>{const v=o[k];if(v==null||v==='')return;if(typeof v==='number'?!Number.isFinite(v):!(typeof v==='string'&&NUM_OK.test(v)))delete o[k];else if(typeof v==='string')o[k]=Number(v.replace(',','.'))});
 const isObj=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
 /* okt. 29.: a betöltéskor (fixState) használt állandók ITT, a fixState előtt – később definiálva az induláskori betöltés hibára futott (TDZ), és az app üresen indult */
 const REM_MAX=20,REM_LOG=50,REM_EV={once:'Egyszer',d:'naponta',w:'hetente',m:'havonta'},REM_N={d:10,w:3,m:6};
@@ -2459,20 +2484,22 @@ const COST_MAX=5000000;
 const WALK_MAX=600,WALK_Q=[15,30,45,60];
 function fixState(st){
   if(!isObj(st))return blank();
-  const pets=Array.isArray(st.pets)?st.pets.filter(isObj):[],map={};
-  for(const p of pets){if(!ID_OK.test(String(p.id))){const n=newId();map[String(p.id)]=n;p.id=n}numFix(p,PET_NUM);
+  const pets=Array.isArray(st.pets)?st.pets.filter(isObj):[],map=Object.create(null);
+  for(const p of pets){if(!idOk(p.id)){const n=newId();map[String(p.id)]=n;p.id=n}numFix(p,PET_NUM);
+    if(p.birth!=null&&!dateOk(p.birth)){const c=String(p.createdAt||'').slice(0,10);p.birth=dateOk(c)?c:iso(today());p.est=true}
     for(const k of ['name','speciesName','breed','species','size','sex','neutered','photo','birth','createdAt'])if(p[k]!=null&&typeof p[k]!=='string'&&typeof p[k]!=='number')delete p[k];
-    {const ok=o=>isObj(o)&&+o.g>0&&+o.g<=100000&&+o.d>0&&+o.d<=5000&&DATE_OK.test(String(o.start))&&(o.name==null||typeof o.name==='string');
+    {const ok=o=>isObj(o)&&+o.g>0&&+o.g<=100000&&+o.d>0&&+o.d<=5000&&dateOk(o.start)&&(o.name==null||typeof o.name==='string');
      if(p.sitter!=null&&!(isObj(p.sitter)&&(p.sitter.note==null||typeof p.sitter.note==='string')&&(p.sitter.vet==null||typeof p.sitter.vet==='string')))delete p.sitter;
      if(p.marks!=null&&typeof p.marks!=='string')delete p.marks;
-     if(p.home!=null&&!DATE_OK.test(String(p.home)))delete p.home;
-     if(p.stock!=null&&!ok(p.stock))delete p.stock;if(p.stockHist!=null)p.stockHist=Array.isArray(p.stockHist)?p.stockHist.filter(h=>ok(h)&&DATE_OK.test(String(h.end))).slice(0,5):[]}}
+     if(p.home!=null&&!dateOk(p.home))delete p.home;
+     if(p.stock!=null&&!ok(p.stock))delete p.stock;if(p.stockHist!=null)p.stockHist=Array.isArray(p.stockHist)?p.stockHist.filter(h=>ok(h)&&dateOk(h.end)).slice(0,5):[]}}
   const ids=new Set(pets.map(p=>p.id)),re=k=>map[k]||k;
   const events=(Array.isArray(st.events)?st.events:[]).filter(isObj).filter(e=>{e.petId=re(String(e.petId));
-    if(!ids.has(e.petId)||!DATE_OK.test(String(e.date))||typeof e.kind!=='string')return false;
-    if(!ID_OK.test(String(e.id)))e.id=newId();numFix(e,EV_NUM);
+    if(!ids.has(e.petId)||!dateOk(e.date)||typeof e.kind!=='string')return false;
+    if(!idOk(e.id))e.id=newId();numFix(e,EV_NUM);
+    if(e.kind==='ms'&&!MS_KEY.test(String(e.key)))return false;
     if(e.kind==='own'&&!EVCAT[e.cat])e.cat='other';
-    if(e.kind==='rem'){if(typeof e.title!=='string'||!REM_EV[e.ev])return false;if(e.until!=null&&!DATE_OK.test(String(e.until)))delete e.until}
+    if(e.kind==='rem'){if(typeof e.title!=='string'||!REM_EV[e.ev])return false;if(e.until!=null&&!dateOk(e.until))delete e.until}
     if(e.kind==='remlog'&&typeof e.rem!=='string')return false;
     if(e.kind==='walk'){if(!(Number.isInteger(+e.min)&&+e.min>0&&+e.min<=WALK_MAX))return false;e.min=+e.min}
     if(e.kind==='cost'){if(!(Number.isInteger(+e.ft)&&+e.ft>0&&+e.ft<=COST_MAX))return false;e.ft=+e.ft;if(!COST_CAT[e.cat])e.cat='other'}return true});
@@ -3064,7 +3091,7 @@ let vpT=0,vpT0='';
 function vpPrint(html,p,kind='osszesito'){let el=$('#print');if(!el){el=document.createElement('div');el.id='print';document.body.appendChild(el)}
   el.innerHTML=html;clearTimeout(vpT);const t0=vpT0||(vpT0=document.title),slug=String(petName(p)).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30)||'allat';
   document.title=`Petavira-${kind}-${slug}-${iso(today())}`; /* a „Mentés PDF-ként” ezt ajánlja fájlnévnek */
-  addEventListener('afterprint',()=>{clearTimeout(vpT);vpT=setTimeout(()=>{document.title=t0},1500)},{once:true});
+  addEventListener('afterprint',()=>{clearTimeout(vpT);vpT=setTimeout(()=>{document.title=t0;const x=$('#print');if(x)x.innerHTML=''},1500)},{once:true});/* D kör (I5): nyomtatás után a rejtett lap kiürül */
   setTimeout(()=>{try{window.print()}catch(e){toast('A nyomtatás most nem érhető el.')}},60)}
 /* ---------- Saját ismétlődő emlékeztetők (okt. 28.; 2. prémium funkció) ----------
    Csaba döntése: a következő alkalom a legutóbbi pipálástól számol (mint a parazitakezelésnél); gyors sablonok fajcsoportonként + szabad megnevezés.
@@ -3781,7 +3808,7 @@ async function delGo(){
   if(navigator.onLine===false)return showErr('#delErr','Nincs internetkapcsolat. A törléshez kapcsolat kell.');
   delBusy=true;$('#delErr').hidden=true;const b=$('#delBtn');b.disabled=true;b.textContent='Törlés…';
   const fail=m=>{delBusy=false;const x=$('#delBtn');if(x){x.disabled=false;x.textContent='Fiók végleges törlése';showErr('#delErr',m)}};
-  const ct=await capToken();
+  const ct=await capToken();if(!ct)return fail(capMsg());
   let r;try{r=await cloud.sb.auth.signInWithPassword({email:cloud.email,password:pw,...(ct?{options:{captchaToken:ct}}:{})})}catch(e){r={error:e}}
   capReset();if(r.error)return fail(auErr(r.error));
   const tok=r.data&&r.data.session&&r.data.session.access_token;if(!tok)return fail('Most nem sikerült. Próbáld újra kicsit később.');
@@ -4020,9 +4047,9 @@ function wizardNext(){
     if(birth&&(isNaN(birth)||birth>t))w.err='A születési dátum nem lehet a jövőben.';
     else if(birth&&birth<addM(t,-Math.max(480,((limitsFor(w)||[])[2]||0)*3)))w.err=w.mode==='est'?'Ennyi idős nem lehet. A „Hány éves?” mezőbe a korát írd (pl. 3), ne a születési évét.':'Ez a dátum túl régi. Ellenőrizd az évszámot.';
     const fish=g==='hal',gr=gramSp(w);let kg=null,cnt=null,tank=null;
-    if(fish){cnt=parseInt(w.count,10);tank=parseFloat(String(w.tankL).replace(',','.'));
+    if(fish){cnt=parseInt(w.count,10);tank=numHU(w.tankL);
       if(!w.err&&!(cnt>=1&&cnt<=999))w.err='Add meg, hány hal él az akváriumban (1 és 999 között).';else if(!w.err&&!(tank>0&&tank<=10000))w.err='Add meg az akvárium méretét literben, pl. 60.'}
-    else if(w.weight!==''&&!noWeight(w)){kg=parseFloat(String(w.weight).replace(',','.'));if(gr)kg/=1000;if(!(kg>0&&kg<200))w.err=gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.'}
+    else if(w.weight!==''&&!noWeight(w)){kg=numHU(w.weight);if(gr)kg/=1000;if(!(kg>0&&kg<200))w.err=gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.'}
     if(!w.err&&!fish&&w.home&&(!DATE_OK.test(w.home)||w.home>iso(t)||(birth&&w.home<iso(birth))))w.err='A „Mikor került hozzád?” dátum nem lehet jövőbeli, és nem lehet korábbi a születésnél.';
     if(!w.err){
       const old=w.edit&&S.pets.find(x=>x.id===w.id),bs=iso(birth);
@@ -4351,7 +4378,7 @@ const ACT={
     const o={from,to,own:clean($('#siOwn').value,40),ownTel:telClean($('#siOwnTel').value),vet:clean($('#siVet').value,60),vetTel:telClean($('#siVetTel').value),note:qClean($('#siNote').value).slice(0,500)};
     p.sitter={note:o.note,vet:o.vet};save();closeSheet();vpPrint(sitterHtml(p,o),p,'atado-lap')},
   stockNew(){stockSheet(false)},stockEdit(){stockSheet(true)},
-  stockSave(el){const p=pet();if(!p||!premOK('food'))return;const edit=!!el.dataset.edit,u=$('#stU').value==='g'?1:1000,gv=parseFloat($('#stG').value.replace(',','.')),g=Math.round(gv*u),dRaw=$('#stD').value.trim(),d=+dRaw,start=$('#stStart').value,w=+$('#stW').value,name=clean($('#stName').value,40);
+  stockSave(el){const p=pet();if(!p||!premOK('food'))return;const edit=!!el.dataset.edit,u=$('#stU').value==='g'?1:1000,gv=numHU($('#stG').value),g=Math.round(gv*u),dRaw=$('#stD').value.trim(),d=+dRaw,start=$('#stStart').value,w=+$('#stW').value,name=clean($('#stName').value,40);
     if(!(g>=10&&g<=100000))return showErr('#stErr','A kiszerelés 10 g és 100 kg között lehet.');if(!/^\d{1,4}$/.test(dRaw)||d<1||d>5000)return showErr('#stErr','A napi adagot egész grammban add meg (1–5000).');
     if(d>g)return showErr('#stErr','A napi adag nem lehet több, mint a zsák.');if(!DATE_OK.test(start)||D(start)>today())return showErr('#stErr','A kibontás napja mai vagy korábbi legyen.');
     const o={name,g,d,start,w:STOCK_W.includes(w)?w:7};
@@ -4386,11 +4413,11 @@ const ACT={
   wNew(){wSheet()},symNew(){symSheet()},parNew(el){parSheet(el.dataset.t)},
   terraNew(){terraSheet()},
   terraSave(){const p=pet(),d=$('#hDate').value,tod=(document.querySelector('[name=trTod]:checked')||{}).value==='n'?'n':'d',e={id:newId(),petId:p.id,kind:'terra',date:d,tod};let n=0;
-    for(const f of terraFields(p)){const raw=$('#tr_'+f).value.trim();if(!raw)continue;const v=parseFloat(raw.replace(',','.'));if(!/^\d{1,3}([.,]\d)?$/.test(raw)||!(v>=0&&v<=(f==='hum'?100:60)))return showErr('#hErr',f==='hum'?'A páratartalmat 0 és 100 közötti számmal add meg, pl. 55.':'A hőmérsékletet 0 és 60 °C közötti számmal add meg, pl. 31,5.');e[f]=Math.round(v*10)/10;n++}
+    for(const f of terraFields(p)){const raw=$('#tr_'+f).value.trim();if(!raw)continue;const v=numHU(raw);if(!/^\d{1,3}([.,]\d)?$/.test(raw)||!(v>=0&&v<=(f==='hum'?100:60)))return showErr('#hErr',f==='hum'?'A páratartalmat 0 és 100 közötti számmal add meg, pl. 55.':'A hőmérsékletet 0 és 60 °C közötti számmal add meg, pl. 31,5.');e[f]=Math.round(v*10)/10;n++}
     if(!n)return showErr('#hErr','Írj be legalább egy mért értéket.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     S.events=S.events.filter(x=>!(x.petId===p.id&&x.kind==='terra'&&x.date===d&&(x.tod||'d')===tod));S.events.push(e);save();closeSheet();render();toast('Mérés mentve')},
   uvbOn(){pet().uvbOn=true;save();render()},uvbOff(){pet().uvbOn=false;save();render()},
-  wSave(){const p=pet(),gr=gramSp(p),kg=parseFloat($('#wKg').value.replace(',','.'))/(gr?1000:1),d=$('#hDate').value;if(!(kg>0&&kg<200))return showErr('#hErr',gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
+  wSave(){const p=pet(),gr=gramSp(p),kg=numHU($('#wKg').value)/(gr?1000:1),d=$('#hDate').value;if(!(kg>0&&kg<200))return showErr('#hErr',gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     {const w=dogWarn(p,kg,d),btn=$('#sheet [data-act="wSave"]');if(w&&btn&&btn.dataset.ok!==String(kg)){btn.dataset.ok=String(kg);return showErr('#hErr',w)}}
     S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===d));S.events.push({id:newId(),petId:p.id,kind:'w',date:d,kg});syncWeight(p);save();closeSheet();render();toast('Súly mentve')},
   symSave(el){const text=$('#syText').value.trim(),d=$('#hDate').value,ai=el.dataset.ai;if(!text)return showErr('#hErr','Írd le röviden, mit vettél észre.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
@@ -4427,7 +4454,7 @@ document.addEventListener('change',e=>{const t=e.target;
   else if(t.id==='cityIn')save();
   else if(t.id==='npMegye'){npMegye=t.value;render();const s=$('#npMegye');s&&s.focus({preventScroll:true})}
   else if(t.id==='npBreed'){npBreed[npSp]=t.value;render();const s=$('#npBreed');s&&s.focus({preventScroll:true})}
-  else if(t.id==='kcalIn'){const v=parseFloat(t.value.replace(',','.')),p=pet();if(t.value.trim()&&!(v>=30&&v<=700))return toast('30 és 700 közötti értéket írj be (kcal / 100 g).');p.kcal100=v||null;save();render()}});
+  else if(t.id==='kcalIn'){const v=numHU(t.value),p=pet();if(t.value.trim()&&!(v>=30&&v<=700))return toast('30 és 700 közötti értéket írj be (kcal / 100 g).');p.kcal100=v||null;save();render()}});
 document.addEventListener('input',e=>{const t=e.target;
   if(t.id==='chatIn'){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'}
   if(t.id==='cityIn'){const c=S.settings.city=t.value.trim();document.querySelectorAll('#mapBtns a').forEach(a=>{if(c){a.href=mapUrl(a.dataset.q,c);a.removeAttribute('aria-disabled')}else{a.removeAttribute('href');a.setAttribute('aria-disabled','true')}})}});
@@ -4446,6 +4473,7 @@ Object.assign(ACT,{
     if(m==='up'&&!($('#auAgree')&&$('#auAgree').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elolvastad a tájékoztatót, és elmúltál 18 éves. Fiók nélkül is használhatod az appot.');
     auBusy=true;$('#auErr').hidden=true;const b=$('#auBtn');b.disabled=true;b.textContent='Egy pillanat…';
     const ct=await capToken(),cap=ct?{captchaToken:ct}:{};
+    if(!ct){auBusy=false;const x=$('#auBtn');if(x){x.disabled=capSt==='fail';x.textContent=AU[m].b}return showErr('#auErr',capMsg())}
     let r;try{r=m==='in'?await cloud.sb.auth.signInWithPassword({email:mail,password:pw,...(ct?{options:cap}:{})})
       :m==='up'?await cloud.sb.auth.signUp({email:mail,password:pw,options:{emailRedirectTo:APP_URL,...cap}})
       :await cloud.sb.auth.resetPasswordForEmail(mail,{redirectTo:APP_URL,...cap})}catch(e){r={error:e}}
@@ -4486,6 +4514,7 @@ Object.assign(ACT,{
   privBack(){const f=privBack;privBack=null;if(f)f();else closeSheet()},
   privFromAuth(){const m=$('#auMail')?$('#auMail').value.trim():'';privSheet(()=>authSheet('up',m))},
   privFromAi(el){const fn=aiPending;if(el.closest('#sheet'))privSheet(()=>aiConsent(fn));else privSheet()},
+  capRetry(){capLoad=null;capMount()},
   exportData,syncAskGo(){syncAskDone('go')},syncAskNo(){syncAskDone('cancel')},
   aiRevoke(){delete S.settings.aiConsent;delete S.settings.aiConsentV;save();render();toast('A Tanácsadóhoz adott hozzájárulást visszavontad')},
   delAsk(){delSheet()},
@@ -4511,7 +4540,7 @@ addEventListener('appinstalled',()=>{installEvt=null;toast('Petavira telepítve'
 Object.assign(ACT,{
   waterNew(){waterSheet()},wcNew(){wcSheet()},
   waterSave(){const p=pet(),d=$('#hDate').value,e={};let n=0;
-    for(const f of wFields(p)){const raw=$('#wt_'+f).value.trim();if(!raw)continue;const v=parseFloat(raw.replace(',','.')),min=f==='sg'?1:0,k=f==='sg'?1000:f==='nh3'||f==='no2'?100:10;
+    for(const f of wFields(p)){const raw=$('#wt_'+f).value.trim();if(!raw)continue;const v=numHU(raw),min=f==='sg'?1:0,k=f==='sg'?1000:f==='nh3'||f==='no2'?100:10;
       if(!/^\d{1,3}([.,]\d{1,3})?$/.test(raw)||!(v>=min&&v<=WF[f][3]))return showErr('#hErr',`${WF[f][0]}: ${min} és ${String(WF[f][3]).replace('.',',')} közötti számot adj meg (${WF[f][4]}).`);e[f]=Math.round(v*k)/k;n++}
     if(!n)return showErr('#hErr','Írj be legalább egy mért értéket.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     const old=S.events.find(x=>x.petId===p.id&&x.kind==='water'&&x.date===d);if(old)Object.assign(old,e);else S.events.push(Object.assign({id:newId(),petId:p.id,kind:'water',date:d},e));save();closeSheet();render();toast('Mérés mentve')},

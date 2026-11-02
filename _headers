@@ -19,3 +19,11 @@
 # Az app kódja: a böngésző mindig ellenőrizze a frissességét (az index.html-lel együtt frissüljön).
 /app.js
   Cache-Control: no-cache
+
+# Nov. 2. (D kör, K3/F8): az oldal is mindig friss legyen (különben a böngésző régi oldalt adhat az új kódhoz)
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/jogi.css
+  Cache-Control: no-cache
