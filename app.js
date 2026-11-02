@@ -2482,7 +2482,7 @@ function fixState(st){
   const settings=Object.assign(blank().settings,isObj(st.settings)?st.settings:{});
   settings.activePetId=ids.has(re(String(settings.activePetId)))?re(String(settings.activePetId)):(pets[0]?pets[0].id:null);
   if(typeof settings.city!=='string')settings.city='';
-  return Object.assign(blank(),st,{pets,events,chat,ai,settings});
+  return Object.assign(blank(),st,{pets,events,chat,ai,settings,sync:fixSync(st.sync)});
 }
 /* okt. 29.: ha a mentett adat betöltése hibára fut, a tárolt adatot NEM írjuk felül üres állapottal (loadFail: a mentés tiltva, figyelmeztetés látszik);
    belépett felhasználónál a felhőből sikeresen betöltött állapot feloldja */
@@ -2512,6 +2512,17 @@ const errCode=e=>String((e&&(e.code||e.status))||(navigator.onLine===false?'ninc
 const cdoc=(k,uid=cloud.uid)=>{const q=()=>cloud.sb.from(SB_TABLE);return{
   get:async()=>{const{data}=un(await q().select('data').eq('user_id',uid).eq('key',k).maybeSingle());return{exists:!!data,data:()=>data.data}},
   set:async v=>{un(await q().upsert({user_id:uid,key:k,data:v,updated_at:new Date().toISOString()},{onConflict:'user_id,key'}))},
+  /* C kör (nov. 2.): verziós olvasás – null, ha nincs ilyen dokumentum */
+  getV:async()=>{if(!cloud.legacy){const r=await q().select('data,ver').eq('user_id',uid).eq('key',k).maybeSingle();
+      if(!(r&&r.error&&noVer(r.error))){const{data}=un(r);return data?{data:data.data,ver:Number(data.ver)||0}:null}cloud.legacy=true}
+    const{data}=un(await q().select('data').eq('user_id',uid).eq('key',k).maybeSingle());return data?{data:data.data,ver:null}:null},
+  /* feltételes írás: csak akkor ír, ha a felhőben azóta senki nem módosított (base = az utoljára látott verzió; null = még nincs ilyen sor).
+     Visszaad: az új verzió, vagy null = ütközés (a felhőben újabb változat van). Régi szervernél (nincs ver oszlop) sima felülírás. */
+  put:async(v,base)=>{if(!cloud.legacy){
+      const r=base==null?await q().insert({user_id:uid,key:k,data:v}).select('ver'):await q().update({data:v}).eq('user_id',uid).eq('key',k).eq('ver',base).select('ver');
+      if(r&&r.error&&String(r.error.code)==='23505')return null;
+      if(!(r&&r.error&&noVer(r.error))){un(r);return r.data&&r.data.length?Number(r.data[0].ver)||0:null}cloud.legacy=true}
+    un(await q().upsert({user_id:uid,key:k,data:v,updated_at:new Date().toISOString()},{onConflict:'user_id,key'}));return 0},
   delete:async()=>{un(await q().delete().eq('user_id',uid).eq('key',k))}}};
 /* B kör (nov. 1., F10): a helyi mentés hibája (pl. megtelt tárhely) nem lehet csendes – egyszer szólunk, a Beállításokban látszik */
 let localFail=false;
@@ -2519,6 +2530,61 @@ function saveLocal(){if(loadFail)return;try{localStorage.setItem(LS,JSON.stringi
 function save(...keys){if(loadFail){toast(LOAD_FAIL_MSG);return}S.updatedAt=Date.now();S.pend=true;saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200);try{pushLater()}catch(e){}}
 /* a Tanácsadó fülön csak akkor rajzolunk újra, ha épp nem ír és nem vár válaszra */
 const soft=()=>{if(!$('#sheet').hidden||(tab==='ai'&&(chatBusy||document.activeElement===$('#chatIn'))))renderTop();else render()};
+/* ---------- C kör (nov. 2.): szinkronütközés – verzió + háromutas összefésülés ----------
+   A szerver minden mentésnél növeli a dokumentum verzióját (ver). Az app megjegyzi, melyik verziót látta utoljára (S.sync),
+   és csak akkor ír, ha a felhőben azóta nem változott semmi. Ha igen (másik eszköz írt közben), NEM ír felül, hanem:
+   letölti a felhőbeli változatot, és tételenként összefésüli a sajátjával. Az „ős” (az utoljára közösen látott állapot)
+   tételenkénti lenyomatából derül ki, ki mit változtatott vagy törölt:
+   - csak az egyik oldalon változott → az a változat marad; mindkettőn → a helyi nyer;
+   - az egyik oldalon törölték, a másikon nem változott → törölve marad; a másikon módosították → a módosítás nyer;
+   - új tétel bármelyik oldalon → megmarad. A Tanácsadó-üzenetek időbélyeg szerint fésülődnek.
+   Az S.sync csak ezen az eszközön van (a felhőbe és az adatletöltésbe nem kerül). */
+const noVer=e=>String(e&&e.code)==='42703'||/column .*ver.* does not exist/i.test(String(e&&e.message));
+const canon=v=>Array.isArray(v)?'['+v.map(canon).join(',')+']':isObj(v)?'{'+Object.keys(v).filter(k=>v[k]!==undefined&&typeof v[k]!=='function').sort().map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}':(typeof v==='number'&&!Number.isFinite(v))||v===undefined?'null':JSON.stringify(v);
+const hsh=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(36)};
+const hPet=p=>{const{photo,hasPhoto,...r}=p;return hsh(canon(r))},hEv=e=>hsh(canon(e)),hSet=x=>{const{activePetId,...r}=isObj(x)?x:{};return hsh(canon(r))};
+const msgKey=(pid,m)=>pid+'|'+m.ts+'|'+m.r;
+function mainBase(m,ver){const P={},E={};(Array.isArray(m&&m.pets)?m.pets:[]).forEach(p=>{if(isObj(p)&&p.id!=null)P[p.id]=hPet(p)});
+  (Array.isArray(m&&m.events)?m.events:[]).forEach(e=>{if(isObj(e)&&e.id!=null)E[e.id]=hEv(e)});return{ver,P,E,s:hSet(m&&m.settings)}}
+function chatBase(c,ver){const m=[];const b=isObj(c&&c.byPet)?c.byPet:{};for(const pid in b)if(Array.isArray(b[pid]))b[pid].forEach(x=>{if(isObj(x))m.push(msgKey(pid,x))});return{ver,m}}
+function fixSync(x){const o={};if(!isObj(x))return o;const ver=v=>v==null?null:(Number.isInteger(v)&&v>=0?v:null),strs=v=>{const r={};if(isObj(v))for(const k in v)if(typeof v[k]==='string')r[k]=v[k];return r};
+  if(isObj(x.main))o.main={ver:ver(x.main.ver),P:strs(x.main.P),E:strs(x.main.E),s:typeof x.main.s==='string'?x.main.s:null};
+  if(isObj(x.chat))o.chat={ver:ver(x.chat.ver),m:Array.isArray(x.chat.m)?x.chat.m.filter(v=>typeof v==='string').slice(0,5000):[]};return o}
+const syncOf=k=>(isObj(S.sync)&&S.sync[k])||null;
+function setSync(k,b){if(!isObj(S.sync))S.sync={};S.sync[k]=b}
+/* tételenkénti háromutas összefésülés (B: ős lenyomatai, L: helyi, R: felhőbeli) */
+function merge3(B,L,R,h){const lm=new Map(L.map(x=>[x.id,x])),rm=new Map(R.map(x=>[x.id,x])),out=[];
+  for(const x of L){const b=B[x.id],r=rm.get(x.id);
+    if(r)out.push(b!=null&&h(x)===b?r:x);
+    else if(b==null||h(x)!==b)out.push(x)}
+  for(const r of R)if(!lm.has(r.id)){const b=B[r.id];if(b==null||h(r)!==b)out.push(r)}
+  return out}
+/* a felhőbeli main összefésülése a helyi állapottal; visszaadja azokat az állatokat, amelyeknek a fotóját le kell tölteni */
+function mergeMain(R){const B=syncOf('main')||{P:{},E:{},s:null},rp=(Array.isArray(R&&R.pets)?R.pets:[]).filter(x=>isObj(x)&&x.id!=null),re=(Array.isArray(R&&R.events)?R.events:[]).filter(x=>isObj(x)&&x.id!=null);
+  const photo=new Map(S.pets.map(p=>[p.id,p.photo])),fromR=new Set(rp),need=[];
+  const pets=merge3(B.P||{},S.pets,rp,hPet).map(p=>{if(!fromR.has(p))return p;const q={...p},ph=photo.get(p.id);delete q.hasPhoto;delete q.photo;
+    if(p.hasPhoto){if(ph)q.photo=ph;need.push(q.id)}return q});
+  const events=merge3(B.E||{},S.events,re,hEv);
+  const settings=B.s!=null&&hSet(S.settings)===B.s&&isObj(R.settings)?Object.assign(blank().settings,R.settings,{activePetId:S.settings.activePetId}):S.settings;
+  S=fixState({...S,pets,events,settings,updatedAt:Math.max(S.updatedAt||0,+R.updatedAt||0)});return need}
+function mergeChat(C){const B=new Set((syncOf('chat')||{m:[]}).m),rb=isObj(C&&C.byPet)?C.byPet:{},ra=isObj(C&&C.ai)?C.ai:{},chat={},ai={};
+  for(const pid of new Set([...Object.keys(S.chat),...Object.keys(rb)])){
+    const L=S.chat[pid]||[],R=(Array.isArray(rb[pid])?rb[pid]:[]).filter(m=>isObj(m)&&typeof m.t==='string'),rk=new Set(R.map(m=>msgKey(pid,m))),seen=new Set(),out=[];
+    for(const m of L){const k=msgKey(pid,m);if(B.has(k)&&!rk.has(k))continue;seen.add(k);out.push(m)}
+    for(const m of R){const k=msgKey(pid,m);if(seen.has(k)||B.has(k))continue;seen.add(k);out.push(m)}
+    out.sort((a,b)=>(+a.ts||0)-(+b.ts||0));if(out.length)chat[pid]=out.slice(-CHAT_KEEP)}
+  for(const pid of new Set([...Object.keys(S.ai),...Object.keys(ra)]))ai[pid]=Object.assign({},isObj(ra[pid])?ra[pid]:{},S.ai[pid]||{});
+  S=fixState({...S,chat,ai})}
+async function photosFor(ids,uid){if(!ids.length)return;const ph=await Promise.all(ids.map(id=>cdoc('photo_'+id,uid).get().catch(()=>null)));
+  if(cloud.uid!==uid)return;ids.forEach((id,i)=>{const p=S.pets.find(x=>x.id===id);if(p&&ph[i]&&ph[i].exists){const v=ph[i].data().data;if(okPhoto(v))p.photo=v}})}
+let mergedAt=0;const mergedNote=()=>{if(Date.now()-mergedAt>60000){mergedAt=Date.now();toast('Másik eszközön is módosítottál, a kettőt összefésültem.')}};
+/* ütközéskor: a felhőbeli változat letöltése és összefésülése; az ős ezután a felhőbeli változat */
+async function resolve(k,uid){const r=await cdoc(k,uid).getV();if(cloud.uid!==uid)return;
+  if(!r){setSync(k,Object.assign({},syncOf(k)||{},{ver:null}));return}
+  if(k==='main'){const need=mergeMain(r.data);setSync('main',mainBase(r.data,r.ver));await photosFor(need,uid);cloud.dirty.add('chat')}
+  else{mergeChat(r.data);setSync('chat',chatBase(r.data,r.ver))}
+  S.pend=true;saveLocal();mergedNote();soft()}
+
 /* ---------- B kör (nov. 1.): felhőmentés hibakezelése ----------
    K2: a véglegesen elutasított kulcs (túl nagy, tárhely megtelt, rossz formátum) nem megy újra végtelenül: a cloud.bad listára kerül,
        érthető üzenettel; az átmeneti hibánál (hálózat, 5xx) egyre ritkábban próbálkozunk (30 mp → 10 perc).
@@ -2528,7 +2594,7 @@ const CHAT_KEEP=30,CHAT_MAX_BYTES=900000,RETRY_MS=[30000,60000,120000,300000,600
 cloud.bad=new Map();cloud.fails=0;
 const PERM_CODES=new Set(['54000','23514','22P02','22001','23502']);
 /* 'perm' = végleges, 'auth' = munkamenet-gond (új belépés kell), 'temp' = átmeneti */
-function errKind(e){const c=String((e&&e.code)||''),st=Number(e&&e.status)||0;
+function errKind(e){const c=String((e&&e.code)||''),st=Number(e&&e.status)||0;if(c==='conflict')return'temp';
   if(c==='PGRST301'||c==='PGRST303'||st===401)return'auth';
   if(PERM_CODES.has(c)||st===413)return'perm';
   if(st>=400&&st<500&&st!==408&&st!==429&&st!==403)return'perm';
@@ -2554,7 +2620,15 @@ async function flush(){
   let temp=0,auth=false;
   for(const [k,v] of snap){
     if(cloud.uid!==uid)break;
-    try{if(v)await cdoc(k,uid).set(v);else await cdoc(k,uid).delete();cloud.bad.delete(k)}
+    try{
+      if((k==='main'||k==='chat')&&v){let cur=v,done=false;
+        for(let i=0;i<3&&!done&&cloud.uid===uid;i++){const base=(syncOf(k)||{}).ver,nv=await cdoc(k,uid).put(cur,base==null?null:base);
+          if(cloud.uid!==uid)break;
+          if(nv!=null){if(!cloud.legacy)setSync(k,k==='main'?mainBase(cur,nv):chatBase(cur,nv));else setSync(k,k==='main'?mainBase(cur,null):chatBase(cur,null));done=true}
+          else{await resolve(k,uid);cur=docFor(k)}}
+        if(!done&&cloud.uid===uid)throw{code:'conflict'};if(done)saveLocal()}
+      else if(v)await cdoc(k,uid).set(v);else await cdoc(k,uid).delete();
+      cloud.bad.delete(k)}
     catch(e){if(cloud.uid!==uid)break;const kind=errKind(e);
       if(kind==='perm'){cloud.bad.set(k,badWhy(e));console.warn('[Mentés] nem menthető:',k,errCode(e))}
       else{cloud.dirty.add(k);if(kind==='auth')auth=true;else temp++;cloud.err=errCode(e)}}}
@@ -2576,7 +2650,7 @@ function badHtml(){if(!cloud.uid||!cloud.bad.size)return'';const why={size:'túl
 async function pull(){
   const uid=cloud.uid;if(!uid||cloud.pulling)return false;cloud.pulling=true;
   try{
-    const snap=await cdoc('main').get(),R=snap.exists?snap.data():null,hasR=!!(R&&Array.isArray(R.pets));
+    const snap=await cdoc('main').getV(),R=snap?snap.data:null,hasR=!!(R&&Array.isArray(R.pets)),rv=snap?snap.ver:null;
     if(cloud.uid!==uid)return false;
     const foreign=!!S.owner&&S.owner!==uid,anon=!S.owner;
     /* B kör (nov. 1., F5/I2 + F6): kérdés nélkül sem beolvasztás, sem törlés nincs.
@@ -2586,12 +2660,25 @@ async function pull(){
     if(ask){const r=await syncAskOpen(ask);if(cloud.uid!==uid)return false;
       if(r!=='go'){cloud.uid=null;cloud.state='out';cloud.ok=false;try{await cloud.sb.auth.signOut({scope:'local'})}catch(e){}soft();toast('Nem léptél be, az adatok ezen az eszközön maradtak');return false}}
     if(foreign){const th=S.settings.theme;S=blank();S.settings.theme=th;cloud.dirty.clear()}
-    if(hasR&&(anon||foreign||!S.updatedAt||(R.updatedAt||0)>(S.updatedAt||0))){
-      const pets=R.pets,[cs,...ph]=await Promise.all([cdoc('chat').get(),...pets.map(p=>p.hasPhoto?cdoc('photo_'+p.id).get():null)]);
+    /* C kör: a felhő változott-e, amióta utoljára láttuk? (a szerver verziója dönt; régi szervernél a régi, óra szerinti mód) */
+    const sm=syncOf('main'),noBase=!sm||sm.ver==null,known=!anon&&!foreign&&!noBase&&sm.ver===rv,clock=!!R&&(R.updatedAt||0)>(S.updatedAt||0),newer=cloud.legacy?clock:!known;
+    /* összefésülés: mindkét oldalon változás (helyi feltöltetlen módosítás + újabb felhő), vagy első futás ős nélkül (frissítés után),
+       ha a helyi állapot nem régebbi az óra szerint – így a frissítéskor sem vész el semmi */
+    const both=!cloud.legacy&&hasR&&!anon&&!foreign&&!!S.updatedAt&&newer&&(S.pend||(noBase&&!clock));
+    if(both){
+      /* mindkét oldalon változás: összefésülés, nem felülírás */
+      const cs=await cdoc('chat').getV();if(cloud.uid!==uid)return false;
+      S.owner=uid;const need=mergeMain(R);setSync('main',mainBase(R,rv));
+      if(cs){mergeChat(cs.data);setSync('chat',chatBase(cs.data,cs.ver))}else setSync('chat',Object.assign({m:[]},syncOf('chat')||{},{ver:null}));
+      await photosFor(need,uid);if(cloud.uid!==uid)return false;
+      loadFail=false;S.pend=true;cloud.dirty.add('main').add('chat');mergedNote();
+    }else if(hasR&&(anon||foreign||!S.updatedAt||newer)){
+      const pets=R.pets,[cs,...ph]=await Promise.all([cdoc('chat').getV(),...pets.map(p=>p.hasPhoto?cdoc('photo_'+p.id).get():null)]);
       if(cloud.uid!==uid)return false;
       pets.forEach((p,i)=>{if(ph[i]&&ph[i].exists){const v=ph[i].data().data;if(okPhoto(v))p.photo=v}delete p.hasPhoto});
       const mine=S,keep=anon||mine.pend;
-      S={pets,events:R.events||[],chat:(cs.exists&&cs.data().byPet)||{},ai:(cs.exists&&cs.data().ai)||{},settings:Object.assign(blank().settings,R.settings),updatedAt:R.updatedAt||Date.now(),owner:uid,pend:false};S=fixState(S);loadFail=false;/* B1–B2 */
+      S={pets,events:R.events||[],chat:(cs&&cs.data&&cs.data.byPet)||{},ai:(cs&&cs.data&&cs.data.ai)||{},settings:Object.assign(blank().settings,R.settings),updatedAt:R.updatedAt||Date.now(),owner:uid,pend:false,
+        sync:{main:mainBase(R,rv),chat:cs?chatBase(cs.data,cs.ver):{ver:null,m:[]}}};S=fixState(S);loadFail=false;/* B1–B2 */
       cloud.dirty.clear();
       const have=new Set(S.pets.map(p=>p.id)),extra=keep?mine.pets.filter(p=>!have.has(p.id)):[];
       if(extra.length){S.pets.push(...extra);S.events.push(...mine.events.filter(e=>!have.has(e.petId)));
@@ -2599,7 +2686,8 @@ async function pull(){
         S.settings.activePetId=extra[0].id;S.updatedAt=Date.now();S.pend=true;cloud.dirty.add('main').add('chat')}
     }else{
       S.owner=uid;
-      if(S.updatedAt&&(S.pend||!hasR||S.updatedAt>(R.updatedAt||0))){S.pend=true;cloud.dirty.add('main').add('chat');S.pets.forEach(p=>p.photo&&cloud.dirty.add('photo_'+p.id))}
+      if(!hasR&&syncOf('main'))setSync('main',Object.assign({},syncOf('main'),{ver:null}));/* a felhőben nincs (pl. törölték): beszúrással megy fel */
+      if(S.updatedAt&&(S.pend||!hasR||(cloud.legacy&&S.updatedAt>(R.updatedAt||0)))){S.pend=true;cloud.dirty.add('main').add('chat');S.pets.forEach(p=>p.photo&&cloud.dirty.add('photo_'+p.id))}
     }
     saveLocal();applyTheme();return true;
   }finally{cloud.pulling=false}
@@ -4325,7 +4413,7 @@ const ACT={
   chatClear(){confirmSheet('Törlöd a beszélgetést?','Az eddigi kérdések és válaszok törlődnek ennél az állatnál.','Igen, törlöm','chatClearDo')},
   chatClearDo(){delete S.chat[pet().id];chatNote='';save('chat');closeSheet();render()},
   wipeAsk(){confirmSheet('Minden adatot törölsz?',`Minden állat, esemény és beszélgetés törlődik ${cloud.ok?'erről az eszközről és a fiókodhoz mentett másolatból is':'erről az eszközről'}. Ezt nem lehet visszavonni.`,'Igen, mindent törlök','wipe')},
-  wipe(){planClear();const ids=S.pets.map(p=>'photo_'+p.id),theme=S.settings.theme,owner=S.owner;S=blank();S.settings.theme=theme;S.owner=owner;save('chat',...ids);closeSheet();tab='home';render({top:true});toast('Minden adat törölve')}
+  wipe(){planClear();const ids=S.pets.map(p=>'photo_'+p.id),theme=S.settings.theme,owner=S.owner,sync=S.sync;S=blank();S.settings.theme=theme;S.owner=owner;S.sync=sync;save('chat',...ids);closeSheet();tab='home';render({top:true});toast('Minden adat törölve')}
 };
 document.addEventListener('click',e=>{
   if(e.target.id==='sheet'&&!W)return closeSheet();
