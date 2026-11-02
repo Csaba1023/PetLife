@@ -1,7 +1,7 @@
 /* Petavira service worker – offline indulás.
    Az oldal (index.html) hálózat-első: online mindig a friss változat jön, offline a mentett.
    Ha az ikonok vagy a manifest változik, növeld a V számát. */
-const V = 'petlife-v45';
+const V = 'petlife-v46';
 const LIB = 'petlife-lib-2';
 /* az értesítések terve (az app írja, itt csak olvassuk); frissítéskor sem töröljük */
 const PUSH = 'petvia-push';
@@ -12,7 +12,11 @@ const IMG = 'petlife-img-1';
 const LIB_URL = new URL('./vendor/supabase-js-2.112.4.js', self.registration.scope).href;
 const PAGE = './index.html';
 /* okt. 21.: az app kódja külön fájlban; az oldallal együtt hálózat-első, hogy a kettő ne keveredjen */
-const APP = './app.js';
+const APP = './app.js?v=' + V;
+/* nov. 2. (D kör, K3): az index.html verziószámmal kéri a kódot (app.js?v=…), így a régi oldal a régi, az új oldal az új kódot kapja –
+   nem keveredhetnek. A verziós kérés gyorsítótár-első (a cím a verzióval együtt egyedi); a verzió nélküli (régi oldal) hálózat-első marad. */
+const APP_PATH = new URL('./app.js', self.registration.scope).pathname;
+const JOGI_PATH = new URL('./jogi.css', self.registration.scope).pathname;
 const SHELL = ['./', PAGE, APP, './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './img/paw-144.webp', './fonts/fraunces-var.woff', './fonts/plusjakartasans-var.woff', './img/kezdo.webp', './img/tile-emlos.webp', './img/tile-madar.webp', './img/tile-gyik.webp', './img/tile-kigyo.webp', './img/tile-teknos.webp', './img/tile-keteltu.webp', './img/tile-hal.webp', './img/tile-gerinctelen.webp', './img/tile-egyeb.webp'];
 
 self.addEventListener('install', e => {
@@ -49,6 +53,13 @@ async function pageFirst(req, key = PAGE) {
   }
 }
 
+/* hálózat-első, mentett tartalékkal (jogi.css: a jogi oldalakkal együtt frissüljön) */
+async function netFirst(req) {
+  const cache = await caches.open(V);
+  try { const res = await fetch(req); if (res && res.ok) cache.put(req, res.clone()); return res; }
+  catch (err) { const hit = await cache.match(req); if (hit) return hit; throw err; }
+}
+
 async function cacheFirst(req, name) {
   const cache = await caches.open(name || V);
   const hit = await cache.match(req);
@@ -71,7 +82,8 @@ self.addEventListener('fetch', e => {
     if (url.pathname === root || url.pathname === root + 'index.html') e.respondWith(pageFirst(req));
     return;
   }
-  if (url.pathname === new URL(APP, self.registration.scope).pathname) { e.respondWith(pageFirst(req, APP)); return; }
+  if (url.pathname === APP_PATH) { e.respondWith(url.searchParams.get('v') ? cacheFirst(req) : pageFirst(req, './app.js')); return; }
+  if (url.pathname === JOGI_PATH) { e.respondWith(netFirst(req)); return; }
   if (url.pathname.includes('/img/faj/')) { e.respondWith(cacheFirst(req, IMG)); return; }
   e.respondWith(cacheFirst(req));
 });
