@@ -2488,6 +2488,7 @@ function fixState(st){
    belépett felhasználónál a felhőből sikeresen betöltött állapot feloldja */
 let loadFail=false;
 try{const r=localStorage.getItem(LS);if(r){try{S=fixState(JSON.parse(r))}catch(e){loadFail=true;console.warn('[Betöltés]',e)}}}catch(e){}
+const LOCAL_FAIL_MSG='A telefon tárhelye megtelt, a legutóbbi módosítás nem mentődött ezen az eszközön. Szabadíts fel helyet, vagy törölj régi fotókat.';
 const LOAD_FAIL_MSG='A mentett adatok betöltése nem sikerült. Az adataid megvannak a telefonon; ne töröld az appot, és szólj nekünk (petavira@csabastudio.com).';
 const HOST_THEME=document.documentElement.getAttribute('data-theme');
 /* ---------- fiók és szinkron (Supabase) ----------
@@ -2505,31 +2506,69 @@ if(hashErr)try{history.replaceState(null,'',location.pathname+location.search)}c
 const cloud={sb:null,uid:null,email:'',ok:false,state:CFG_OK?'pending':'off',err:'',leaving:false,pulling:false,checked:0,dirty:new Set(),busy:false,timer:0};
 const plain=o=>JSON.parse(JSON.stringify(o));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const un=r=>{if(r&&r.error)throw r.error;return r};
+const un=r=>{if(r&&r.error){const e=r.error;try{if(e&&typeof e==='object'&&r.status&&!e.status)e.status=r.status}catch(x){}throw e}return r};
 const errCode=e=>String((e&&(e.code||e.status))||(navigator.onLine===false?'nincs kapcsolat':'ismeretlen')).slice(0,40);
 /* egy felhasználó egy dokumentuma: main (állatok, események, beállítások), chat (beszélgetések, AI-ajánlások), photo_<állat> */
-const cdoc=k=>{const uid=cloud.uid,q=()=>cloud.sb.from(SB_TABLE);return{
+const cdoc=(k,uid=cloud.uid)=>{const q=()=>cloud.sb.from(SB_TABLE);return{
   get:async()=>{const{data}=un(await q().select('data').eq('user_id',uid).eq('key',k).maybeSingle());return{exists:!!data,data:()=>data.data}},
   set:async v=>{un(await q().upsert({user_id:uid,key:k,data:v,updated_at:new Date().toISOString()},{onConflict:'user_id,key'}))},
   delete:async()=>{un(await q().delete().eq('user_id',uid).eq('key',k))}}};
-function saveLocal(){if(loadFail)return;try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+/* B kör (nov. 1., F10): a helyi mentés hibája (pl. megtelt tárhely) nem lehet csendes – egyszer szólunk, a Beállításokban látszik */
+let localFail=false;
+function saveLocal(){if(loadFail)return;try{localStorage.setItem(LS,JSON.stringify(S));localFail=false}catch(e){if(!localFail){localFail=true;try{toast(LOCAL_FAIL_MSG)}catch(x){}}}}
 function save(...keys){if(loadFail){toast(LOAD_FAIL_MSG);return}S.updatedAt=Date.now();S.pend=true;saveLocal();cloud.dirty.add('main');keys.forEach(k=>cloud.dirty.add(k));clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,1200);try{pushLater()}catch(e){}}
 /* a Tanácsadó fülön csak akkor rajzolunk újra, ha épp nem ír és nem vár válaszra */
 const soft=()=>{if(!$('#sheet').hidden||(tab==='ai'&&(chatBusy||document.activeElement===$('#chatIn'))))renderTop();else render()};
+/* ---------- B kör (nov. 1.): felhőmentés hibakezelése ----------
+   K2: a véglegesen elutasított kulcs (túl nagy, tárhely megtelt, rossz formátum) nem megy újra végtelenül: a cloud.bad listára kerül,
+       érthető üzenettel; az átmeneti hibánál (hálózat, 5xx) egyre ritkábban próbálkozunk (30 mp → 10 perc).
+   F9: a mentés elején rögzítjük a fiókot és az adatok pillanatképét; fiókváltás közben semmi nem kerülhet a másik fiókba.
+   Chat (b): mentés előtt méretellenőrzés; a határ fölött a legrégebbi üzenetek esnek ki. */
+const CHAT_KEEP=30,CHAT_MAX_BYTES=900000,RETRY_MS=[30000,60000,120000,300000,600000];
+cloud.bad=new Map();cloud.fails=0;
+const PERM_CODES=new Set(['54000','23514','22P02','22001','23502']);
+/* 'perm' = végleges, 'auth' = munkamenet-gond (új belépés kell), 'temp' = átmeneti */
+function errKind(e){const c=String((e&&e.code)||''),st=Number(e&&e.status)||0;
+  if(c==='PGRST301'||c==='PGRST303'||st===401)return'auth';
+  if(PERM_CODES.has(c)||st===413)return'perm';
+  if(st>=400&&st<500&&st!==408&&st!==429&&st!==403)return'perm';
+  return'temp'}
+function badWhy(e){const m=String((e&&e.message)||'');return/total/.test(m)?'total':/limit/.test(m)?'limit':Number(e&&e.status)===413||/size/.test(m)||String(e&&e.code)==='54000'?'size':'other'}
+const jsonBytes=o=>new TextEncoder().encode(JSON.stringify(o)).length;
+/* a Tanácsadó-beszélgetések rövidítése: állatonként legfeljebb CHAT_KEEP üzenet, és az egész dokumentum a méretkorlát alatt */
+function chatTrim(){let cut=false;
+  for(const k in S.chat){const l=S.chat[k];if(Array.isArray(l)&&l.length>CHAT_KEEP){l.splice(0,l.length-CHAT_KEEP);cut=true}}
+  for(let i=0;i<5000&&jsonBytes({byPet:S.chat,ai:S.ai})>CHAT_MAX_BYTES;i++){
+    let big=null,bb=0;for(const k in S.chat){const l=S.chat[k];if(!l.length)continue;const n=jsonBytes(l);if(n>bb){bb=n;big=k}}
+    if(!big)break;S.chat[big].splice(0,Math.min(2,S.chat[big].length));cut=true}
+  return cut}
+function docFor(k){
+  if(k==='main')return plain({pets:S.pets.map(({photo,...p})=>({...p,hasPhoto:!!photo})),events:S.events,settings:S.settings,updatedAt:S.updatedAt});
+  if(k==='chat'){if(chatTrim())saveLocal();return plain({byPet:S.chat,ai:S.ai})}
+  const p=S.pets.find(x=>'photo_'+x.id===k);return p&&p.photo?{data:p.photo}:null}
 async function flush(){
   if(!cloud.ok||cloud.busy||!cloud.dirty.size)return;
   cloud.busy=true;const keys=[...cloud.dirty],uid=cloud.uid,was=cloud.state;cloud.dirty.clear();
-  try{for(const k of keys){
-    if(k==='main')await cdoc('main').set(plain({pets:S.pets.map(({photo,...p})=>({...p,hasPhoto:!!photo})),events:S.events,settings:S.settings,updatedAt:S.updatedAt}));
-    else if(k==='chat')await cdoc('chat').set(plain({byPet:S.chat,ai:S.ai}));
-    else{const p=S.pets.find(x=>'photo_'+x.id===k);if(p&&p.photo)await cdoc(k).set({data:p.photo});else await cdoc(k).delete()}
-   }
-   if(cloud.uid===uid){cloud.state='cloud';cloud.err='';if(!cloud.dirty.size){S.pend=false;saveLocal()}}}
-  catch(e){if(cloud.uid===uid){keys.forEach(k=>cloud.dirty.add(k));cloud.state='error';cloud.err=errCode(e)}}
+  /* F9: pillanatkép a mentés elején, még minden várakozás előtt */
+  const snap=keys.map(k=>[k,docFor(k)]);
+  let temp=0,auth=false;
+  for(const [k,v] of snap){
+    if(cloud.uid!==uid)break;
+    try{if(v)await cdoc(k,uid).set(v);else await cdoc(k,uid).delete();cloud.bad.delete(k)}
+    catch(e){if(cloud.uid!==uid)break;const kind=errKind(e);
+      if(kind==='perm'){cloud.bad.set(k,badWhy(e));console.warn('[Mentés] nem menthető:',k,errCode(e))}
+      else{cloud.dirty.add(k);if(kind==='auth')auth=true;else temp++;cloud.err=errCode(e)}}}
+  if(cloud.uid===uid){
+    if(!temp&&!auth){cloud.state='cloud';cloud.err='';cloud.fails=0;if(!cloud.dirty.size){S.pend=false;saveLocal()}}
+    else{cloud.state='error';cloud.fails=Math.min(cloud.fails+1,RETRY_MS.length)}}
   cloud.busy=false;
   if(cloud.state!==was&&tab==='more'&&$('#sheet').hidden)render();
-  if(cloud.ok&&cloud.dirty.size){clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,cloud.state==='cloud'?400:30000)}
+  if(cloud.ok&&cloud.dirty.size&&!auth){clearTimeout(cloud.timer);cloud.timer=setTimeout(flush,cloud.state==='cloud'?400:RETRY_MS[Math.max(0,cloud.fails-1)])}
 }
+/* a nem menthető kulcsok érthető felsorolása (Beállítások) */
+function badHtml(){if(!cloud.uid||!cloud.bad.size)return'';const why={size:'túl nagy',total:'a fiók tárhelye megtelt',limit:'túl sok bejegyzés a fiókban',other:'a szerver nem fogadta el'};
+  const items=[...cloud.bad].map(([k,w])=>{const n=k==='main'?'Az állatok adatai':k==='chat'?'A Tanácsadó-beszélgetések':(()=>{const p=S.pets.find(x=>'photo_'+x.id===k);return(p?esc(petName(p)):'Egy állat')+' fotója'})();return`<li>${n}: ${why[w]||why.other}</li>`}).join('');
+  return`<div class="note warn" id="cloudBad" role="status"><b>Nem menthető a felhőbe:</b><ul>${items}</ul>Ezen az eszközön megvannak. Kisebb fotóval, régi beszélgetések törlésével vagy régi bejegyzések törlésével újra menthető.</div>`}
 /* A fiók és az eszköz adatainak összefésülése.
    - más fiók adatai maradtak az eszközön: eldobjuk, soha nem töltjük fel;
    - fiók nélkül felvett adatok (első belépés): a fiók adatai mellé kerülnek;
@@ -2540,6 +2579,12 @@ async function pull(){
     const snap=await cdoc('main').get(),R=snap.exists?snap.data():null,hasR=!!(R&&Array.isArray(R.pets));
     if(cloud.uid!==uid)return false;
     const foreign=!!S.owner&&S.owner!==uid,anon=!S.owner;
+    /* B kör (nov. 1., F5/I2 + F6): kérdés nélkül sem beolvasztás, sem törlés nincs.
+       - idegen fiók adatai vannak az eszközön: törlés előtt megerősítés + adatletöltés lehetősége;
+       - fiók nélkül felvett állatok és a fiókban is vannak adatok: hozzáadjuk-e a fiókhoz? */
+    const ask=foreign&&S.pets.length?'foreign':(anon&&S.pets.length&&hasR&&R.pets.length?'anon':'');
+    if(ask){const r=await syncAskOpen(ask);if(cloud.uid!==uid)return false;
+      if(r!=='go'){cloud.uid=null;cloud.state='out';cloud.ok=false;try{await cloud.sb.auth.signOut({scope:'local'})}catch(e){}soft();toast('Nem léptél be, az adatok ezen az eszközön maradtak');return false}}
     if(foreign){const th=S.settings.theme;S=blank();S.settings.theme=th;cloud.dirty.clear()}
     if(hasR&&(anon||foreign||!S.updatedAt||(R.updatedAt||0)>(S.updatedAt||0))){
       const pets=R.pets,[cs,...ph]=await Promise.all([cdoc('chat').get(),...pets.map(p=>p.hasPhoto?cdoc('photo_'+p.id).get():null)]);
@@ -2559,6 +2604,15 @@ async function pull(){
     saveLocal();applyTheme();return true;
   }finally{cloud.pulling=false}
 }
+/* B kör (nov. 1.): megerősítő kérdés belépéskor (F5/I2, F6). A lap bezárása = mégse (nem marad függő szinkron). */
+let syncAsk=null;
+function syncAskOpen(kind){return new Promise(res=>{if(syncAsk){const f=syncAsk;syncAsk=null;f('cancel')}
+  const n=S.pets.length,warn=S.pend?' <b>Figyelem:</b> ezeknek egy része még nem került fel a felhőbe.':'';
+  openSheet(kind==='foreign'
+    ?`<h2>Másik fiók adatai vannak ezen az eszközön</h2><p>Ezen a telefonon ${n} állat adatai egy másik fiókhoz tartoznak. Ha folytatod, ezek erről az eszközről törlődnek (az előző fiókban a feltöltött adatok megmaradnak), és a te fiókod adatai jelennek meg.${warn}</p><button class="btn ghost" data-act="exportData">Előbb letöltöm az adatokat</button><button class="btn danger" style="margin-top:10px" data-act="syncAskGo">Folytatás</button><button class="btn ghost" style="margin-top:10px" data-act="syncAskNo">Mégse, nem lépek be</button>`
+    :`<h2>Hozzáadjam a fiókodhoz?</h2><p>Ezen a telefonon fiók nélkül ${n} állatot vettél fel, a fiókodban pedig már vannak adatok. Hozzáadjam ezeket az állatokat a fiókodhoz?</p><button class="btn" data-act="syncAskGo">Igen, hozzáadom</button><button class="btn ghost" style="margin-top:10px" data-act="syncAskNo">Nem, kilépek – maradjanak csak ezen a telefonon</button>`);
+  syncAsk=res})}
+function syncAskDone(r){const f=syncAsk;syncAsk=null;closeSheet();if(f)f(r)}
 async function startSync(){
   const uid=cloud.uid;if(!uid)return;if(cloud.pulling){setTimeout(startSync,500);return}cloud.state='sync';soft();
   try{const done=await pull();if(cloud.uid!==uid)return;if(done){cloud.ok=true;cloud.state='cloud';cloud.err='';cloud.checked=Date.now();flush()}}
@@ -2577,12 +2631,12 @@ function onAuth(ev,sess){
   const u=sess&&sess.user;
   if(u){
     cloud.email=u.email||'';
-    if(cloud.uid!==u.id){cloud.uid=u.id;cloud.ok=false;cloud.leaving=false;startSync();planGet();setTimeout(()=>{try{pushSync()}catch(e){}},5000)}
+    if(cloud.uid!==u.id){cloud.uid=u.id;cloud.ok=false;cloud.bad.clear();cloud.fails=0;cloud.leaving=false;startSync();planGet();setTimeout(()=>{try{pushSync()}catch(e){}},5000)}
     else if(!cloud.ok&&cloud.state==='error')startSync();
     if(ev==='PASSWORD_RECOVERY')pwSheet();
     else if(ev==='SIGNED_IN'&&hashType==='signup'&&!cloud.greeted){cloud.greeted=true;toast('E-mail-cím megerősítve, beléptél')}
   }else{
-    const left=cloud.leaving;cloud.uid=null;cloud.email='';cloud.ok=false;cloud.leaving=false;cloud.state='out';cloud.err='';cloud.dirty.clear();clearTimeout(cloud.timer);
+    const left=cloud.leaving;cloud.uid=null;cloud.email='';cloud.ok=false;cloud.leaving=false;cloud.state='out';cloud.err='';cloud.dirty.clear();cloud.bad.clear();cloud.fails=0;clearTimeout(cloud.timer);
     if(left){try{if(aiRate.unl){aiRate.unl=false;aiRateSave()}}catch(e){}planClear();const th=S.settings.theme,gone=cloud.deleted;cloud.deleted=false;S=blank();S.settings.theme=th;saveLocal();tab='home';closeSheet();render({top:true});toast(gone?'A fiókodat és az adataidat töröltük':'Kiléptél');return}
     soft();
   }
@@ -3548,7 +3602,7 @@ function vMore(){
   <h2>Telepítés</h2>${installHtml()}
   <h2>Adatvédelem</h2><p class="sub">Mit tárol a Petavira, hol, meddig, és milyen jogaid vannak.</p><button class="btn ghost" data-act="tab" data-tab="privacy">Adatkezelési tájékoztató</button><button class="btn ghost" style="margin-top:10px" data-act="exportData">Adataim letöltése</button><p class="sub weblnk" style="margin-top:10px">Weben is: <a href="adatvedelem.html" target="_blank" rel="noopener">adatkezelési tájékoztató</a> · <a href="fioktorles.html" target="_blank" rel="noopener">fióktörlés</a></p>
   <h2>Impresszum</h2><div class="card imp"><p><b>Üzemeltető:</b> ${PRIV.name} (magánszemély)</p><p><b>Kapcsolat:</b> <a href="mailto:${PRIV.mail}">${PRIV.mail}</a></p><p><b>Tárhely:</b> Cloudflare, Inc. (USA); adatbázis és fiókkezelés: Supabase, Inc. (EU, Írország)</p><p><b>Adatvédelmi felügyelet:</b> Nemzeti Adatvédelmi és Információszabadság Hatóság (NAIH)</p></div>
-  <h2>Adatok</h2><p class="sub">${store}</p><button class="btn danger" data-act="wipeAsk">Adatok törlése</button>
+  <h2>Adatok</h2><p class="sub">${store}</p>${badHtml()}<button class="btn danger" data-act="wipeAsk">Adatok törlése</button>
   <p class="note">A mérföldkövek és a szakaszhatárok tájékoztató jellegűek. Kutyánál a veszettség elleni oltást a 164/2008. (XII. 20.) FVM rendelet, a mikrochipet a 41/2010. (II. 26.) Korm. rendelet írja elő. ${DISC}</p>`}
 function accountHtml(){
   if(cloud.state==='off')return`<p class="sub">${cloud.err==='lib'?'A fiókkezelést most nem sikerült betölteni. Ellenőrizd az internetkapcsolatot, majd nyisd meg újra az appot.':'A fiók ebben a változatban nincs beállítva.'}</p>`;
@@ -3798,6 +3852,9 @@ function render(opt={}){
   else if(tab==='walk')v.innerHTML=p.species==='kutya'?walkHtml(p):vHub(p);
   else if(tab==='ai'){v.className='chatmode';v.innerHTML=vChat(p);if(!opt.clearDraft&&$('#chatIn'))$('#chatIn').value=draft;scrollChat();planGet()}
   if(loadFail&&!v.querySelector('#loadFail'))v.insertAdjacentHTML('afterbegin',`<p class="note warn" id="loadFail" role="alert">${LOAD_FAIL_MSG}</p>`);
+  /* B kör (F6): a szerver kiléptetett (vagy a belépés megszakadt), de az adatok egy fiókhoz tartoznak – csak tájékoztatunk, nem törlünk */
+  if(!loadFail&&S.owner&&!cloud.uid&&cloud.state==='out'&&(tab==='home'||tab==='more')&&!v.querySelector('#sessLost'))v.insertAdjacentHTML('afterbegin',`<div class="note warn" id="sessLost" role="status">Nem vagy belépve, ezért a módosításaid nem mentődnek a fiókodba. Az adataid ezen az eszközön megvannak. <button class="btn small" data-act="auOpen" data-m="in">Belépés</button></div>`);
+  if(localFail&&tab==='more'&&!v.querySelector('#localFail'))v.insertAdjacentHTML('afterbegin',`<p class="note warn" id="localFail" role="alert">${LOCAL_FAIL_MSG}</p>`);
   if(opt.top)v.scrollTop=0;
   /* a vízszintesen görgethető fülsorokban a kiválasztott fül legyen látható */
   v.querySelectorAll('.seg2 [aria-pressed="true"]').forEach(b=>{const s=b.parentElement;s.scrollLeft+=b.getBoundingClientRect().left-s.getBoundingClientRect().left-(s.clientWidth-b.offsetWidth)/2});
@@ -3811,7 +3868,7 @@ document.addEventListener('visibilitychange',()=>document.documentElement.classL
 const scrollChat=()=>{const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight};
 let toastT=0;function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2400)}
 function openSheet(html,keep){const s=$('#sheet'),old=keep&&s.firstElementChild,y=old?old.scrollTop:0;s.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"${old?' style="animation:none"':''}>${html}</div>`;s.hidden=false;navSync();if(old)s.firstElementChild.scrollTop=y;else{const f=s.querySelector('h2');f&&(f.tabIndex=-1,f.focus({preventScroll:true}))}}
-function closeSheet(){capDrop();$('#sheet').hidden=true;$('#sheet').innerHTML='';W=null;wzStep=0;chatSheet=false;navSync()}
+function closeSheet(){if(syncAsk){const f=syncAsk;syncAsk=null;f('cancel')}capDrop();$('#sheet').hidden=true;$('#sheet').innerHTML='';W=null;wzStep=0;chatSheet=false;navSync()}
 /* visszagomb (okt. 16.): ha nem a Főoldalon vagyunk, vagy nyitva van egy lap, egy saját előzménybejegyzés áll a böngészőben;
    a vissza ezt veszi el: a lapot bezárja, illetve a Főoldalra visz. A Főoldalon a vissza a szokásos módon kilép. */
 let navPushed=false,navSkip=false;
@@ -4160,7 +4217,7 @@ async function sendChat(raw){
   }catch(e){
     if(!e||e.code!=='cancelled')chatNote=aiErrText(e);
   }
-  chatBusy=null;chatCtl=null;streamText='';if(log.length>60)log.splice(0,log.length-60);save('chat');redrawChat();
+  chatBusy=null;chatCtl=null;streamText='';if(log.length>CHAT_KEEP)log.splice(0,log.length-CHAT_KEEP);save('chat');redrawChat();
 }
 
 /* ---------- események ---------- */
@@ -4341,7 +4398,7 @@ Object.assign(ACT,{
   privBack(){const f=privBack;privBack=null;if(f)f();else closeSheet()},
   privFromAuth(){const m=$('#auMail')?$('#auMail').value.trim():'';privSheet(()=>authSheet('up',m))},
   privFromAi(el){const fn=aiPending;if(el.closest('#sheet'))privSheet(()=>aiConsent(fn));else privSheet()},
-  exportData,
+  exportData,syncAskGo(){syncAskDone('go')},syncAskNo(){syncAskDone('cancel')},
   aiRevoke(){delete S.settings.aiConsent;delete S.settings.aiConsentV;save();render();toast('A Tanácsadóhoz adott hozzájárulást visszavontad')},
   delAsk(){delSheet()},
   delGo
