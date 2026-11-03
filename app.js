@@ -3938,7 +3938,8 @@ function auErr(e){const c=String((e&&e.code)||''),m=String((e&&e.message)||'').t
   if(c==='email_address_invalid'||c==='validation_failed'||m.includes('invalid email')||m.includes('invalid format'))return'Ez az e-mail-cím nem tűnik érvényesnek.';
   if(c==='signup_disabled'||c==='email_provider_disabled')return'A regisztráció jelenleg nincs engedélyezve.';
   /* okt. 21.: a regisztrációs védelem (eldobható cím, ugyanaz a postafiók) adatbázis-hibaként jön vissza; részletet a Supabase nem ad */
-  if(m.includes('database error'))return'Ezzel az e-mail-címmel nem lehet regisztrálni. Eldobható (ideiglenes) címet nem fogadunk el, és egy postafiókhoz egy fiók tartozhat. Ha már van fiókod, lépj be, vagy kérj új jelszót.';
+  /* nov. 2. (E kör, SZ5): semleges szöveg – ne derüljön ki, hogy egy postafiókhoz (pl. Gmail-alias) már tartozik-e fiók */
+  if(m.includes('database error'))return'Ezzel az e-mail-címmel most nem lehet regisztrálni. Ideiglenes (eldobható) címet nem fogadunk el. Ha már van fiókod, lépj be, vagy kérj új jelszót.';
   if(navigator.onLine===false||m.includes('fetch')||m.includes('network'))return'Nincs internetkapcsolat. Próbáld újra később.';
   return`Most nem sikerült. Próbáld újra kicsit később.${c?` (hibakód: ${c.slice(0,40)})`:''}`}
 function renderTop(){const p=pet(),b=$('#petPill');b.hidden=!p;if(p)b.innerHTML=`${ava(p)}<b>${esc(petName(p))}</b><span aria-hidden="true">▾</span>`;
