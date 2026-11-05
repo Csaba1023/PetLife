@@ -2522,9 +2522,23 @@ const SB_LIB='./vendor/supabase-js-2.112.4.js',SB_SRI='sha384-fSjuuvOtAQLomBhXUB
 const APP_URL=location.origin+location.pathname;
 const keyOk=k=>{if(!k||/^sb_secret_/.test(k))return false;const p=k.split('.');if(p.length===3)try{if(/service_role/.test(atob(p[1].replace(/-/g,'+').replace(/_/g,'/'))))return false}catch(e){}return true};
 const CFG_OK=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(SB_URL)&&keyOk(SB_KEY);
-/* a megerősítő vagy jelszócserélő levélből érkező visszatérés jelzései (a könyvtár betöltése előtt olvassuk ki) */
-const HASH=new URLSearchParams(location.hash.slice(1)),hashErr=HASH.get('error_code')||HASH.get('error')||'',hashType=HASH.get('type')||'';
-if(hashErr)try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+/* H kör (nov. 5., F12): a megerősítő és a jelszócserélő levél linkje.
+   ÚJ: {{ .SiteURL }}/?token_hash=…&type=email|recovery (a Supabase levélsablonjában) → az app váltja be (verifyOtp).
+     Bármelyik böngészőben működik (nem kell hozzá ugyanaz a böngésző, mint a sima PKCE-nél), és a levelezők
+     előzetes linkmegnyitása sem használja el, mert a beváltás csak az app kódjával történik.
+   ÁTMENET: ?code=… (PKCE, a régi sablonnal) → exchangeCodeForSession, ha ugyanebben a böngészőben kérték.
+   RÉGI (implicit): #access_token=… → NEM fogadjuk el (flowType: 'pkce', detectSessionInUrl: false), csak „lejárt link” üzenet.
+   BIZTONSÁG: a jelzéseket a könyvtár és minden külső erőforrás betöltése ELŐTT kivesszük a címből (előzmény, megosztás, Referer). */
+const QS=new URLSearchParams(location.search),HASH=new URLSearchParams(location.hash.slice(1));
+const LINK_T={signup:'email',email:'email',recovery:'recovery'};
+let linkPend=(()=>{const h=QS.get('token_hash'),t=QS.get('type'),c=QS.get('code');
+  if(h!==null)return/^[A-Za-z0-9_-]{8,200}$/.test(h)&&LINK_T[t]?{h,t:LINK_T[t]}:{bad:1};
+  if(c!==null)return/^[A-Za-z0-9_-]{8,200}$/.test(c)?{c}:{bad:1};
+  if(HASH.get('error_code')||HASH.get('error')||HASH.get('access_token')||HASH.get('refresh_token'))return{bad:1};
+  return null})();
+let linkKind='',linkLast=null;
+if(linkPend)try{const q=new URLSearchParams(location.search);['token_hash','type','code','error','error_code','error_description'].forEach(k=>q.delete(k));
+  history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:''))}catch(e){}
 /* állapotok: off = nincs beállítva vagy nem tölthető be, pending = ellenőrzés, out = nincs belépve, sync = első letöltés, cloud = mentve, error = sikertelen mentés */
 const cloud={sb:null,uid:null,email:'',ok:false,state:CFG_OK?'pending':'off',err:'',leaving:false,pulling:false,checked:0,dirty:new Set(),busy:false,timer:0};
 const plain=o=>JSON.parse(JSON.stringify(o));
@@ -2745,7 +2759,7 @@ function onAuth(ev,sess){
     if(cloud.uid!==u.id){cloud.uid=u.id;cloud.ok=false;cloud.bad.clear();cloud.fails=0;cloud.leaving=false;startSync();planGet();setTimeout(()=>{try{pushSync()}catch(e){}},5000)}
     else if(!cloud.ok&&cloud.state==='error')startSync();
     if(ev==='PASSWORD_RECOVERY')pwSheet();
-    else if(ev==='SIGNED_IN'&&hashType==='signup'&&!cloud.greeted){cloud.greeted=true;toast('E-mail-cím megerősítve, beléptél')}
+    else if(ev==='SIGNED_IN'&&linkKind==='email'&&!cloud.greeted){cloud.greeted=true;toast('E-mail-cím megerősítve, beléptél')}
   }else{
     const left=cloud.leaving;cloud.uid=null;cloud.email='';cloud.ok=false;cloud.leaving=false;cloud.state='out';cloud.err='';cloud.dirty.clear();cloud.bad.clear();cloud.fails=0;clearTimeout(cloud.timer);
     if(left){try{if(aiRate.unl){aiRate.unl=false;aiRateSave()}}catch(e){}planClear();const th=S.settings.theme,gone=cloud.deleted;cloud.deleted=false;S=blank();S.settings.theme=th;saveLocal();tab='home';closeSheet();render({top:true});toast(gone?'A fiókodat és az adataidat töröltük':'Kiléptél');return}
@@ -2755,11 +2769,25 @@ function onAuth(ev,sess){
 const loadLib=()=>new Promise((ok,no)=>{if(window.supabase&&window.supabase.createClient)return ok();const el=document.createElement('script');el.src=SB_LIB;el.integrity=SB_SRI;el.crossOrigin='anonymous';el.onload=()=>window.supabase&&window.supabase.createClient?ok():no(new Error('lib'));el.onerror=()=>no(new Error('lib'));document.head.appendChild(el)});
 async function initCloud(){
   if(!CFG_OK)return;
-  try{await loadLib();cloud.sb=window.supabase.createClient(SB_URL.replace(/\/$/,''),SB_KEY);
+  try{await loadLib();cloud.sb=window.supabase.createClient(SB_URL.replace(/\/$/,''),SB_KEY,{auth:{flowType:'pkce',detectSessionInUrl:false}});
     /* a könyvtár kérése szerint a visszahívásban nem várunk másik Supabase-hívásra, ezért időzítve dolgozzuk fel */
     cloud.sb.auth.onAuthStateChange((ev,sess)=>setTimeout(()=>onAuth(ev,sess),0));
-    if(hashErr)openSheet('<h2>A link már nem érvényes</h2><p>A levélben kapott link lejárt, vagy már felhasználtad. Ha már megerősítetted a címed, egyszerűen lépj be. Ha nem, kérj új levelet.</p><button class="btn" data-act="auOpen" data-m="in">Belépés</button><button class="btn ghost" data-act="close">Bezárás</button>');
+    linkGo();
   }catch(e){cloud.state='off';cloud.err='lib';soft()}
+}
+/* H kör: a levélből kapott link beváltása – csak a 18+ megerősítés után (a kapunál a lapok gombjai nem működnének) */
+const LINK_OLD='<h2>A link már nem érvényes</h2><p>A levélben kapott link lejárt, vagy már felhasználtad. Ha már megerősítetted a címed, egyszerűen lépj be. Ha új jelszót kértél, kérj új levelet.</p><button class="btn" data-act="auOpen" data-m="in">Belépés</button><button class="btn ghost" data-act="close">Bezárás</button>';
+const LINK_NET='<h2>Most nem sikerült</h2><p>A levélben kapott linket most nem tudtuk beváltani. Ellenőrizd az internetkapcsolatot, és próbáld újra.</p><button class="btn" data-act="linkRetry">Újra</button><button class="btn ghost" data-act="close">Bezárás</button>';
+/* lejárt, felhasznált, hibás: nincs értelme újrapróbálni; hálózati hiba, 429, 5xx: újrapróbálható */
+const linkGone=e=>{const c=String((e&&e.code)||''),st=Number(e&&e.status)||0;return/otp_expired|flow_state|code_verifier|validation_failed|not_found|invalid/.test(c)||(st>=400&&st<500&&st!==429)};
+async function linkGo(){
+  if(!linkPend||!cloud.sb||!adultOk())return;
+  const l=linkPend;linkPend=null;linkLast=null;
+  if(l.bad)return openSheet(LINK_OLD);
+  linkKind=l.h?l.t:'';   /* a beváltás eseménye (SIGNED_IN) időzítve fut le: előre jelöljük, mi volt a link */
+  let r;try{r=l.h?await cloud.sb.auth.verifyOtp({token_hash:l.h,type:l.t}):await cloud.sb.auth.exchangeCodeForSession(l.c)}catch(e){r={error:e}}
+  if(r&&r.error){linkKind='';if(linkGone(r.error))return openSheet(LINK_OLD);linkLast=l;return openSheet(LINK_NET)}
+  /* siker: a PASSWORD_RECOVERY esemény nyitja az új jelszó lapját (onAuth), megerősítésnél köszöntő */
 }
 function applyTheme(){const t=S.settings.theme,r=document.documentElement;
   if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else if(HOST_THEME)r.setAttribute('data-theme',HOST_THEME);else r.removeAttribute('data-theme');
@@ -4529,7 +4557,8 @@ Object.assign(ACT,{
 });
 /* adatvédelem: tájékoztató, letöltés, hozzájárulás visszavonása, fióktörlés */
 Object.assign(ACT,{
-  age18(){ageMem=true;try{localStorage.setItem(AGE_LS,iso(today()))}catch(e){}tab='home';render({top:true})},
+  age18(){ageMem=true;try{localStorage.setItem(AGE_LS,iso(today()))}catch(e){}tab='home';render({top:true});linkGo()},
+  linkRetry(){if(linkLast){linkPend=linkLast;linkLast=null;closeSheet();linkGo()}},
   privAge(){privSheet()},
   aszfOpen(){try{window.open(ASZF_URL,'_blank','noopener')}catch(e){}},
   aszfOk(el){const b=el&&el.parentElement&&el.parentElement.parentElement,box=b&&b.querySelector('.aszfCk');if(!box||!box.checked){const e=b&&b.querySelector('.aszfErr');if(e)e.hidden=false;return}
