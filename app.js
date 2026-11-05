@@ -2825,6 +2825,14 @@ function vAge(){return`<div class="empty start"><img class="startpic" src="img/k
   <p><b>A Petavira 18 éves kortól használható.</b></p>
   <p><button class="btn" data-act="age18">Elmúltam 18 éves – tovább</button></p>
   <p class="hint">Az adataid kezeléséről: <button type="button" class="lnk" data-act="privAge">adatkezelési tájékoztató</button></p></div>`}
+/* ÁSZF (nov. 4., ASZF_ON): a fiókos felhasználó egyszer elfogadja az aktuális változatot; elutasítás helyett kiléphet vagy törölheti a fiókját */
+function vAszf(){return`<div class="empty start"><h1>Felhasználási feltételek</h1>
+  <p>A Petavira fiókos használatához el kell fogadnod a Felhasználási feltételeket (ÁSZF).</p>
+  ${aszfHtml('','aszfCk')}<p class="err aszfErr" role="alert" hidden>Jelöld be a négyzetet az elfogadáshoz.</p>
+  <p><button class="btn" data-act="aszfOk">Elfogadom</button></p>
+  ${privLinkHtml('privAge')}
+  <p class="sub">Ha nem fogadod el, kiléphetsz (fiók nélkül tovább használhatod az appot), vagy törölheted a fiókodat.</p>
+  <p><button class="btn ghost" data-act="outAsk">Kilépés</button></p><p><button class="btn text" style="color:var(--alert)" data-act="delAsk">Fiók törlése</button></p></div>`}
 function vEmpty(){return`<div class="empty start"><img class="startpic" src="img/kezdo.webp" alt="Petavira – Okos gazdi, boldog családtag." width="720" height="1279"><h1 class="sr-only">Kövesd végig a kedvenced életét</h1>
   <p class="sub">Életút, egészség, táplálkozás, gondozás és tanácsadó – több mint 60 állatfajra</p>
   <p><button class="btn" data-act="petNew">Állat felvétele</button></p><p><button class="btn ghost" data-act="tab" data-tab="nopet">Még nincs állatom</button></p>${cloud.state==='sync'?'<p class="hint">Korábban mentett adatok keresése…</p>':''}</div>`}
@@ -3708,7 +3716,7 @@ function vMore(){
   <h2>Értesítések</h2>${pushHtml()}
   <h2>Megjelenés</h2><div class="chips">${[['auto','Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,n])=>`<label><input type="radio" name="theme" value="${v}"${th===v?' checked':''}><span>${n}</span></label>`).join('')}</div>
   <h2>Telepítés</h2>${installHtml()}
-  <h2>Adatvédelem</h2><p class="sub">Mit tárol a Petavira, hol, meddig, és milyen jogaid vannak.</p><button class="btn ghost" data-act="tab" data-tab="privacy">Adatkezelési tájékoztató</button><button class="btn ghost" style="margin-top:10px" data-act="exportData">Adataim letöltése</button><p class="sub weblnk" style="margin-top:10px">Weben is: <a href="adatvedelem.html" target="_blank" rel="noopener">adatkezelési tájékoztató</a> · <a href="fioktorles.html" target="_blank" rel="noopener">fióktörlés</a></p>
+  <h2>Adatvédelem</h2><p class="sub">Mit tárol a Petavira, hol, meddig, és milyen jogaid vannak.</p><button class="btn ghost" data-act="tab" data-tab="privacy">Adatkezelési tájékoztató</button>${ASZF_ON?'<button class="btn ghost" style="margin-top:10px" data-act="aszfOpen">Felhasználási feltételek (ÁSZF)</button>':''}<button class="btn ghost" style="margin-top:10px" data-act="exportData">Adataim letöltése</button><p class="sub weblnk" style="margin-top:10px">Weben is: <a href="adatvedelem.html" target="_blank" rel="noopener">adatkezelési tájékoztató</a> · <a href="fioktorles.html" target="_blank" rel="noopener">fióktörlés</a></p>
   <h2>Impresszum</h2><div class="card imp"><p><b>Üzemeltető:</b> ${PRIV.name} (magánszemély)</p><p><b>Kapcsolat:</b> <a href="mailto:${PRIV.mail}">${PRIV.mail}</a></p><p><b>Tárhely:</b> Cloudflare, Inc. (USA); adatbázis és fiókkezelés: Supabase, Inc. (EU, Írország)</p><p><b>Adatvédelmi felügyelet:</b> Nemzeti Adatvédelmi és Információszabadság Hatóság (NAIH)</p></div>
   <h2>Adatok</h2><p class="sub">${store}</p>${badHtml()}<button class="btn danger" data-act="wipeAsk">Adatok törlése</button>
   <p class="note">A mérföldkövek és a szakaszhatárok tájékoztató jellegűek. Kutyánál a veszettség elleni oltást a 164/2008. (XII. 20.) FVM rendelet, a mikrochipet a 41/2010. (II. 26.) Korm. rendelet írja elő. ${DISC}</p>`}
@@ -3719,9 +3727,19 @@ function accountHtml(){
   return`<p class="sub">Belépve: <b>${esc(cloud.email)}</b></p><button class="btn ghost" data-act="outAsk">Kilépés</button><button class="btn text" style="margin-top:6px;color:var(--alert)" data-act="delAsk">Fiók törlése</button>`}
 /* ---------- adatvédelem: tájékoztató, adatletöltés, fióktörlés (GDPR-kör, 2026. október) ----------
    A szolgáltatókról szóló állítások forrásai a tájékoztató végén; a linkek letöltéssel ellenőrizve (2026. 10. 12.). */
-const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. október 24.'};
+const PRIV={name:'Molnár Csaba',mail:'petavira@csabastudio.com',date:'2026. november 4.'};
 const xa=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
-function agreeHtml(id,act,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam az <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztatót</button>. Elmúltam 18 éves.</span></label>`}
+/* JOGI NYILATKOZATOK (nov. 4., jogászi javaslat): a 18+ nyilatkozat, az ÁSZF elfogadása és a Tanácsadó hozzájárulása
+   külön elem; az adatkezelési tájékoztató link (megismerése nem kötelező jelölőnégyzet). Egyik sincs előre bejelölve. */
+const ASZF_ON=false;/* a végleges, jogász által jóváhagyott ÁSZF-szöveggel kapcsoljuk be (aszf.html + ez) */
+const ASZF_V=1,ASZF_URL='aszf.html';
+function ageHtml(id,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elmúltam 18 éves.</span></label>`}
+function aszfHtml(id,cls=''){return`<label class="ck"><input type="checkbox"${id?` id="${id}"`:''}${cls?` class="${cls}"`:''}><span>Elolvastam és elfogadom a <button type="button" class="lnk" data-act="aszfOpen">Felhasználási feltételeket (ÁSZF)</button>.</span></label>`}
+const privLinkHtml=act=>`<p class="hint">Az adataid kezeléséről: <button type="button" class="lnk" data-act="${act}">adatkezelési tájékoztató</button></p>`;
+const aszfNeed=()=>ASZF_ON&&!!cloud.uid&&(S.settings.aszfV|0)<ASZF_V;
+const aszfAccept=()=>{S.settings.aszfV=ASZF_V;S.settings.aszfAt=new Date().toISOString()};
+/* hozzájárulás időpontja: régen csak dátum (ÉÉÉÉ-HH-NN), nov. 4-től pontos időpont (ISO) */
+const fmtWhen=v=>{const t=String(v||'');if(DATE_OK.test(t))return t;const d=new Date(t);return isNaN(d)?'':d.toLocaleString('hu-HU',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})};
 function privHtml(){return`<div class="priv">
 <p class="sub">Hatályos: ${PRIV.date}</p>
 <h3>Ki kezeli az adataidat?</h3>
@@ -3731,8 +3749,8 @@ function privHtml(){return`<div class="priv">
 <h3>Fiókkal</h3>
 <ul><li><b>Mit:</b> az e-mail-címed, a jelszavad (mi nem látjuk), és az adataid másolata (állatok, fotók, események, beszélgetések), valamint a beállításaid: a megadott település, a téma, a kiválasztott állat, az értesítéstípusok és a Tanácsadóhoz adott hozzájárulásod.</li>
 <li><b>Miért:</b> hogy belépés után minden eszközödön megjelenjenek, és legyen biztonsági mentésed. Jogalap: a szolgáltatás nyújtása (szerződés teljesítése, GDPR 6. cikk (1) b).</li>
-<li><b>Meddig:</b> amíg a fiókodat nem törlöd. Ha a regisztrációt nem erősíted meg, 7 nap után automatikusan töröljük. A biztonsági mentésekben a törlés után legfeljebb 14 napig megmaradnak, titkosítva.</li>
-<li><b>Biztonsági mentés:</b> naponta titkosított mentés készül a fiókokhoz mentett adatokról és a fiókok listájáról (e-mail-cím, a regisztráció, a megerősítés és az utolsó belépés ideje; jelszó nélkül). A mentést titkosítva a GitHub tárhelyén őrizzük 14 napig, utána magától törlődik. Visszafejteni csak a fejlesztő tudja, a GitHub nem. Célja, hogy hiba vagy támadás esetén ne vesszenek el az adataid. Jogalap: jogos érdek (adatbiztonság, 6. cikk (1) f).</li>
+<li><b>Meddig:</b> amíg a fiókodat nem törlöd. Ha a regisztrációt nem erősíted meg, 7 nap után automatikusan töröljük. A biztonsági mentésekben a törlés után legfeljebb 30 napig megmaradnak, titkosítva.</li>
+<li><b>Biztonsági mentés:</b> naponta titkosított mentés készül a fiókokhoz mentett adatokról és a fiókok listájáról (e-mail-cím, a regisztráció, a megerősítés és az utolsó belépés ideje; jelszó nélkül). A mentést titkosítva a GitHub tárhelyén őrizzük 30 napig, utána magától törlődik. Visszafejteni csak a fejlesztő tudja, a GitHub nem. Célja, hogy hiba vagy támadás esetén ne vesszenek el az adataid. Jogalap: jogos érdek (adatbiztonság, 6. cikk (1) f).</li>
 <li><b>Visszaélés elleni védelem a regisztrációnál:</b> eldobható (ideiglenes) e-mail-címmel nem lehet regisztrálni, és egy postafiókhoz egy fiók tartozhat. Ehhez az e-mail-címed normalizált (kisbetűs, a „+” utáni rész és Gmailnél a pontok nélküli) változatának lenyomata (SHA-256) és a fiók első létrehozásának ideje; magát a címet ebben nem tároljuk. Ha törlöd a fiókodat, a lenyomat 12 hónapig megmarad, hogy újraregisztrációkor az ingyenes keret ne induljon újra. Meg nem erősített regisztrációnál a lenyomat a fiókkal együtt, 7 nap után törlődik. Jogalap: jogos érdek (a szolgáltatás és a költségek védelme).</li>
 <li><b>Levelek:</b> csak a regisztráció megerősítéséhez, az új jelszóhoz és az e-mail-cím cseréjéhez küldünk levelet. Hírlevelet nem küldünk. A levélküldő (Resend) a levelet és a küldési naplót 30 napig őrzi, utána törli.</li></ul>
 <h3>Tanácsadó (mesterséges intelligencia)</h3>
@@ -3773,7 +3791,7 @@ function vPrivacy(){
   const ok=aiAgreed();
   return`<button class="btn text back" data-act="tab" data-tab="more">‹ Beállítások</button><h1>Adatkezelési tájékoztató</h1>
   <div class="card" style="margin-top:12px"><b>A te adataid</b>
-  <p class="sub" style="margin:6px 0 12px">Tanácsadó: ${ok?`hozzájárultál (${esc(S.settings.aiConsent)}).`:'nem adtál hozzájárulást.'}</p>
+  <p class="sub" style="margin:6px 0 12px">Tanácsadó: ${ok?`hozzájárultál (${esc(fmtWhen(S.settings.aiConsent))}).`:'nem adtál hozzájárulást.'}</p>
   <button class="btn ghost" data-act="exportData">Adataim letöltése</button>
   ${ok?'<button class="btn ghost" style="margin-top:10px" data-act="aiRevoke">Hozzájárulás visszavonása</button>':''}</div>
   ${privHtml().replace(/<(\/?)h3>/g,'<$1h2>')}`}
@@ -3913,7 +3931,7 @@ function authSheet(m,mail=''){auMode=AU[m]?m:'in';auBusy=false;const a=AU[auMode
   ${auMode==='reset'?'<p class="sub">Írd be az e-mail-címed, és küldünk egy linket, amivel új jelszót adhatsz meg.</p>':auMode==='up'?'<p class="sub">A regisztráció után megerősítő levelet kapsz. A benne lévő linkre kattintva válik használhatóvá a fiókod.</p>':''}
   <label class="f"><span>E-mail-cím</span><input id="auMail" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="200" value="${esc(mail)}"></label>
   ${auMode==='reset'?'':`<label class="f"><span>Jelszó${auMode==='up'?' ('+PW_HINT+')':''}</span><input id="auPw" type="password" name="password" autocomplete="${auMode==='up'?'new-password':'current-password'}" maxlength="72"></label>`}
-  ${auMode==='up'?agreeHtml('auAgree','privFromAuth'):''}
+  ${auMode==='up'?ageHtml('auAge')+(ASZF_ON?aszfHtml('auAszf'):'')+privLinkHtml('privFromAuth'):''}
   ${capBox}<p class="err" id="auErr" role="alert" hidden></p>
   <button class="btn" id="auBtn" data-act="auGo">${a.b}</button>
   ${auMode==='in'?'<button type="button" class="btn ghost" data-act="auMode" data-m="up">Nincs még fiókom</button><button type="button" class="btn text" style="width:100%" data-act="auMode" data-m="reset">Elfelejtettem a jelszavam</button>':'<button type="button" class="btn ghost" data-act="auMode" data-m="in">Van már fiókom</button>'}
@@ -3943,8 +3961,9 @@ function render(opt={}){
   const p=pet(),v=$('#view'),draft=$('#chatIn')?$('#chatIn').value:'';
   renderTop();v.className='';
   /* KORHATÁR (okt. 26.): a megerősítés előtt az alsó menü rejtve (különben a gombok halottnak tűnnek) */
-  const ok18=adultOk();document.body.classList.toggle('age-gate',!ok18);
+  const ok18=adultOk(),aszf=ok18&&aszfNeed();document.body.classList.toggle('age-gate',!ok18||aszf);
   if(!ok18){v.innerHTML=vAge();if(opt.top)v.scrollTop=0;navSync();return}
+  if(aszf){v.innerHTML=vAszf();if(opt.top)v.scrollTop=0;navSync();return}
   if(tab==='more')v.innerHTML=vMore();
   else if(tab==='vets')v.innerHTML=vVets();
   else if(tab==='nopet')v.innerHTML=vNoPet()+infoNote('nopet');
@@ -4270,9 +4289,9 @@ let aiPending=null;
    a korábbi, 16 éves elfogadás nem elég, mindenkinek egyszer újra el kell fogadnia) */
 const AI_CONSENT_V=4;
 const aiAgreed=()=>(S.settings.aiConsentV|0)>=AI_CONSENT_V&&!!S.settings.aiConsent;
-const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot, a saját vagy más ember egészségügyi adatát). Az e-mail-címet, a telefonszámot, a linket és a bankszámlaszámot az app küldés előtt kitakarja. A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${agreeHtml('','privFromAi','aiAge')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be a négyzetet a folytatáshoz.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
-const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom</button></div>`;
-function aiConsent(fn){if(aiAgreed()){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom</button><button class="btn ghost" data-act="close">Mégse</button>`)}
+const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot, a saját vagy más ember egészségügyi adatát). Az e-mail-címet, a telefonszámot, a linket és a bankszámlaszámot az app küldés előtt kitakarja. A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${ageHtml('','aiAge')}${privLinkHtml('privFromAi')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be, hogy elmúltál 18 éves.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
+const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom az adattovábbítást</button></div>`;
+function aiConsent(fn){if(aiAgreed()){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom az adattovábbítást</button><button class="btn ghost" data-act="close">Mégse</button>`)}
 /* ---------- „Válasz jelentése” (okt. 17.; Google Play: generatív AI – appon belüli jelentés) ----------
    A szerver csak az általa aláírt választ fogadja el (sig); a jelentés nem számít a napi kérdéskeretbe, és nem hívja az OpenAI-t.
    A szerverre csak a válasz szövege, az ok, a feladat neve és a faj kulcsa megy; a kérdés, a név és az állat adatai nem.
@@ -4419,7 +4438,7 @@ const ACT={
   symAi(el){const e=S.events.find(x=>x.id===el.dataset.id);e&&symAsk(e)},
   aiGo(el){const p=pet(),key=el.dataset.key;aiConsent(()=>runAi(key,aiPayload(p,key.startsWith('prod_')?'prod':key,aiTaskData(p,key)),(t,sig)=>{(S.ai[p.id]=S.ai[p.id]||{})[key]={t,ts:Date.now(),...(sig?{sig}:{})}}))},
   aiOk(el){const box=el&&el.parentElement.querySelector('.aiAge');if(!box||!box.checked){const e=el&&el.parentElement.querySelector('.aiAgeErr');if(e)e.hidden=false;return}
-    S.settings.aiConsent=iso(today());S.settings.aiConsentV=AI_CONSENT_V;save();const fn=aiPending;aiPending=null;if(fn){closeSheet();fn()}else redrawChat()},
+    S.settings.aiConsent=new Date().toISOString();S.settings.aiConsentV=AI_CONSENT_V;save();const fn=aiPending;aiPending=null;if(fn){closeSheet();fn()}else redrawChat()},
   aiStop(){aiRun&&aiRun.ctl.abort()},
   tier(el){tier=el.dataset.v;render()},pCat(el){pCat=el.dataset.v;render()},careSt(el){careSt=el.dataset.v;render()},
   cTab(el){cTab=el.dataset.v;render()},
@@ -4464,7 +4483,9 @@ Object.assign(ACT,{
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail))return showErr('#auErr','Írd be az e-mail-címed.');
     if(m!=='reset'&&!pw)return showErr('#auErr','Írd be a jelszavad.');
     if(m==='up'&&!pwOk(pw))return showErr('#auErr',PW_MSG);
-    if(m==='up'&&!($('#auAgree')&&$('#auAgree').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elolvastad a tájékoztatót, és elmúltál 18 éves. Fiók nélkül is használhatod az appot.');
+    if(m==='up'&&!($('#auAge')&&$('#auAge').checked))return showErr('#auErr','A regisztrációhoz jelöld be, hogy elmúltál 18 éves. Fiók nélkül is használhatod az appot.');
+    if(m==='up'&&ASZF_ON&&!($('#auAszf')&&$('#auAszf').checked))return showErr('#auErr','A regisztrációhoz el kell fogadnod a Felhasználási feltételeket (ÁSZF).');
+    if(m==='up'&&ASZF_ON){aszfAccept();save()}
     auBusy=true;$('#auErr').hidden=true;const b=$('#auBtn');b.disabled=true;b.textContent='Egy pillanat…';
     const ct=await capToken(),cap=ct?{captchaToken:ct}:{};
     if(!ct){auBusy=false;const x=$('#auBtn');if(x){x.disabled=capSt==='fail';x.textContent=AU[m].b}return showErr('#auErr',capMsg())}
@@ -4505,6 +4526,9 @@ Object.assign(ACT,{
 Object.assign(ACT,{
   age18(){ageMem=true;try{localStorage.setItem(AGE_LS,iso(today()))}catch(e){}tab='home';render({top:true})},
   privAge(){privSheet()},
+  aszfOpen(){try{window.open(ASZF_URL,'_blank','noopener')}catch(e){}},
+  aszfOk(el){const b=el&&el.parentElement&&el.parentElement.parentElement,box=b&&b.querySelector('.aszfCk');if(!box||!box.checked){const e=b&&b.querySelector('.aszfErr');if(e)e.hidden=false;return}
+    aszfAccept();save();render({top:true});toast('Elfogadtad a Felhasználási feltételeket')},
   privBack(){const f=privBack;privBack=null;if(f)f();else closeSheet()},
   privFromAuth(){const m=$('#auMail')?$('#auMail').value.trim():'';privSheet(()=>authSheet('up',m))},
   privFromAi(el){const fn=aiPending;if(el.closest('#sheet'))privSheet(()=>aiConsent(fn));else privSheet()},
