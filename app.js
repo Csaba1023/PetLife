@@ -3820,12 +3820,17 @@ async function delGo(){
   delBusy=true;$('#delErr').hidden=true;const b=$('#delBtn');b.disabled=true;b.textContent='Törlés…';
   const fail=m=>{delBusy=false;const x=$('#delBtn');if(x){x.disabled=false;x.textContent='Fiók végleges törlése';showErr('#delErr',m)}};
   const ct=await capToken();if(!ct)return fail(capMsg());
-  let r;try{r=await cloud.sb.auth.signInWithPassword({email:cloud.email,password:pw,...(ct?{options:{captchaToken:ct}}:{})})}catch(e){r={error:e}}
-  capReset();if(r.error)return fail(auErr(r.error));
-  const tok=r.data&&r.data.session&&r.data.session.access_token;if(!tok)return fail('Most nem sikerült. Próbáld újra kicsit később.');
+  /* F kör (nov. 5., SZ6): a jelszót a SZERVER ellenőrzi (a robotszűrő-jeggyel együtt); a kérés a mostani belépési jeggyel megy.
+     A jelszó csak ebben a kérésben utazik (HTTPS), nem tároljuk és nem naplózzuk. A jegy egyszer használható: utána új ellenőrzés. */
+  let tok='';try{const r=await cloud.sb.auth.getSession();tok=(r.data&&r.data.session&&r.data.session.access_token)||''}catch(e){}
+  if(!tok){capReset();return fail('A belépésed lejárt. Lépj ki és be, majd próbáld újra.')}
   clearTimeout(cloud.timer);for(let i=0;i<40&&cloud.busy;i++)await sleep(100);
-  let res;try{res=await fetch(DEL_URL,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({confirm:'TÖRLÉS'})})}catch(e){res=null}
-  if(!res||!res.ok){let c='';try{c=String(((await res.json())||{}).code||'')}catch(e){}return fail(`A törlés most nem sikerült. Próbáld újra később.${c?` (hibakód: ${esc(c.slice(0,30))})`:res?` (hibakód: ${res.status})`:''}`)}
+  let res;try{res=await fetch(DEL_URL,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({confirm:'TÖRLÉS',password:pw,captcha:ct})})}catch(e){res=null}
+  capReset();
+  if(!res||!res.ok){let c='';try{c=String(((await res.json())||{}).code||'')}catch(e){}
+    const M={password:'Hibás jelszó.',captcha:auErr({code:'captcha_failed'}),rate:auErr({status:429}),session_expired:'A belépésed lejárt. Lépj ki és be, majd próbáld újra.',login:'A belépésed lejárt. Lépj ki és be, majd próbáld újra.'};
+    if(M[c]){if(c==='password'){const p=$('#delPw');if(p){p.value='';p.focus()}}return fail(M[c])}
+    return fail(`A törlés most nem sikerült. Próbáld újra később.${c?` (hibakód: ${c.slice(0,30)})`:res?` (hibakód: ${res.status})`:''}`)}   /* showErr textContent-tel ír: nem kell esc */
   /* a szerveren minden törölve: helyben is takarítunk, és nem töltünk fel semmit */
   cloud.dirty.clear();cloud.ok=false;cloud.deleted=true;cloud.leaving=true;if(pushLocal().on)await pushOff(true);
   try{await cloud.sb.auth.signOut({scope:'local'})}catch(e){}
