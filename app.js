@@ -3358,7 +3358,7 @@ function vVets(){
 const MEGYEK=['Budapest','Bács-Kiskun','Baranya','Békés','Borsod-Abaúj-Zemplén','Csongrád-Csanád','Fejér','Győr-Moson-Sopron','Hajdú-Bihar','Heves','Jász-Nagykun-Szolnok','Komárom-Esztergom','Nógrád','Pest','Somogy','Szabolcs-Szatmár-Bereg','Tolna','Vas','Veszprém','Zala'];
 const SHELTERS=[
  ['Budapest','Illatos úti Állategészségügyi Szolgálat','Budapest, IX. kerület','https://ebtelep.hu/allatok/','='],
- ['Budapest','Noé Állatotthon Alapítvány','Budapest','http://www.noeallatotthon.hu/index.php?pid=1&faj=0&statusz=0','='],
+ ['Budapest','Noé Állatotthon Alapítvány','Budapest','https://www.noeallatotthon.hu/index.php?pid=1&faj=0&statusz=0','='],
  ['Budapest','Rex Kutyaotthon Alapítvány','Budapest, IV. kerület','https://www.rex.hu/hu/orokbefogadas/','='],
  ['Budapest','HEROSZ Budapesti Állatotthon','Budapest, XXII. kerület','https://herosz.hu/allatfajok/kutya/','https://herosz.hu/allatfajok/macska/'],
  ['Budapest','Vigyél Haza Alapítvány','Budapest','https://vigyelhaza.hu/kutyalista/',''],
@@ -3418,7 +3418,7 @@ const SHELTERS=[
  ['Veszprém','Északbalatoni Ebmentő Egyesület','Balatonfüred','https://www.ebmenhely.eu/','','német nyelvű oldal'],
  ['Zala','Élettér Állat- és Természetvédő Egyesület','Nagykanizsa','https://eletter-kanizsa.hu/gazdit-keresunk/kutyak/','https://eletter-kanizsa.hu/gazdit-keresunk/cicak/'],
  ['Zala','Bogáncs Zalaegerszegi Állatvédő Egyesület','Zalaegerszeg','https://bogancsmenhely.hu/orokbe-fogadhato-kutyaink',''],
- ['Zala','Szimat Állatvédő Egyesület','Zalaszentgrót','http://www.szimat-ave.hu/','']];
+ ['Zala','Szimat Állatvédő Egyesület','Zalaszentgrót','https://www.szimat-ave.hu/','']];
 /* ---------- „Még nincs állatom": fajtatiszta állat (fajtaklubok, tenyésztőlisták) ----------
    Egyes tenyésztőket nem ajánlunk: a link a hivatalos magyar szervezet (fajtaklub, MEOE Szövetség, Felis Hungarica)
    oldalára visz, ahol a tenyésztők listája van. A klub–fajta megfeleltetés forrása a MEOE Szövetség fajtaklub-listája.
@@ -3468,12 +3468,12 @@ const KLUB={
  mtte:['Magyar Tacskótenyésztők Egyesülete','https://magyartacsko.hu/','o'],
  mut:['Magyarországi Uszkárbarátok Társasága','https://www.poodleclub.hu/','o'],
  /* a következő címeket gépi letöltéssel nem lehetett ellenőrizni; Csaba nyitotta meg őket 2026. október 11-én */
- szk:['Szánhúzó Kutyások Kynológiai Egyesülete','http://szanhuzoklub.hu/','o'],
- spz:['Magyar Spitz Egyesület','http://www.spitz.hu/','o'],
+ szk:['Szánhúzó Kutyások Kynológiai Egyesülete','https://szanhuzoklub.hu/','o'],
+ spz:['Magyar Spitz Egyesület','https://www.spitz.hu/','o'],
  mmk:['Magyar Molosser Kedvelők Egyesülete','http://2016mmke.hu','o'],
  hsp:['Hungária Schnauzer Pinscher Klub','http://www.hspk.hu/','o'],
- msp:['Magyarországi Schnauzer Pinscher Dobermann Klub','http://www.mspdk.hu/','o'],
- nvk:['Német Vizsla Klub Magyarország','http://nemetvizslaklub.eu/','o'],
+ msp:['Magyarországi Schnauzer Pinscher Dobermann Klub','https://www.mspdk.hu/','o'],
+ nvk:['Német Vizsla Klub Magyarország','https://nemetvizslaklub.eu/','o'],
  tkk:['Társasági Kutyások Kynológiai Egyesülete','http://www.tkke.hu/hirek.html','o']};
 /* fajta (a BREEDS.kutya nevei szerint) → klubok; amelyik fajta nincs itt, annál csak a MEOE Szövetség listája jelenik meg */
 const FAJTAKLUB={'Akita':['szk'],'Amerikai staffordshire terrier':['pte'],'Angol bulldog':['hbk','hbs'],'Angol cocker spániel':['ste'],'Ausztrál juhászkutya':['aapk','hcsc'],
@@ -3514,7 +3514,11 @@ const BRSRC={kutya:[['Nébih: Kutyakötelesség. Útmutató a felelős kutyatart
 let npSp='kutya',npMegye='',npTab='adopt',npBreed={kutya:'',macska:''};
 const megyeHU=m=>m==='Budapest'?m:m+' megye';
 const shOf=(m,sp)=>SHELTERS.filter(s=>s[0]===m&&(sp==='kutya'?s[3]:s[4])).map(s=>({n:s[1],t:s[2],u:sp==='kutya'||s[4]==='='?s[3]:s[4],x:s[5]||''}));
-const npRow=(n,u,w)=>`<li><a class="plink" ${ext(u)}><b>${esc(n)}</b><span class="when">${esc(w)}</span></a></li>`;
+/* I kör (F13): ahol a szervezetnek nincs működő https-oldala (2026-11-05: tanúsítványhiba vagy nem tölt be), a http-link marad,
+   de a sor jelölést kap. Új http-cím csak a teszt HTTP_OK listájának bővítésével kerülhet be. */
+const INSEC_TXT='nem titkosított oldal',isInsec=u=>/^http:\/\//i.test(u);
+const npRow=(n,u,w)=>`<li><a class="plink" ${ext(u)}><b>${esc(n)}</b><span class="when">${esc(w)}</span>${isInsec(u)?`<span class="tag insec">${INSEC_TXT}</span>`:''}</a></li>`;
+const INSEC_NOTE=' A „nem titkosított oldal” jelölésű címek titkosítás nélkül (http) nyílnak meg: ott ne adj meg jelszót vagy fizetési adatot.';
 function npAdoptHtml(){
   const c=S.settings.city||'',l=npMegye?shOf(npMegye,npSp):[],mit=npSp==='kutya'?'kutyát':'macskát';
   const a=(q,t,cls)=>`<a class="btn ${cls}" data-q="${q}" target="_blank" rel="noopener noreferrer" ${c?`href="${esc(mapUrl(q,c))}"`:'aria-disabled="true"'}>${t}</a>`;
@@ -3525,7 +3529,7 @@ function npAdoptHtml(){
   <h2>Keresés a térképen</h2><p class="sub">Írd be a településed, és a Google Térkép megmutatja a közeli menhelyeket. Ezeket a találatokat a Petavira nem nézte át.</p>
   <label class="f"><span>Település</span><input id="cityIn" value="${esc(c)}" maxlength="60" placeholder="pl. Szeged vagy Budapest XI. kerület" autocomplete="address-level2"></label>
   <div id="mapBtns">${a('állatmenhely','Állatmenhely keresése a térképen','')}<div style="height:10px"></div>${a('állatvédő egyesület','Állatvédő szervezet keresése a térképen','ghost')}</div>
-  <p class="note">A listán csak létező szervezet szerepel, az oldalukat 2026 októberében néztük át; az elérhetőségük és az oldaluk címe változhat. A linkek nem fizetett hirdetések, a Petavira nem áll kapcsolatban a szervezetekkel, és nem tartja nyilván az örökbe fogadható állatokat. Örökbefogadás előtt mindig egyeztess a szervezettel.</p>`}
+  <p class="note">A listán csak létező szervezet szerepel, az oldalukat 2026 októberében néztük át; az elérhetőségük és az oldaluk címe változhat. A linkek nem fizetett hirdetések, a Petavira nem áll kapcsolatban a szervezetekkel, és nem tartja nyilván az örökbe fogadható állatokat. Örökbefogadás előtt mindig egyeztess a szervezettel.${l.some(x=>isInsec(x.u))?INSEC_NOTE:''}</p>`}
 function npBreedHtml(){
   const sp=npSp,b=npBreed[sp],dog=sp==='kutya';let res='';
   if(b&&dog){const ids=FAJTAKLUB[b]||[];
@@ -3541,7 +3545,7 @@ function npBreedHtml(){
   <h2>Miről ismered fel a felelős tenyésztőt?</h2>${dog?'':'<p class="sub">A Felis Hungarica tagjaira vonatkozó tenyésztési szabályzat szerint:</p>'}
   <ul class="steps2" id="npSigns" style="margin-top:8px">${BRSIGN[sp].map(x=>`<li>${x}</li>`).join('')}</ul>
   <details class="acc" id="npSrc" style="margin-top:14px"><summary>Források</summary><ul class="srcs">${BRSRC[sp].map(([n,u])=>`<li><a ${ext(u)}>${esc(n)}</a></li>`).join('')}</ul><p class="sub" style="margin:0 0 12px">A felsorolás tájékoztató jellegű, a pontjai ezekből a forrásokból származnak.</p></details>
-  <p class="note">A linkek nem fizetett hirdetések. A Petavira egyes tenyésztőket nem ajánl és nem ellenőriz: a listákat a szervezetek vezetik, és az oldaluk címe változhat. A klubok oldalát 2026 októberében néztük át.</p>`}
+  <p class="note">A linkek nem fizetett hirdetések. A Petavira egyes tenyésztőket nem ajánl és nem ellenőriz: a listákat a szervezetek vezetik, és az oldaluk címe változhat. A klubok oldalát 2026 októberében néztük át.${dog&&b?INSEC_NOTE:''}</p>`}
 /* „Mielőtt döntesz": felelős állatvállalás. A számok és az állítások az NPRSRC forrásaiból vannak
    (élettartam: PDSA; a visszaadások 70 százaléka, a kiadások fajtái, az ajándékozás, a nagykorúság: Nébih, „Fogadj örökbe!"). */
 const NPRESP={kutya:['Egy állat befogadása életre szóló döntés. A kutyák fajtától függően átlagosan 5,5–14 évig élnek (a kis testűek 7–14, a közepesek 8–13,5, a nagy testűek 5,5–13 évig): ennyi időre vállalod az etetését, az állatorvosi ellátását, a nevelését és a napi törődést.',
