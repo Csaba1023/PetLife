@@ -2473,7 +2473,7 @@ const ID_OK=/^[A-Za-z0-9_-]{1,64}$/,DATE_OK=/^\d{4}-\d{2}-\d{2}$/,NUM_OK=/^-?\d{
 const ID_BAD=new Set(['__proto__','constructor','prototype','hasOwnProperty','toString','valueOf']);
 const idOk=v=>ID_OK.test(String(v))&&!ID_BAD.has(String(v));
 const dateOk=v=>{if(!DATE_OK.test(String(v)))return false;const[y,m,d]=String(v).split('-').map(Number),t=new Date(Date.UTC(y,m-1,d));return y>=1900&&y<=2200&&t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d};
-const MS_KEY=/^[A-Za-z][A-Za-z0-9_-]{0,39}$/;/* a valódi kulcsok: pl. chip, rabies1, rabiesY, vaccY, molt1 */
+const MS_KEY=/^(?!(?:constructor|prototype|hasOwnProperty|toString|valueOf)$)[A-Za-z][A-Za-z0-9_-]{0,39}$/;/* a valódi kulcsok: pl. chip, rabies1, rabiesY, vaccY, molt1; J kör (nov. 9., F7 maradék): a JS beépített nevei nem lehetnek kulcsok */
 const EV_NUM=['ft','min','kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW'];
 const numFix=(o,ks)=>ks.forEach(k=>{const v=o[k];if(v==null||v==='')return;if(typeof v==='number'?!Number.isFinite(v):!(typeof v==='string'&&NUM_OK.test(v)))delete o[k];else if(typeof v==='string')o[k]=Number(v.replace(',','.'))});
 const isObj=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
@@ -2760,7 +2760,12 @@ function onAuth(ev,sess){
   const u=sess&&sess.user;
   if(u){
     cloud.email=u.email||'';
-    if(cloud.uid!==u.id){cloud.uid=u.id;cloud.ok=false;cloud.bad.clear();cloud.fails=0;cloud.leaving=false;startSync();planGet();setTimeout(()=>{try{pushSync()}catch(e){}},5000)}
+    if(cloud.uid!==u.id){cloud.uid=u.id;
+      /* J kör (nov. 9., F5 maradék): ha az eszközön még nincs állat, a belépő fiók azonnal tulajdonos lesz – így az első, esetleg hibás letöltés
+         után felvett állatok ennek a fióknak a nevén vannak, és egy később belépő másik fiók nem kapja meg őket kérdés nélkül.
+         Ha már vannak (fiók nélkül felvett) állatok, a tulajdonos marad üres, hogy a pull() megkérdezze, hozzáadjuk-e őket a fiókhoz (I2). */
+      if(!S.owner&&!S.pets.length){S.owner=u.id;saveLocal()}
+      cloud.ok=false;cloud.bad.clear();cloud.fails=0;cloud.leaving=false;startSync();planGet();setTimeout(()=>{try{pushSync()}catch(e){}},5000)}
     else if(!cloud.ok&&cloud.state==='error')startSync();
     if(ev==='PASSWORD_RECOVERY')pwSheet();
     else if(ev==='SIGNED_IN'&&linkKind==='email'&&!cloud.greeted){cloud.greeted=true;toast('E-mail-cím megerősítve, beléptél')}
@@ -2804,7 +2809,7 @@ function syncWeight(p){const l=recs(p,'w');if(l[0])p.weight=l[0].kg}
 
 /* ---------- életút-logika ---------- */
 function buildItems(p){
-  const b=D(p.birth),created=D(p.createdAt),done={},items=[];
+  const b=D(p.birth),created=D(p.createdAt),done=Object.create(null),items=[];/* J kör (F7): prototípus nélküli térkép – a kulcs nem ütközhet beépített névvel */
   S.events.filter(e=>e.petId===p.id&&e.kind==='ms').sort((a,c)=>a.date<c.date?-1:1).forEach(e=>(done[e.key]=done[e.key]||[]).push(e));
   for(const m of msFor(p)){
     if(m.every){
