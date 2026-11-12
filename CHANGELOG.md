@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Tanácsadó – adatminimalizálás (A kör, 2026. nov. 12.)
+- **11-12 – v56 + szerver:** a Tanácsadó ember egészségéről szóló kérdést nem továbbít az AI-nak (semleges üzenet, tiltás nélkül); a naplóból az emberi egészségadatot tartalmazó sor kimarad, erről a válasz alatt jelzés jelenik meg; „nem állatorvos” jelölés; emberre is átterjedő betegségnél orvoshoz irányítás; a túl nagy kérés azonnali 413-at kap (SZ22).
+
 ### Biztonság (független szakértői átnézés feldolgozása, 2026. okt. 28. – nov. 7.)
 - **11-07 – szerver:** az értesítés-időzítő jelszava a Supabase Vaultba és a függvény titkai közé került; a függvény minden adatbázishívás előtt, állandó idejű összevetéssel ellenőrzi (SZ16/17, 1. fázis).
 - **11-07 – szerver:** sebességkorlát a csomaglekérdezés, a válaszjelentés és az értesítés be-/kikapcsolás útvonalán; a nyilvános értesítési kulcs gyorstárból (SZ4).
