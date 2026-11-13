@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Tanácsadó – javítások (A2–A3, 2026. nov. 13.)
+- **11-13 – v57 + szerver:** ha a kimenet-ellenőrzés eldobja a választ, a semleges hiba helyett biztonsági útmutatás jelenik meg (sürgős tünetnél azonnal állatorvos/ügyelet). Szerver: a kimenet-ellenőrző indoklással dönt (eddig a chatválaszok nagy részét eldobta), pontosítva a mérgezéses és az emberre is átterjedő betegséges válaszokra; keret-visszaírás korláttal; a túl nagy kérés azonnali 413 (SZ22).
+
 ### Tanácsadó – adatminimalizálás (A kör, 2026. nov. 12.)
 - **11-12 – v56 + szerver:** a Tanácsadó ember egészségéről szóló kérdést nem továbbít az AI-nak (semleges üzenet, tiltás nélkül); a naplóból az emberi egészségadatot tartalmazó sor kimarad, erről a válasz alatt jelzés jelenik meg; „nem állatorvos” jelölés; emberre is átterjedő betegségnél orvoshoz irányítás; a túl nagy kérés azonnali 413-at kap (SZ22).
 
