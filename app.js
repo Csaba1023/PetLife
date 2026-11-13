@@ -4260,6 +4260,8 @@ const aiLeftHtml=()=>{if(!cloud.uid)return'';aiAcct();if(aiRate.unl===true)retur
   if(q&&q.limit){const n=aiLeft();if(n===null)return'';return`<p class="pleft${n?'':' none'}">${n?`Ma még ${n} kérdésed van.`:`Mára elfogyott a napi ${q.limit} kérdésed. Holnap újra kérdezhetsz.`}</p>`}
   const n=aiLeft();if(n===null)return'';return`<p class="pleft${n?'':' none'}">${n?`Ma még ${n} kérdésed van.`:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`}</p>`};
 const AI_NEUTRAL='Most nem tudok válaszolni, próbáld újra később.';
+/* nov. 13. (A3): ha a szerver kimenet-ellenőrzése eldobja a választ, vészhelyzetben se maradjon útmutatás nélkül a felhasználó */
+const AI_OUT_SAFE='Most nem tudok részletes választ adni. Ha az állatodnál sürgős tünetet látsz (légzési nehézség, görcs, remegés, mérgezés gyanúja, erős vérzés), azonnal vidd állatorvoshoz vagy ügyeletre.';
 const ERR={short:'Írd le bővebben, mire vagy kíváncsi, pl. „Hány gramm tápot adjak naponta?”',login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
   daily_limit:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`,hourly_limit:'Ebben az órában elérted a kérdéskeretet. Próbáld újra később.',
   /* okt. 21.: díjcsomag szerinti keret (a szerver PLAN_START után küldi) és a napi globális ingyenes keret */
@@ -4267,7 +4269,7 @@ const ERR={short:'Írd le bővebben, mire vagy kíváncsi, pl. „Hány gramm t�
   refused:'Ebben nem tudok segíteni. Kisállattartásról kérdezz, például a táplálásáról, az egészségéről vagy a tartásáról.',blocked:'A Tanácsadó néhány percre szünetel. Próbáld újra később.',
   /* nov. 12. (A kör, J4): ember egészségéről szóló kérdés – a szerver strike nélkül elutasítja, az OpenAI-válaszolóhoz nem jut el */
   human:'Emberek egészségéről nem adhatok tanácsot. Az állatoddal kapcsolatban szívesen segítek.',
-  dup:'Ezt a kérdést az előbb már elküldted.',consent:'A Tanácsadó használatához előbb fogadd el a fenti tájékoztatót.',rate_limited:AI_NEUTRAL,setup:AI_NEUTRAL,none:AI_NEUTRAL,output:AI_NEUTRAL,def:AI_NEUTRAL};
+  dup:'Ezt a kérdést az előbb már elküldted.',consent:'A Tanácsadó használatához előbb fogadd el a fenti tájékoztatót.',rate_limited:AI_NEUTRAL,setup:AI_NEUTRAL,none:AI_NEUTRAL,output:AI_OUT_SAFE,def:AI_NEUTRAL};
 const aiErrText=e=>{const c=e&&ERR[e.code]?e.code:'def';{const q=planCur();if(c==='daily_limit'&&q&&q.per==='day'&&q.limit)return`Mára elfogyott a napi ${q.limit} kérdésed. Holnap újra kérdezhetsz.`}if(['def','setup','none','output','rate_limited'].includes(c))console.warn('[Tanácsadó]',e&&e.code,e&&e.detail||'');
   return c==='blocked'&&e.until&&isFinite(new Date(e.until))?`A Tanácsadó ${new Date(e.until).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}-ig szünetel. Próbáld újra később.`:ERR[c]};
 /* az állat adatai: csak kiválasztott értékek és szűrt mezők; a gazda szabad szövege rövidítve, külön (notes) megy, és a szerveren ellenőrzés után kerül az AI elé */
