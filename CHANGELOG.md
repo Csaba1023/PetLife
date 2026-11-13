@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Adatvédelem – e-mail-lenyomat titkos kulccsal (B kör, 2026. nov. 13.)
+- **11-13 – szerver (SQL) + tájékoztató:** a regisztrációs védelem e-mail-lenyomata sima SHA-256 helyett HMAC-SHA256, az adatbázisban generált, Vaultban tárolt kulccsal (J25); az élő fiókok lenyomata újraszámolva, a törölt fiókok régi lenyomatai törölve. Az adatvédelmi tájékoztató ennek megfelelően frissítve.
+
 ### Tanácsadó – javítások (A2–A3, 2026. nov. 13.)
 - **11-13 – v57 + szerver:** ha a kimenet-ellenőrzés eldobja a választ, a semleges hiba helyett biztonsági útmutatás jelenik meg (sürgős tünetnél azonnal állatorvos/ügyelet). Szerver: a kimenet-ellenőrző indoklással dönt (eddig a chatválaszok nagy részét eldobta), pontosítva a mérgezéses és az emberre is átterjedő betegséges válaszokra; keret-visszaírás korláttal; a túl nagy kérés azonnali 413 (SZ22).
 
