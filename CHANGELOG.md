@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Tanácsadó – tartós jelzés (2026. nov. 13.)
+- **11-13 – v58:** az „Emberek egészségéről nem adhatok tanácsot…” elutasítás a beszélgetésben marad (eddig eltűnt); az AI-nak nem megy el, és nem jelenthető.
+
 ### Adatvédelem – e-mail-lenyomat titkos kulccsal (B kör, 2026. nov. 13.)
 - **11-13 – szerver (SQL) + tájékoztató:** a regisztrációs védelem e-mail-lenyomata sima SHA-256 helyett HMAC-SHA256, az adatbázisban generált, Vaultban tárolt kulccsal (J25); az élő fiókok lenyomata újraszámolva, a törölt fiókok régi lenyomatai törölve. Az adatvédelmi tájékoztató ennek megfelelően frissítve.
 

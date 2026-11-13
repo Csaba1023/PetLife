@@ -3731,7 +3731,7 @@ function chatLogHtml(p){
     if(aiGate())return`<p class="sub">A Tanácsadó ${esc(petName(p))} profilja alapján válaszol a kérdéseidre. A használatához lépj be a fiókodba.</p><p><button class="btn" data-act="auOpen" data-m="in">Belépés</button></p><p><button class="btn ghost" data-act="auOpen" data-m="up">Regisztráció</button></p><small class="disc">${DISC}</small>`;
     return`<p class="sub">Kérdezz bármit ${esc(petName(p))} táplálásáról, egészségéről, tartásáról vagy neveléséről. A válasz a profiljához és az életszakaszához igazodik.</p>
     <div class="sugs">${q.map(x=>`<button data-act="chatSug">${esc(x)}</button>`).join('')}</div>${chatNote?`<div class="msg e">${esc(chatNote)}</div>`:''}<small class="disc">${DISC}</small>`}
-  return(!aiGate()&&!aiAgreed()?consentCard(p):'')+log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}${skipHtml(m.skip)}<small class="disc">${DISC}</small>${repHtml('c:'+m.ts,m)}</div>`).join('')
+  return(!aiGate()&&!aiAgreed()?consentCard(p):'')+log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:m.r==='n'?`<div class="msg e">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}${skipHtml(m.skip)}<small class="disc">${DISC}</small>${repHtml('c:'+m.ts,m)}</div>`).join('')
    +(chatBusy===p.id?`<div class="msg a"><div class="bubble" id="pending">${esc(streamText)||'Gondolkodom…'}</div></div>`:'')+(chatNote?`<div class="msg e">${esc(chatNote)}</div>`:'')}
 function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="aimark">Mesterséges intelligencia válaszol, nem állatorvos</p><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p></div>
   ${chatLog(p).length&&!chatBusy?'<button class="btn ghost small" data-act="chatClear">Törlés</button>':''}</div>
@@ -4391,7 +4391,7 @@ async function sendChat(raw){
   const log=S.chat[p.id]=S.chat[p.id]||[],lastU=[...log].reverse().find(m=>m.r==='u');
   if(lastU&&lastU.sig&&lastU.t===text){chatNote=ERR.dup;redrawChat();return}
   const lim=aiLimit();if(lim){chatNote=aiErrText(lim);redrawChat();return}
-  const hist=log.slice(-AI_HIST).map(m=>({role:m.r==='u'?'user':'assistant',content:m.t,...(m.sig?{sig:m.sig}:{})})),u={r:'u',t:text,ts:Date.now()};log.push(u);
+  const hist=log.filter(m=>m.r!=='n').slice(-AI_HIST).map(m=>({role:m.r==='u'?'user':'assistant',content:m.t,...(m.sig?{sig:m.sig}:{})})),u={r:'u',t:text,ts:Date.now()};log.push(u);
   chatBusy=p.id;chatNote='';streamText='';save('chat');redrawChat(true);
   try{
     chatCtl=new AbortController();
@@ -4399,7 +4399,9 @@ async function sendChat(raw){
     if(res.qsig)u.sig=res.qsig;
     log.push({r:'a',t:res.text,ts:Date.now(),...(res.sig?{sig:res.sig}:{}),...(res.truncated?{cut:1}:{}),...(res.skip?{skip:res.skip}:{})});
   }catch(e){
-    if(!e||e.code!=='cancelled')chatNote=aiErrText(e);
+    /* nov. 13.: az emberi egészségre vonatkozó elutasítás tartósan a beszélgetésben marad (r:'n' – csak jelzés: nem megy az AI-nak, nem jelenthető) */
+    if(e&&e.code==='human')log.push({r:'n',t:ERR.human,ts:Date.now()});
+    else if(!e||e.code!=='cancelled')chatNote=aiErrText(e);
   }
   chatBusy=null;chatCtl=null;streamText='';if(log.length>CHAT_KEEP)log.splice(0,log.length-CHAT_KEEP);save('chat');redrawChat();
 }
