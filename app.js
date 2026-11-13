@@ -3068,7 +3068,7 @@ function vHealth(p){
     b=`<p class="note warn">Sürgős tünetnél (pl. légzési nehézség, görcs, mérgezés gyanúja, erős vérzés) azonnal fordulj állatorvoshoz vagy ügyelethez.</p><button class="btn" data-act="symNew">Tünet rögzítése</button>
     ${l.length?`<ul class="tasks" style="margin-top:14px">${l.map(e=>{const k=p.id+':sym:'+e.id,run=aiRun&&aiRun.key===k;return`<li style="display:block"><div class="row"><div style="flex:1;min-width:0"><b>${esc(e.text)}</b><span class="when">${fmtDate(D(e.date))}, ${SEV[e.sev]||'nincs besorolva'}</span></div>${delBtn(e.id)}</div>
       ${run?`<div class="aitext" id="aiOut" style="margin-top:8px">${esc(aiRun.text)||'Gondolkodom…'}</div><p style="margin:10px 0 0"><button class="btn ghost small" data-act="aiStop">Leállítás</button></p>`
-      :e.ai?`<details class="acc" style="margin:8px 0 0"${e.id===symOpen?' open':''}><summary>Lehetséges okok (nem diagnózis)</summary><div class="aitext">${esc(e.ai)}</div><small class="disc" style="margin-bottom:10px">${DISC}</small>${repHtml('s:'+e.id,{t:e.ai,sig:e.aiSig,rep:e.aiRep})}</details>`
+      :e.ai?`<details class="acc" style="margin:8px 0 0"${e.id===symOpen?' open':''}><summary>Lehetséges okok (nem diagnózis)</summary><div class="aitext">${esc(e.ai)}</div>${skipHtml(e.aiSkip)}<small class="disc" style="margin-bottom:10px">${DISC}</small>${repHtml('s:'+e.id,{t:e.ai,sig:e.aiSig,rep:e.aiRep})}</details>`
       :`<p style="margin:8px 0 0"><button class="btn ghost small" data-act="symAi" data-id="${e.id}"${aiRun?' disabled':''}>Lehetséges okok kérése</button></p>`}${aiErr&&aiErr.key===k?`<p class="err">${esc(aiErr.t)}</p>`:''}</li>`}).join('')}</ul>`
     :'<p class="sub" style="margin-top:14px">Még nincs rögzített tünet. Mentéskor kérheted, hogy a Tanácsadó felsorolja a lehetséges okokat, és megírja, mire figyelj.</p>'}`}
   if(hTab==='vit')b=`<h2>Vitaminok és kiegészítők</h2><p>${vitFor(p)}</p>${aiBox(p,'vit','Személyre szabott ajánlás kérése')}<p class="sub" style="margin-top:12px">Az ajánlás típusokat és létező, Magyarországon kapható márkákat említ, adagolás nélkül. Mielőtt bármit adnál, egyeztess az állatorvossal.</p>`;
@@ -3294,7 +3294,7 @@ function prodList(p,l,all){const f=l.filter(x=>all||tier==='all'||x[x.length-1]=
 function aiBox(p,key,label){
   const r=(S.ai[p.id]||{})[key],k=p.id+':'+key,run=aiRun&&aiRun.key===k;
   return`<div class="card" style="margin-top:12px">${run?`<div class="aitext" id="aiOut">${esc(aiRun.text)||'Gondolkodom…'}</div><p style="margin:10px 0 0"><button class="btn ghost small" data-act="aiStop">Leállítás</button></p>`
-    :r?`<div class="aitext">${esc(r.t)}</div><small class="disc">${DISC}</small>${repHtml('b:'+key,r)}<p style="margin:10px 0 0"><button class="btn ghost small" data-act="aiGo" data-key="${key}"${aiRun?' disabled':''}>Új ajánlás kérése</button></p>`
+    :r?`<div class="aitext">${esc(r.t)}</div>${skipHtml(r.skip)}<small class="disc">${DISC}</small>${repHtml('b:'+key,r)}<p style="margin:10px 0 0"><button class="btn ghost small" data-act="aiGo" data-key="${key}"${aiRun?' disabled':''}>Új ajánlás kérése</button></p>`
     :aiGate()?`<p class="sub" style="margin:0 0 10px">Személyre szabott ajánláshoz lépj be a fiókodba.</p><button class="btn ghost" data-act="auOpen" data-m="in">Belépés</button>`
     :`<button class="btn" data-act="aiGo" data-key="${key}"${aiRun?' disabled':''}>${label}</button>`}${aiErr&&aiErr.key===k?`<p class="err" style="margin-bottom:0">${esc(aiErr.t)}</p>`:''}</div>`}
 /* feladatgombok (táp, vitamin, otthon, játék, termék): a feladat szövege a szerveren van, innen csak a neve és a listák mennek */
@@ -3308,10 +3308,10 @@ async function runAi(key,body,store){
   const p=pet();if(!p||aiRun)return;aiErr=null;const k=p.id+':'+key;
   const lim=aiLimit();if(lim){aiErr={key:k,t:aiErrText(lim)};render();return}
   aiRun={key:k,text:'',ctl:new AbortController()};render();
-  try{const res=await aiCall(body,{signal:aiRun.ctl.signal});store(res.text,res.sig)}
+  try{const res=await aiCall(body,{signal:aiRun.ctl.signal});store(res.text,res.sig,res.skip)}
   catch(e){if(!e||e.code!=='cancelled')aiErr={key:k,t:aiErrText(e)}}
   aiRun=null;save('chat');render()}
-const symAsk=e=>{symOpen=e.id;const p=pet();aiConsent(()=>runAi('sym:'+e.id,aiPayload(p,'sym',{sym:noteClean(e.text),symDate:e.date,symSev:e.sev||''}),(t,sig)=>{e.ai=t;e.aiSig=sig||'';delete e.aiRep}))};
+const symAsk=e=>{symOpen=e.id;const p=pet();aiConsent(()=>runAi('sym:'+e.id,aiPayload(p,'sym',{sym:noteClean(e.text),symDate:e.date,symSev:e.sev||''}),(t,sig,sk)=>{e.ai=t;e.aiSig=sig||'';delete e.aiRep;if(sk)e.aiSkip=sk;else delete e.aiSkip}))};
 let cTab='guide',lesOpen='';
 function vCare(p){
   const k=gkey(p),C=CARE[k],cur=stageOf(p);
@@ -3731,18 +3731,18 @@ function chatLogHtml(p){
     if(aiGate())return`<p class="sub">A Tanácsadó ${esc(petName(p))} profilja alapján válaszol a kérdéseidre. A használatához lépj be a fiókodba.</p><p><button class="btn" data-act="auOpen" data-m="in">Belépés</button></p><p><button class="btn ghost" data-act="auOpen" data-m="up">Regisztráció</button></p><small class="disc">${DISC}</small>`;
     return`<p class="sub">Kérdezz bármit ${esc(petName(p))} táplálásáról, egészségéről, tartásáról vagy neveléséről. A válasz a profiljához és az életszakaszához igazodik.</p>
     <div class="sugs">${q.map(x=>`<button data-act="chatSug">${esc(x)}</button>`).join('')}</div>${chatNote?`<div class="msg e">${esc(chatNote)}</div>`:''}<small class="disc">${DISC}</small>`}
-  return(!aiGate()&&!aiAgreed()?consentCard(p):'')+log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}<small class="disc">${DISC}</small>${repHtml('c:'+m.ts,m)}</div>`).join('')
+  return(!aiGate()&&!aiAgreed()?consentCard(p):'')+log.map(m=>m.r==='u'?`<div class="msg u">${esc(m.t)}</div>`:`<div class="msg a"><div class="bubble">${esc(m.t)}</div>${m.cut?'<small class="disc">A válasz félbeszakadt.</small>':''}${skipHtml(m.skip)}<small class="disc">${DISC}</small>${repHtml('c:'+m.ts,m)}</div>`).join('')
    +(chatBusy===p.id?`<div class="msg a"><div class="bubble" id="pending">${esc(streamText)||'Gondolkodom…'}</div></div>`:'')+(chatNote?`<div class="msg e">${esc(chatNote)}</div>`:'')}
-function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="aimark">Mesterséges intelligencia válaszol</p><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p></div>
+function vChat(p){const st=stageOf(p);return`<div class="chat-head"><div style="min-width:0"><h1>Tanácsadó</h1><p class="aimark">Mesterséges intelligencia válaszol, nem állatorvos</p><p class="sub" style="margin:2px 0 0">${esc(petName(p))}, ${fmtAge(p)}${st?', '+stHU(p,st).toLowerCase():''}</p></div>
   ${chatLog(p).length&&!chatBusy?'<button class="btn ghost small" data-act="chatClear">Törlés</button>':''}</div>
   <div id="msgs" aria-live="polite">${chatLogHtml(p)}</div>
-  ${planLapsed()?lapseHtml():`<div class="composer">${aiLeftHtml()}<p class="pwarn">Ne írj személyes adatot (név, cím, telefonszám, egészségügyi adat).</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
+  ${planLapsed()?lapseHtml():`<div class="composer">${aiLeftHtml()}<p class="pwarn">Ne írj személyes adatot: nevet, címet, telefonszámot, és se a saját, se más ember egészségéről.</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
   <button class="send" data-act="${chatBusy?'chatStop':'chatSend'}" aria-label="${chatBusy?'Leállítás':'Küldés'}">${chatBusy?'■':'↑'}</button></div>`}`}
-const composer=()=>planLapsed()?lapseHtml():`<div class="composer">${aiLeftHtml()}<p class="pwarn">Ne írj személyes adatot (név, cím, telefonszám, egészségügyi adat).</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
+const composer=()=>planLapsed()?lapseHtml():`<div class="composer">${aiLeftHtml()}<p class="pwarn">Ne írj személyes adatot: nevet, címet, telefonszámot, és se a saját, se más ember egészségéről.</p><textarea id="chatIn" rows="1" maxlength="500" placeholder="Írd ide a kérdésed…" aria-label="Kérdés"></textarea>
   <button class="send" data-act="${chatBusy?'chatStop':'chatSend'}" aria-label="${chatBusy?'Leállítás':'Küldés'}">${chatBusy?'■':'↑'}</button></div>`;
 function drawChatSheet(clear){
   const p=pet(),old=$('#chatIn'),draft=old&&!clear?old.value:'',s=$('#sheet'),had=!!s.querySelector('.chatsheet');
-  s.innerHTML=`<div class="sheet chatsheet" role="dialog" aria-modal="true" aria-label="Tanácsadó"${had?' style="animation:none"':''}><div class="chat-head"><div style="min-width:0"><h2 style="margin:0">Tanácsadó</h2><p class="aimark">Mesterséges intelligencia válaszol</p><p class="sub" style="margin:2px 0 0">${TOPIC_HU[chatTopic]||'Általános'} téma, ${esc(petName(p))}</p></div><button class="btn ghost small" data-act="close">Bezárás</button></div>
+  s.innerHTML=`<div class="sheet chatsheet" role="dialog" aria-modal="true" aria-label="Tanácsadó"${had?' style="animation:none"':''}><div class="chat-head"><div style="min-width:0"><h2 style="margin:0">Tanácsadó</h2><p class="aimark">Mesterséges intelligencia válaszol, nem állatorvos</p><p class="sub" style="margin:2px 0 0">${TOPIC_HU[chatTopic]||'Általános'} téma, ${esc(petName(p))}</p></div><button class="btn ghost small" data-act="close">Bezárás</button></div>
   <div id="msgs" aria-live="polite">${chatLogHtml(p)}</div>${composer()}</div>`;
   s.hidden=false;navSync();if($('#chatIn'))$('#chatIn').value=draft;scrollChat();planGet()}
 function redrawChat(clear){if(chatSheet)drawChatSheet(clear);else if(tab==='ai')render({clearDraft:clear})}
@@ -4265,6 +4265,8 @@ const ERR={short:'Írd le bővebben, mire vagy kíváncsi, pl. „Hány gramm t�
   /* okt. 21.: díjcsomag szerinti keret (a szerver PLAN_START után küldi) és a napi globális ingyenes keret */
   weekly_limit:'Ezen a héten elfogytak az ingyenes kérdéseid. Hétfőtől újra kérdezhetsz.',monthly_limit:'Ebben a hónapban elfogytak a Tanácsadó-kérdéseid. A következő hónap 1-jétől újra kérdezhetsz.',plan_ended:'Az ingyenes Tanácsadó-időszakod lejárt.',free_busy:'Ma már nagyon sokan kérdeztek, ezért az ingyenes Tanácsadó szünetel. Holnap újra kérdezhetsz.',too_fast:'Várj néhány másodpercet a következő kérdéssel.',
   refused:'Ebben nem tudok segíteni. Kisállattartásról kérdezz, például a táplálásáról, az egészségéről vagy a tartásáról.',blocked:'A Tanácsadó néhány percre szünetel. Próbáld újra később.',
+  /* nov. 12. (A kör, J4): ember egészségéről szóló kérdés – a szerver strike nélkül elutasítja, az OpenAI-válaszolóhoz nem jut el */
+  human:'Emberek egészségéről nem adhatok tanácsot. Az állatoddal kapcsolatban szívesen segítek.',
   dup:'Ezt a kérdést az előbb már elküldted.',consent:'A Tanácsadó használatához előbb fogadd el a fenti tájékoztatót.',rate_limited:AI_NEUTRAL,setup:AI_NEUTRAL,none:AI_NEUTRAL,output:AI_NEUTRAL,def:AI_NEUTRAL};
 const aiErrText=e=>{const c=e&&ERR[e.code]?e.code:'def';{const q=planCur();if(c==='daily_limit'&&q&&q.per==='day'&&q.limit)return`Mára elfogyott a napi ${q.limit} kérdésed. Holnap újra kérdezhetsz.`}if(['def','setup','none','output','rate_limited'].includes(c))console.warn('[Tanácsadó]',e&&e.code,e&&e.detail||'');
   return c==='blocked'&&e.until&&isFinite(new Date(e.until))?`A Tanácsadó ${new Date(e.until).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}-ig szünetel. Próbáld újra később.`:ERR[c]};
@@ -4331,14 +4333,17 @@ async function aiCall(body,{signal}={}){
   if(!res.ok||!j||typeof j.t!=='string'){j=j||{};
     if(j.code==='blocked'){aiAcct();aiRate.until=+new Date(j.until)||Date.now()+3e5;aiRateSave()}
     throw{code:typeof j.code==='string'&&ERR[j.code]?j.code:res.status===401?'session_expired':'def',detail:typeof j.detail==='string'?j.detail:String(res.status),until:j.until}}
-  return{text:j.t,truncated:!!j.cut,sig:typeof j.sig==='string'?j.sig:'',qsig:typeof j.qsig==='string'?j.qsig:''}}
+  return{text:j.t,truncated:!!j.cut,sig:typeof j.sig==='string'?j.sig:'',qsig:typeof j.qsig==='string'?j.qsig:'',skip:skipN(j.skip)}}
+/* nov. 12. (A kör, D3): ennyi naplóbejegyzést nem adott át a szerver az AI-nak, mert személyes (emberi) egészségadat volt benne */
+function skipN(v){return Number.isInteger(v)&&v>0&&v<=16?v:0}
+const skipHtml=n=>(n=skipN(n))?`<small class="disc">${n===1?'Egy naplóbejegyzést':n+' naplóbejegyzést'} nem adtam át, mert személyes egészségadat volt benne.</small>`:'';
 /* hozzájárulás: az első AI-kérés előtt egyszer (a chatben a beszélgetés tetején, máshol felugró lapon) */
 let aiPending=null;
 /* hozzájárulás a Tanácsadóhoz (4. változat, 2026. okt. 24.: csak 18 év felett – az egész app 18+;
    a korábbi, 16 éves elfogadás nem elég, mindenkinek egyszer újra el kell fogadnia) */
 const AI_CONSENT_V=4;
 const aiAgreed=()=>(S.settings.aiConsentV|0)>=AI_CONSENT_V&&!!S.settings.aiConsent;
-const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot, a saját vagy más ember egészségügyi adatát). Az e-mail-címet, a telefonszámot, a linket és a bankszámlaszámot az app küldés előtt kitakarja. A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${ageHtml('','aiAge')}${privLinkHtml('privFromAi')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be, hogy elmúltál 18 éves.</p><p class="sub">A válaszok tájékoztató jellegűek. ${DISC}</p>`;
+const consentText=p=>`<p>A Tanácsadó mesterséges intelligenciával (az OpenAI szolgáltatásával) válaszol. Ehhez a kérdésed, az előző néhány üzenet és ${esc(petName(p))} adatai (név, faj, fajta, kor, ivar, súly, a rögzített mérföldkövek, kezelések és naplóbejegyzések rövidített szövege) a Petavira szerverén át az OpenAI-hoz kerülnek. Az OpenAI ezeket nem használja modelltanításra, és legfeljebb 30 napig őrzi meg.</p><p>Ne írj a kérdésbe vagy a naplóba személyes adatot (például nevet, címet, telefonszámot, a saját vagy más ember egészségügyi adatát). Az e-mail-címet, a telefonszámot, a linket és a bankszámlaszámot az app küldés előtt kitakarja. A hozzájárulást a Beállítások → Adatkezelési tájékoztató oldalon bármikor visszavonhatod.</p>${ageHtml('','aiAge')}${privLinkHtml('privFromAi')}<p class="err aiAgeErr" role="alert" hidden>Jelöld be, hogy elmúltál 18 éves.</p><p class="sub">A Tanácsadó nem állatorvos: a válaszai tájékoztató jellegűek. ${DISC}</p>`;
 const consentCard=p=>`<div class="card" id="aiConsent" style="margin-bottom:12px"><b>Mielőtt kérdezel</b>${consentText(p)}<button class="btn" data-act="aiOk">Elfogadom az adattovábbítást</button></div>`;
 function aiConsent(fn){if(aiAgreed()){fn();return}aiPending=fn;openSheet(`<h2>Mielőtt kérdezel</h2>${consentText(pet())}<button class="btn" data-act="aiOk">Elfogadom az adattovábbítást</button><button class="btn ghost" data-act="close">Mégse</button>`)}
 /* ---------- „Válasz jelentése” (okt. 17.; Google Play: generatív AI – appon belüli jelentés) ----------
@@ -4390,7 +4395,7 @@ async function sendChat(raw){
     chatCtl=new AbortController();
     const res=await aiCall(aiPayload(p,'chat',{topic:chatSheet&&TOPIC[chatTopic]?chatTopic:'',messages:[...hist,{role:'user',content:text}]}),{signal:chatCtl.signal});
     if(res.qsig)u.sig=res.qsig;
-    log.push({r:'a',t:res.text,ts:Date.now(),...(res.sig?{sig:res.sig}:{}),...(res.truncated?{cut:1}:{})});
+    log.push({r:'a',t:res.text,ts:Date.now(),...(res.sig?{sig:res.sig}:{}),...(res.truncated?{cut:1}:{}),...(res.skip?{skip:res.skip}:{})});
   }catch(e){
     if(!e||e.code!=='cancelled')chatNote=aiErrText(e);
   }
@@ -4485,7 +4490,7 @@ const ACT={
   symSave(el){const text=$('#syText').value.trim(),d=$('#hDate').value,ai=el.dataset.ai;if(!text)return showErr('#hErr','Írd le röviden, mit vettél észre.');if(!d||D(d)>today())return showErr('#hErr','Adj meg egy mai vagy korábbi dátumot.');
     const e={id:newId(),petId:pet().id,kind:'sym',date:d,text,sev:($('input[name=sySev]:checked')||{}).value||''};S.events.push(e);save();closeSheet();render();toast('Tünet mentve');if(ai)symAsk(e)},
   symAi(el){const e=S.events.find(x=>x.id===el.dataset.id);e&&symAsk(e)},
-  aiGo(el){const p=pet(),key=el.dataset.key;aiConsent(()=>runAi(key,aiPayload(p,key.startsWith('prod_')?'prod':key,aiTaskData(p,key)),(t,sig)=>{(S.ai[p.id]=S.ai[p.id]||{})[key]={t,ts:Date.now(),...(sig?{sig}:{})}}))},
+  aiGo(el){const p=pet(),key=el.dataset.key;aiConsent(()=>runAi(key,aiPayload(p,key.startsWith('prod_')?'prod':key,aiTaskData(p,key)),(t,sig,sk)=>{(S.ai[p.id]=S.ai[p.id]||{})[key]={t,ts:Date.now(),...(sig?{sig}:{}),...(sk?{skip:sk}:{})}}))},
   aiOk(el){const box=el&&el.parentElement.querySelector('.aiAge');if(!box||!box.checked){const e=el&&el.parentElement.querySelector('.aiAgeErr');if(e)e.hidden=false;return}
     S.settings.aiConsent=new Date().toISOString();S.settings.aiConsentV=AI_CONSENT_V;save();const fn=aiPending;aiPending=null;if(fn){closeSheet();fn()}else redrawChat()},
   aiStop(){aiRun&&aiRun.ctl.abort()},
