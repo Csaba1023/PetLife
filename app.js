@@ -4055,8 +4055,17 @@ addEventListener('popstate',()=>{if(navSkip){navSkip=false;return}navPushed=fals
   if(!$('#sheet').hidden)closeSheet();else if(tab!=='home'){tab='home';chatNote='';render({top:true})}navSync()});
 
 /* ---------- állatfelvétel (3 lépés) ---------- */
-let W=null,wzStep=0,wzPop='';
-function wizard(id){
+let W=null,wzStep=0,wzPop='',wzQ='';
+/* nov. 16. (tesztelői javaslat, #1): fajtakereső a hosszú listákhoz. A keresőszöveg nem mentődik és nem megy sehová;
+   a lista elemei textContent-tel (new Option) épülnek újra – iOS-en a rejtett <option> nem működik. */
+const BREED_Q_MIN=13,BREED_Q_MAX=30;
+const fold=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function breedHits(list,q){const f=fold(q.trim());return f?list.filter(b=>fold(b).includes(f)):list}
+function breedShown(list,q,cur){const h=breedHits(list,q);return cur&&cur!=='mix'&&list.includes(cur)&&!h.includes(cur)?[cur,...h]:h}
+function fillBreeds(){const sel=$('#wzBreed');if(!sel||!W)return;const list=BREEDS[W.species]||[],cur=sel.value,mixT=sel.options[0].textContent;
+  sel.replaceChildren(new Option(mixT,'mix'),...breedShown(list,wzQ,cur).map(b=>new Option(b,b)));sel.value=list.includes(cur)?cur:'mix';
+  const none=$('#wzBreedNone');if(none)none.hidden=!(wzQ.trim()&&!breedHits(list,wzQ).length)}
+function wizard(id){wzQ='';
   const p=id&&S.pets.find(x=>x.id===id);
   W=p?{...p,group:tileOf(p),count:p.count??'',tankL:p.tankL??'',weight:p.weight==null?'':gramSp(p)?Math.round(p.weight*1000):p.weight,step:3,mode:'date',edit:true,ey:'',em:'',ew:'',err:''}
      :{group:'',species:'',speciesName:'',breed:'mix',size:'',count:'',tankL:'',birth:'',est:false,mode:'date',ey:'',em:'',ew:'',name:'',sex:'',neutered:'',weight:'',photo:'',home:'',step:1,err:''};
@@ -4075,7 +4084,7 @@ function drawWizard(){
     const ttl=stock(w)?'Halfaj':sp(w).vt||(g==='emlos'||g==='egyeb'?'Fajta':'Változat'),mix=stock(w)?'Vegyes állomány / nem tudom':g==='emlos'&&!sp(w).vt?'Keverék / nem tudom':'Nem tudom';
     body=`<h2>${ttl}</h2>${w.species==='egyeb'
       ?`<label class="f"><span>Fajta (nem kötelező)</span><input name="breed" value="${esc(w.breed==='mix'?'':w.breed)}" maxlength="40"></label>`
-      :list.length?`<label class="f"><span>Válassz a listából</span><select name="breed" id="wzBreed"><option value="mix">${mix}</option>${list.map(b=>`<option${w.breed===b?' selected':''}>${esc(b)}</option>`).join('')}</select></label>`
+      :list.length?`${list.length>=BREED_Q_MIN?`<label class="f"><span>Keresés a fajták között</span><input type="search" id="wzBreedQ" value="${esc(wzQ)}" maxlength="${BREED_Q_MAX}" placeholder="pl. német, terrier" autocomplete="off" enterkeyhint="search"></label><p class="sub" id="wzBreedNone"${wzQ.trim()&&!breedHits(list,wzQ).length?'':' hidden'}>Nincs ilyen fajta a listában. Próbáld másképp, vagy válaszd: ${mix}.</p>`:''}<label class="f"><span>Válassz a listából</span><select name="breed" id="wzBreed"><option value="mix">${mix}</option>${(list.length>=BREED_Q_MIN?breedShown(list,wzQ,w.breed):list).map(b=>`<option${w.breed===b?' selected':''}>${esc(b)}</option>`).join('')}</select></label>`
       :'<p class="sub">Ennél a fajnál nincs választható változat, lépj tovább.</p>'}
     ${w.species==='kutya'?(dogKnown?`<p class="sub">Méret a fajta alapján: ${SIZE_HU[dogKnown]}. Ettől függ, mikor számít felnőttnek és idősnek.</p>`
       :`<div class="f"><span>Mekkora (lesz) felnőttként?</span>${radio('size',Object.entries(SIZE_HINT),w.size)}</div><p class="sub">A nagyobb testű kutyák később nőnek fel és korábban számítanak idősnek.</p>`):''}
@@ -4416,8 +4425,8 @@ const ACT={
   petUse(el){S.settings.activePetId=el.dataset.id;chatNote='';careSt=null;save();closeSheet();if(tab==='more')tab='home';render({top:true,toToday:true})},
   petDelAsk(el){const p=S.pets.find(x=>x.id===el.dataset.id);confirmSheet('Biztosan törlöd?',`${esc(petName(p))} profilja, eseményei és beszélgetései véglegesen törlődnek.`,'Igen, törlöm','petDel',p.id)},
   petDel(el){const id=el.dataset.id;S.pets=S.pets.filter(p=>p.id!==id);S.events=S.events.filter(e=>e.petId!==id);delete S.chat[id];delete S.ai[id];if(S.settings.activePetId===id)S.settings.activePetId=null;save('chat','photo_'+id);closeSheet();tab='home';render({top:true});toast('Állat törölve')},
-  wzGroup(el){readWizard();const v=el.dataset.v;if(W.group!==v){wzPop='g';W.group=v;W.species=v==='egyeb'?'egyeb':'';W.breed='mix';W.size='';W.weight=''}W.err='';drawWizard()},
-  wzSpecies(el){readWizard();if(W.species!==el.dataset.v){wzPop='s';W.species=el.dataset.v;W.breed='mix';W.size='';W.weight=''}W.err='';drawWizard()},
+  wzGroup(el){readWizard();const v=el.dataset.v;if(W.group!==v){wzPop='g';wzQ='';W.group=v;W.species=v==='egyeb'?'egyeb':'';W.breed='mix';W.size='';W.weight=''}W.err='';drawWizard()},
+  wzSpecies(el){readWizard();if(W.species!==el.dataset.v){wzPop='s';wzQ='';W.species=el.dataset.v;W.breed='mix';W.size='';W.weight=''}W.err='';drawWizard()},
   wzNext:wizardNext,wzBack(){readWizard();W.err='';W.step--;drawWizard()},wzNoPhoto(){readWizard();W.photo='';drawWizard()},
   stageAck(){const p=pet();p.lastStage=stageOf(p);save();render()},
   tick(el){tickSheet(el.dataset.key)},
@@ -4527,6 +4536,10 @@ document.addEventListener('change',e=>{const t=e.target;
   else if(t.id==='npBreed'){npBreed[npSp]=t.value;render();const s=$('#npBreed');s&&s.focus({preventScroll:true})}
   else if(t.id==='kcalIn'){const v=numHU(t.value),p=pet();if(t.value.trim()&&!(v>=30&&v<=700))return toast('30 és 700 közötti értéket írj be (kcal / 100 g).');p.kcal100=v||null;save();render()}});
 document.addEventListener('input',e=>{const t=e.target;
+  if(t.id==='wzBreedQ'&&W){wzQ=t.value.slice(0,BREED_Q_MAX);const h=breedHits(BREEDS[W.species]||[],wzQ);
+    // egyetlen találat → kiválasztjuk (kutyánál így rögtön látszik a fajtából számolt méret); újrarajzolás után a fókusz visszakerül
+    if(wzQ.trim()&&h.length===1&&W.breed!==h[0]){readWizard();W.breed=h[0];W.err='';drawWizard();const q=$('#wzBreedQ');if(q){q.focus({preventScroll:true});q.setSelectionRange(q.value.length,q.value.length)}}
+    else fillBreeds();return}
   if(t.id==='chatIn'){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'}
   if(t.id==='cityIn'){const c=S.settings.city=t.value.trim();document.querySelectorAll('#mapBtns a').forEach(a=>{if(c){a.href=mapUrl(a.dataset.q,c);a.removeAttribute('aria-disabled')}else{a.removeAttribute('href');a.setAttribute('aria-disabled','true')}})}});
 document.addEventListener('keydown',e=>{
