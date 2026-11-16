@@ -8,6 +8,7 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ### Fajtakereső az állat felvételénél (2026. nov. 16.)
 - **11-16 – v59:** a hosszú fajtalisták (kutya, macska) fölött kereső mező: ékezet nélkül és részszóra is talál, a „Keverék / nem tudom” mindig elöl marad, egyetlen találatnál a fajta kiválasztódik (kutyánál a méret is látszik). Tesztelői javaslat alapján.
+- **11-16 – build:** a v59 Cloudflare-buildje nem indult el az összevonás után (elveszett értesítés), ez a bejegyzés indítja újra.
 - **11-16 – szerver (advisor):** a Tanácsadó chatválaszai bővebbek (kb. 80–150 szó), felépítettek, és jobban figyelnek a magyar ragozásra. Tesztelői visszajelzés alapján.
 
 ### Tanácsadó – tartós jelzés (2026. nov. 13.)
