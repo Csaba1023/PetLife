@@ -195,6 +195,23 @@ const LIMITS={'kutya:kicsi':[6,12,120],'kutya:kozepes':[6,12,96],'kutya:nagy':[6
 /* az első szakasz neve fajcsoportonként más */
 const STAGE1={madar:'Fióka',hullo:'Juvenilis',keteltu:'Juvenilis',hal:'Ivadék',gerinctelen:'Fiatal'};
 const stHU=(p,s)=>(s==='kolyok'&&STAGE1[grp(p)])||STAGE_HU[s];
+/* nov. 17. (tesztelői ötlet #3): életkor „emberi években” – csak kutya és macska, 1 éves kortól, tájékoztató becslés.
+   Forrás: AVMA „Pets age faster than people” poszter (macska és közepes, 21–50 lb-os kutya, 1–16 év);
+   kis, nagy és óriás kutya, valamint 16 év felett: PetMD (Coates DVM, 2026) ökölszabály 2 éves kor után
+   (kicsi +4, közepes +4–5, nagy +5–6, óriás +7–8 emberi év / év) – ahol a forrás sávot ad, sávot írunk ki. */
+const HY_DOG_M=[15,24,28,32,36,42,47,51,56,60,65,69,74,78,83,87];
+const HY_STEP={kicsi:[4,4],kozepes:[4,5],nagy:[5,6],orias:[7,8]};
+function humanYears(p){
+  if(!p||!p.birth||(p.species!=='kutya'&&p.species!=='macska'))return null;
+  const y=ageM(p)/12;if(!(y>=1))return null;
+  if(y<2){const h=Math.round(15+9*(y-1));return[h,h]}
+  if(p.species==='macska'){const h=Math.round(24+4*(y-2));return[h,h]}
+  const sz=(p.breed&&p.breed!=='mix'&&DOGSIZE[p.breed])||p.size;if(!HY_STEP[sz])return null;
+  if(sz==='kozepes'&&y<=16){const i=Math.floor(y)-1,f=y-Math.floor(y),h=Math.round(HY_DOG_M[i]+(i<15?(HY_DOG_M[i+1]-HY_DOG_M[i])*f:0));return[h,h]}
+  const [a,b]=HY_STEP[sz],base=sz==='kozepes'?87:24,from=sz==='kozepes'?16:2;
+  return[Math.round(base+a*(y-from)),Math.round(base+b*(y-from))];
+}
+const hyTxt=p=>{const r=humanYears(p);return r?`≈ ${r[0]===r[1]?r[0]:r[0]+'–'+r[1]} emberi év`:''};
 const sizeOf=p=>p.species!=='kutya'?null:(p.breed&&p.breed!=='mix'&&DOGSIZE[p.breed])||p.size||'kozepes';
 const limitsFor=p=>{if(p.species==='kutya')return LIMITS['kutya:'+sizeOf(p)];if(stock(p))return LIMITS['hal:'+p.breed]||null;const k=gkey(p);return(k in LIMITS?LIMITS[k]:LIMITS[p.species])||null};
 function stageAt(p,at){const L=limitsFor(p);if(!L)return null;const m=ageMAt(p,at);return m<L[0]?'kolyok':m<L[1]?'novendek':m<L[2]?'felnott':'idos'}
@@ -2881,7 +2898,7 @@ function vHome(p){
   return`${annivHtml(p)}${p.lastStage&&st&&p.lastStage!==st?`<div class="banner"><div style="flex:1">${esc(petName(p))} ${STAGE_INTO[st]||'új szakaszba'} lépett. A teendők és a tippek mostantól ehhez igazodnak.</div><button class="btn small" data-act="stageAck">Rendben</button></div>`:''}
   <section class="hero"><div class="who">${ava(p,1)}<div style="min-width:0"><h1>${esc(petName(p))}</h1>
    <div class="meta">${esc([p.name?speciesLabel(p).toLowerCase():'',breedLabel(p),size?SIZE_HU[size]:'',sex,p.count?p.count+' db':'',p.tankL?fmtKg(p.tankL)+' literes akvárium':''].filter(Boolean).join(', '))}</div>
-   <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+stHU(p,st).toLowerCase():''}</div></div>
+   <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+stHU(p,st).toLowerCase():''}</div>${hyTxt(p)?`<div class="meta hy">${hyTxt(p)} (becslés)</div>`:''}</div>
    <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">${ic('pen')}</button></div>${trail(p)}</section>${flagHtml(FLAG[gkey(p)]?gkey(p):p.species)}
   <h2>Teendők és emlékeztetők</h2>
   ${due.length||soon.length||par.length||wc||rem.length||sk?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}${wc?`<li class="${wc<t?'late':''}" id="wcDue"><div><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(wc)}${wc<t?', már elmúlt':''}</span></div><button class="btn small" data-act="wcNew">Rögzítés</button></li>`:''}
