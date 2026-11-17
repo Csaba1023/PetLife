@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Életkor emberi években (2026. nov. 17.)
+- **11-17 – v60:** kutyánál és macskánál 1 éves kortól a főoldali profilkártyán „≈ N emberi év (becslés)” is látszik. Forrás: AVMA korábra (macska, közepes kutya), PetMD állatorvosi ökölszabály (kis, nagy, óriás kutya – sávval). Keverék kutyánál a felvételkor megadott méret alapján; méret nélkül nem jelenik meg. Tesztelői ötlet alapján.
+
 ### Fajtakereső az állat felvételénél (2026. nov. 16.)
 - **11-16 – v59:** a hosszú fajtalisták (kutya, macska) fölött kereső mező: ékezet nélkül és részszóra is talál, a „Keverék / nem tudom” mindig elöl marad, egyetlen találatnál a fajta kiválasztódik (kutyánál a méret is látszik). Tesztelői javaslat alapján.
 - **11-16 – build:** a v59 Cloudflare-buildje nem indult el az összevonás után (elveszett értesítés), ez a bejegyzés indítja újra.
