@@ -29,11 +29,13 @@ function capFail(){capSt='fail';capTok='';const box=$('#capBox');if(!box)return;
 function capOk(v){capTok=v;capSt='ok';capErrDrop();const x=capBtn();if(x&&x.textContent!=='Egy pillanat…'&&x.textContent!=='Törlés…')x.disabled=false}
 async function capMount(){capDrop();capErrDrop();capSt='load';try{await capLib()}catch(e){return capFail()}
   const box=$('#capBox');if(!box)return;if(!window.turnstile)return capFail();const x=capBtn();if(x)x.disabled=false;const t=S.settings.theme;
-  try{capId=turnstile.render(box,{sitekey:TS_KEY,theme:t==='dark'||t==='light'?t:'auto',size:'flexible',appearance:'interaction-only',callback:capOk,'expired-callback':()=>{capTok='';capSt='exp'},'error-callback':()=>{capTok='';capFail()}})}catch(e){capId=null;capFail()}}
+  try{capId=turnstile.render(box,{sitekey:TS_KEY,theme:t==='dark'||t==='light'?t:'auto',size:'flexible',appearance:'interaction-only',callback:capOk,'expired-callback':()=>{capTok='';capSt='exp'},'error-callback':()=>{capTok='';capFail()},'before-interactive-callback':()=>{capSt='int'},'after-interactive-callback':()=>{if(capSt==='int')capSt='load'}})}catch(e){capId=null;capFail()}}
 /* a token kivárása (legfeljebb CAP_WAIT ms); üres, ha nincs */
 async function capToken(){for(let i=0;i<CAP_WAIT/100&&!capTok&&capId!==null&&capSt!=='fail';i++)await sleep(100);return capTok}
 /* a küldés előtt: van-e érvényes token; ha nincs, mit írjunk ki (null = mehet) */
-const capMsg=()=>capSt==='fail'?CAP_FAIL:capSt==='exp'?CAP_EXP:'A biztonsági ellenőrzés még nem fejeződött be. Várj pár másodpercet, majd próbáld újra.';
+/* nov. 19. (tesztelői jelzés): ha a Cloudflare kattintást kér (interaction-only módban megjelenik a négyzet), ne várakozást írjunk, hanem a bepipálást kérjük. */
+const CAP_INT='Pipáld be fent az „Igazolja, hogy Ön ember” négyzetet, várd meg a zöld pipát, majd nyomd meg újra a gombot.';
+const capMsg=()=>capSt==='fail'?CAP_FAIL:capSt==='exp'?CAP_EXP:capSt==='int'?CAP_INT:'A biztonsági ellenőrzés még nem fejeződött be. Várj pár másodpercet, majd próbáld újra.';
 /* használat után új ellenőrzés */
 function capReset(){capTok='';if(capSt==='ok')capSt='load';if(capId!==null&&window.turnstile)try{turnstile.reset(capId)}catch(e){}}
 /* D kör (nov. 2., F11): magyar számbevitel – tizedesvessző vagy -pont; ezres tagolás (szóköz, „1.000” vagy „1.000,5”) */
