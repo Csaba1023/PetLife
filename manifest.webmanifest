@@ -8,7 +8,6 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#021611",
   "theme_color": "#0F3D33",
   "categories": [
