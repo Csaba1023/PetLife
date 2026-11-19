@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Biztonsági ellenőrzés – egyértelmű üzenet (2026. nov. 19.)
+- **11-19 – v63:** ha a Cloudflare emberellenőrzése kattintást kér (megjelenik a „Igazolja, hogy Ön ember” négyzet), a hibaüzenet a négyzet bepipálását kéri a „Várj pár másodpercet” helyett. Tesztelői jelzés alapján (új jelszó kérése).
+
 ### Költségnapló – napi nézet (2026. nov. 19.)
 - **11-19 – v62:** a Költségek grafikonja fölött váltó: „Havonta” (utolsó 12 hónap) és „Naponta” (az aktuális hónap napjai). A havi grafikonon a hónapszám helyett rövid hónapnév áll („nov.”), alatta felirat. A PDF-kimutatás változatlanul havi.
 
