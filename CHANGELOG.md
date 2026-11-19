@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Tanácsadó – helyzethez illő tartalékszöveg (2026. nov. 19.)
+- **11-19 – v64:** ha a Tanácsadó válasza nem jeleníthető meg, a vészhelyzeti (állatorvos/ügyelet) útmutatás csak tünetvizsgálatnál vagy tünetre utaló kérdésnél jelenik meg; tápajánlásnál, más feladatoknál és egyéb kérdéseknél semleges, a helyzethez illő szöveg. Kétes esetben marad a vészhelyzeti útmutatás.
+
 ### Biztonsági ellenőrzés – egyértelmű üzenet (2026. nov. 19.)
 - **11-19 – v63:** ha a Cloudflare emberellenőrzése kattintást kér (megjelenik a „Igazolja, hogy Ön ember” négyzet), a hibaüzenet a négyzet bepipálását kéri a „Várj pár másodpercet” helyett. Tesztelői jelzés alapján (új jelszó kérése).
 

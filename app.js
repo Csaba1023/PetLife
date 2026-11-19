@@ -3328,7 +3328,7 @@ async function runAi(key,body,store){
   const lim=aiLimit();if(lim){aiErr={key:k,t:aiErrText(lim)};render();return}
   aiRun={key:k,text:'',ctl:new AbortController()};render();
   try{const res=await aiCall(body,{signal:aiRun.ctl.signal});store(res.text,res.sig,res.skip)}
-  catch(e){if(!e||e.code!=='cancelled')aiErr={key:k,t:aiErrText(e)}}
+  catch(e){if(!e||e.code!=='cancelled')aiErr={key:k,t:aiErrText(e,{key})}}
   aiRun=null;save('chat');render()}
 const symAsk=e=>{symOpen=e.id;const p=pet();aiConsent(()=>runAi('sym:'+e.id,aiPayload(p,'sym',{sym:noteClean(e.text),symDate:e.date,symSev:e.sev||''}),(t,sig,sk)=>{e.ai=t;e.aiSig=sig||'';delete e.aiRep;if(sk)e.aiSkip=sk;else delete e.aiSkip}))};
 let cTab='guide',lesOpen='';
@@ -4300,6 +4300,13 @@ const aiLeftHtml=()=>{if(!cloud.uid)return'';aiAcct();if(aiRate.unl===true)retur
 const AI_NEUTRAL='Most nem tudok válaszolni, próbáld újra később.';
 /* nov. 13. (A3): ha a szerver kimenet-ellenőrzése eldobja a választ, vészhelyzetben se maradjon útmutatás nélkül a felhasználó */
 const AI_OUT_SAFE='Most nem tudok részletes választ adni. Ha az állatodnál sürgős tünetet látsz (légzési nehézség, görcs, remegés, mérgezés gyanúja, erős vérzés), azonnal vidd állatorvoshoz vagy ügyeletre.';
+/* nov. 19. (Csaba): az eldobott válasz tartalékszövege igazodjon a kérdéshez – vészhelyzeti útmutatás csak tünetre utaló kérdésnél
+   (tünetvizsgálat, vagy a chatkérdésben tünetszó). Kétes esetben a vészhelyzeti szöveg marad (biztonság > kényelem). */
+const AI_OUT_FOOD='Most nem tudok személyre szabott tápajánlást adni. Próbáld újra később, addig a lenti ajánlott eleségek között nézelődhetsz.';
+const AI_OUT_TASK='Most nem tudok részletes választ adni. Próbáld újra később.';
+const AI_OUT_CHAT='Erre most nem tudok részletes választ adni. Próbáld meg másképp megfogalmazni, vagy kérdezz újra később.';
+const AI_SYM_RE=/h[áa]ny(ik|t|[áa]s|tak|nak)|[öo]klend|hasmen|v[ée]r(es|ez|z|e\b|\b)|g[öo]rcs|remeg|r[áa]ngat|nem (eszik|iszik|evett|ivott)|m[ée]rgez|megev|lenyel|liheg|fullad|nehezen l[ée]le?gz|s[áa]nt|f[áa]j(dalm|ik|t\b|nak)|f[áa]j\b|beteg|\bl[áa]z(as|a|at|ban)?\b|[áa]jul|eszm[ée]letlen|b[ée]nul|duzzad|s[ée]r[üu]l|\bseb(e|ek|es)?\b|nyálaz|nyalaz|t[áa]ntorog|feszes has|puffad/i;
+const aiOutTxt=ctx=>!ctx?AI_OUT_SAFE:ctx.key?(ctx.key.startsWith('sym:')?AI_OUT_SAFE:ctx.key==='food'||ctx.key==='prod_tap'?AI_OUT_FOOD:AI_OUT_TASK):typeof ctx.q==='string'?(AI_SYM_RE.test(ctx.q)?AI_OUT_SAFE:AI_OUT_CHAT):AI_OUT_SAFE;
 const ERR={short:'Írd le bővebben, mire vagy kíváncsi, pl. „Hány gramm tápot adjak naponta?”',login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
   daily_limit:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`,hourly_limit:'Ebben az órában elérted a kérdéskeretet. Próbáld újra később.',
   /* okt. 21.: díjcsomag szerinti keret (a szerver PLAN_START után küldi) és a napi globális ingyenes keret */
@@ -4308,7 +4315,7 @@ const ERR={short:'Írd le bővebben, mire vagy kíváncsi, pl. „Hány gramm t�
   /* nov. 12. (A kör, J4): ember egészségéről szóló kérdés – a szerver strike nélkül elutasítja, az OpenAI-válaszolóhoz nem jut el */
   human:'Emberek egészségéről nem adhatok tanácsot. Az állatoddal kapcsolatban szívesen segítek.',
   dup:'Ezt a kérdést az előbb már elküldted.',consent:'A Tanácsadó használatához előbb fogadd el a fenti tájékoztatót.',rate_limited:AI_NEUTRAL,setup:AI_NEUTRAL,none:AI_NEUTRAL,output:AI_OUT_SAFE,def:AI_NEUTRAL};
-const aiErrText=e=>{const c=e&&ERR[e.code]?e.code:'def';{const q=planCur();if(c==='daily_limit'&&q&&q.per==='day'&&q.limit)return`Mára elfogyott a napi ${q.limit} kérdésed. Holnap újra kérdezhetsz.`}if(['def','setup','none','output','rate_limited'].includes(c))console.warn('[Tanácsadó]',e&&e.code,e&&e.detail||'');
+const aiErrText=(e,ctx)=>{const c=e&&ERR[e.code]?e.code:'def';if(c==='output'){console.warn('[Tanácsadó]','output',e&&e.detail||'');return aiOutTxt(ctx)}{const q=planCur();if(c==='daily_limit'&&q&&q.per==='day'&&q.limit)return`Mára elfogyott a napi ${q.limit} kérdésed. Holnap újra kérdezhetsz.`}if(['def','setup','none','output','rate_limited'].includes(c))console.warn('[Tanácsadó]',e&&e.code,e&&e.detail||'');
   return c==='blocked'&&e.until&&isFinite(new Date(e.until))?`A Tanácsadó ${new Date(e.until).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}-ig szünetel. Próbáld újra később.`:ERR[c]};
 /* az állat adatai: csak kiválasztott értékek és szűrt mezők; a gazda szabad szövege rövidítve, külön (notes) megy, és a szerveren ellenőrzés után kerül az AI elé */
 function aiPayload(p,task,x={}){
@@ -4439,7 +4446,7 @@ async function sendChat(raw){
   }catch(e){
     /* nov. 13.: az emberi egészségre vonatkozó elutasítás tartósan a beszélgetésben marad (r:'n' – csak jelzés: nem megy az AI-nak, nem jelenthető) */
     if(e&&e.code==='human')log.push({r:'n',t:ERR.human,ts:Date.now()});
-    else if(!e||e.code!=='cancelled')chatNote=aiErrText(e);
+    else if(!e||e.code!=='cancelled')chatNote=aiErrText(e,{q:text});
   }
   chatBusy=null;chatCtl=null;streamText='';if(log.length>CHAT_KEEP)log.splice(0,log.length-CHAT_KEEP);save('chat');redrawChat();
 }
