@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Költségnapló – napi nézet (2026. nov. 19.)
+- **11-19 – v62:** a Költségek grafikonja fölött váltó: „Havonta” (utolsó 12 hónap) és „Naponta” (az aktuális hónap napjai). A havi grafikonon a hónapszám helyett rövid hónapnév áll („nov.”), alatta felirat. A PDF-kimutatás változatlanul havi.
+
 ### Szabad tájolás (2026. nov. 19.)
 - **11-19 – v61:** a webes manifestből kikerült a „csak álló” tájolás, így az app fekvő módban és táblagépen is forgatható. A Play-es (Android) változatban a következő csomaggal (versionCode 2) lép életbe.
 
