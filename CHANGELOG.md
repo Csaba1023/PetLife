@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### „Melyik állat illik hozzám?” – hüllők, kétéltűek, halak, gerinctelenek (2026. nov. 21.)
+- **11-21 – v66:** további 46 faj forrásolt kártyája (így mind a 67 faj); a kártyákon a meglévő jogi jelzés (védett, CITES, inváziós) és minden kártyán „tájékoztató jellegű” sor.
+
 ### „Melyik állat illik hozzám?” fajkártyák (2026. nov. 21.)
 - **11-21 – v65:** a „Még nincs állatom” oldalon új nézet: 21 emlős- és madárfaj rövid, forrásolt jellemzése (milyen társ, napi ritmus, társigény, élettartam, gyerek mellé, mire figyelj), három szűrővel. A Tartás és nevelés oldal tetején összecsukható „A fajról” kártya. Hüllők, kétéltűek, halak és gerinctelenek később. Tesztelői ötlet (Körtés János).
 
