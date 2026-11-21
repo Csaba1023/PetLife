@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Fajtakártyák – nyúl, hörcsög, tengerimalac, pinty (2026. nov. 21.)
+- **11-21 – v71:** 10 nyúlfajta, 5 hörcsögfaj, 9 tengerimalac-szőrtípus és 3 pintyfaj forrásolt kártyája a Tartás oldalon és az állatfelvételnél.
+
 ### Halak – közös akvárium, társítás, hímek száma (2026. nov. 21.)
 - **11-21 – v70:** felvételkor „Melyik akváriumban van?” választó; a közös akvárium literszáma minden halcsoportnál egyezik. Ha egy akváriumban nem ajánlott társ van (vízigény, úszócsipkedés, ragadozás, agresszió, két harcoshal), figyelmeztetés felvételkor és a főoldalon. Ahol számít (harcoshal, guppi, platti, molli, Malawi-sügér, gurámi, mandarinhal, xifó), megadható a hímek száma. Pontosabb darabszám-kérdés („Hány harcoshal van?”). A halas figyelmeztetések sárgák, és eltűnnek, ha a helyzet rendeződik.
 
