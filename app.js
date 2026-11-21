@@ -2161,15 +2161,44 @@ function fishNoList(k){const all=[...Object.keys(FISH).filter(x=>!FISH[x].gen),'
   rows.push(`<li>${fsea(k)?'Édesvízi halakkal':'Tengeri halakkal'} nem tartható együtt.</li>`);
   return`<ul class="tips" id="fishNo" style="margin:6px 0 0">${rows.join('')}</ul><p class="sub" style="margin:6px 0 0">A lista a fajlapok adataiból (vízigény, viselkedés) készült, tájékoztató jellegű. A Petavira halfajlistáján nem szereplő halakat nem vizsgálja.</p>`}
 /* méret- és létszámfigyelmeztetés egy halcsoportra (a felvételi űrlap értékeiből is) */
-function fishWarns(k,count,tankL){const X=FISHX[k];if(!X)return[];const w=[],n=fname(k),c=parseInt(count,10),L=typeof tankL==='number'?tankL:numHU(String(tankL||''));
+/* v70: hímek száma ott, ahol a forrás szerint számít (f: legalább hány nőstény jusson egy hímre) */
+const SEXK={harcoshal:{},Guppi:{f:2,t:'Guppinál egy hímre 2–3 nőstény jusson'},Platti:{f:2,t:'Plattinál egy hímre több nőstény jusson'},Molli:{f:3,t:'Mollinál egy hímre három nőstény jusson'},
+  'Malawi-sügér':{f:2,t:'Malawi-sügérnél egy hímre több nőstény jusson'},'Gurámi':{m:'A gurámihímek territoriálisak: két hímet csak nagyon nagy akváriumban tarts.'},
+  Mandarinhal:{m:'A mandarinhal-hímek hevesen verekednek: egy példányt vagy egy hím–nőstény párt tarts.'},'Xifó (kardfarkú hal)':{m:'Szűk helyen a xifóhímek sokat marakodnak a rangsorért: bőséges hely kell nekik.'}};
+const intOr=(v,d=null)=>{const n=typeof v==='number'?v:parseInt(String(v==null?'':v).trim(),10);return Number.isInteger(n)&&n>=0?n:d};
+function fishWarns(k,count,tankL,males){const X=FISHX[k]||{},S2=SEXK[k],w=[],n=fname(k),c=intOr(count),m=intOr(males),L=typeof tankL==='number'?tankL:numHU(String(tankL||''));
   if(X.pond)w.push('A koi kerti tóba való: felnőttnek kb. 38 liter víz kell a testhossza minden 2,5 centiméterére, és a tó legalább 0,9–1,8 m mély legyen.');
   if(L>0&&X.l&&L<X.l)w.push(k==='harcoshal'?`A harcoshalnak legalább kb. 10 literes akvárium kell; a megadott ${fmtKg(L)} liter ennél kevesebb.`:`${az(n)} ${n.toLowerCase()} számára ${X.lt||'legalább kb. '+X.l+' literes'} akváriumot ajánlanak; a megadott ${fmtKg(L)} liter ennél kevesebb.`);
   else if(L>0&&X.li&&L<X.li)w.push(`A harcoshalnak az ideális akvárium 19–38 liter vagy több; a megadott ${fmtKg(L)} liter a legkisebb ajánlott méretet eléri, de ennél kevesebb.`);
   if(c>0&&X.n&&c<X.n)w.push(`${az(n)} ${n.toLowerCase()}: legalább ${X.n} példányt ajánlanak együtt tartani${X.nt?' ('+X.nt+')':''}; a megadott ${c}.`);
-  if(k==='harcoshal'&&c>1)w.push('Két hím harcoshalat soha ne tarts együtt: megsebezhetik, megölhetik egymást. Nőstények csoportban tarthatók.');
+  if(k==='harcoshal'&&c>1){if(m==null)w.push('Ha közülük kettő vagy több hím, soha ne tartsd őket együtt: megsebezhetik, megölhetik egymást. Nőstények csoportban tarthatók. Ha megadod, hány hím van, pontosabban jelzünk.');
+    else if(m>=2)w.push('Két hím harcoshalat soha ne tarts együtt: megsebezhetik, megölhetik egymást.')}
+  if(S2&&m!=null&&c>0&&m<=c){if(S2.f&&m>0&&c-m<S2.f*m)w.push(`${S2.t}; most ${m} hímre ${c-m} nőstény jut.`);if(S2.m&&m>=2)w.push(S2.m)}
   return w}
-const fishWarnHtml=(k,count,tankL,id,wz)=>{const w=fishWarns(k,count,tankL);return w.length?`<div class="note warn" id="${id}" role="status" style="margin-top:10px"><b>Figyelem</b><ul style="margin:6px 0 0;padding-left:18px">${w.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p style="margin:6px 0 0">Tájékoztató jellegű${wz?', a felvételt nem akadályozza':''}.</p></div>`:`<div id="${id}" hidden></div>`};
-const aqWarn=(p,id)=>{const k=fkey(p);return k?fishWarnHtml(k,p.count,p.tankL,id):''};
+/* v70: közös akvárium. Az azonosító a tankId; ha nincs, a halcsoport saját azonosítója (régi profilok: külön akvárium) */
+const tankOf=p=>p.tankId||p.id;
+const isFishPet=p=>sp(p).g==='hal';
+const tankMates=(p,exclId)=>{const T=tankOf(p);return S.pets.filter(q=>q.id!==p.id&&q.id!==exclId&&isFishPet(q)&&tankOf(q)===T)};
+const fishLab=q=>{const k=fkey(q);return k?fname(k)+(q.name?` („${q.name}”)`:''):petName(q)};
+function aqCompat(k,mates){const w=[];if(!k)return w;
+  mates.forEach(q=>{const kq=fkey(q);if(!kq)return;const lab=fishLab(q);
+    if(k==='harcoshal'&&kq==='harcoshal'){w.push(`${lab}: másik harcoshal-csoport is van az akváriumban; két hím harcoshalat soha ne tarts együtt.`);return}
+    const r=fishPair(k,kq);if(!r.length)return;
+    w.push(r[0]==='édesvízi hal'||r[0]==='tengeri hal'?`${lab}: ${r[0]}, nem tartható együtt (más a víz).`:`${lab}: ${r.join('; ')}.`)});
+  return w}
+const fishWarnHtml=(k,count,tankL,id,wz,males,mates)=>{const a=fishWarns(k,count,tankL,males),b=aqCompat(k,mates||[]),li=x=>`<li>${esc(x)}</li>`;
+  return a.length||b.length?`<div class="note fw" id="${id}" role="status" style="margin-top:10px"><b>Figyelem</b>${a.length?`<ul style="margin:6px 0 0;padding-left:18px">${a.map(li).join('')}</ul>`:''}${b.length?`<p style="margin:8px 0 0"><b>Ugyanebben az akváriumban, nem ajánlott társ:</b></p><ul class="aqc" style="margin:4px 0 0;padding-left:18px">${b.map(li).join('')}</ul>`:''}<p style="margin:6px 0 0">Tájékoztató jellegű${wz?', a felvételt nem akadályozza':''}.</p></div>`:`<div id="${id}" hidden></div>`};
+const aqWarn=(p,id)=>{const k=fkey(p);return k?fishWarnHtml(k,p.count,p.tankL,id,0,p.males,tankMates(p)):''};
+/* felvétel: a választható akváriumok (a szerkesztett csoport nélkül) */
+function aqTanks(exclId){const m=new Map();S.pets.filter(q=>isFishPet(q)&&q.id!==exclId).forEach(q=>{const T=tankOf(q);if(!m.has(T))m.set(T,{id:T,pets:[],L:q.tankL});m.get(T).pets.push(q)});return[...m.values()]}
+const wzMates=w=>w.tank&&w.tank!=='new'?S.pets.filter(q=>isFishPet(q)&&q.id!==w.id&&tankOf(q)===w.tank):[];
+function wzFish(w){const k=fkey(w),T=aqTanks(w.id),sex=k&&SEXK[k];
+  const cl=w.species==='harcoshal'?'Hány harcoshal van?':k?'Hány ilyen hal van?':'Hány hal van ebben a csoportban?';
+  return`${T.length?`<label class="f"><span>Melyik akváriumban van?</span><select name="tank" id="wzTank"><option value="new"${!w.tank||w.tank==='new'?' selected':''}>Új akvárium</option>${T.map(t=>`<option value="${esc(t.id)}"${w.tank===t.id?' selected':''}>${esc(t.pets.map(q=>q.name||(fkey(q)?fname(fkey(q)):petName(q))).join(', ')+(t.L?` (${fmtKg(t.L)} l)`:''))}</option>`).join('')}</select><span class="hint" style="font-weight:400;margin-top:6px">Ha több halfaj él egy akváriumban, mindegyiket külön halcsoportként vedd fel, és válaszd ki itt a közös akváriumot.</span></label>`:''}
+    <label class="f"><span>${cl}</span><input type="number" inputmode="numeric" min="1" max="999" name="count" value="${esc(w.count)}" placeholder="pl. 6">${w.species==='harcoshal'?'<span class="hint" style="font-weight:400;margin-top:6px">A többi halat külön halcsoportként vedd fel.</span>':''}</label>
+    ${sex?`<label class="f"><span>Ebből hány hím? (nem kötelező)</span><input type="number" inputmode="numeric" min="0" max="999" name="males" value="${esc(w.males==null?'':w.males)}" placeholder="ha nem tudod, hagyd üresen"></label>`:''}
+    <label class="f"><span>Az akvárium mérete literben${w.tank&&w.tank!=='new'?' (közös: a módosítás az akvárium minden halcsoportjánál érvényes)':''}</span><input name="tankL" inputmode="decimal" value="${esc(w.tankL)}" placeholder="pl. 60"></label>
+    ${k?fishWarnHtml(k,w.count,w.tankL,'wzAq',1,w.males,wzMates(w)):''}`}
 const fishCard=p=>{if(p.species==='harcoshal')return`<div class="card" id="fishCard" style="margin-top:14px">${aqWarn(p,'careAq')}<b>Kivel nem tartható?</b>${fishNoList('harcoshal')}</div>`;const f=fishOf(p);
   if(!f)return stock(p)?`<div class="card guide" id="fishCard"><b>Vegyes állomány</b><p>Vegyes állománynál minden halfaj igényét külön nézd meg: a szükséges akváriumméret, a hőmérséklet és a vízértékek tartománya fajonként eltér. Olyan fajokat tarts együtt, amelyeknek az igényei átfedik egymást. Ha a profilban megadod a fő halfajt, itt a fajlapját látod, és a vízértékek naplója ahhoz igazodik.</p></div>`:'';
   const G=wGoals(p),row=(k,v)=>v?`<li><div style="flex:1"><b>${k}</b><span class="when">${v}</span></div></li>`:'',rg=(k,u)=>G[k]?wGoal(k,G[k])+(u?' '+u:''):'';
@@ -2545,7 +2574,7 @@ const ID_BAD=new Set(['__proto__','constructor','prototype','hasOwnProperty','to
 const idOk=v=>ID_OK.test(String(v))&&!ID_BAD.has(String(v));
 const dateOk=v=>{if(!DATE_OK.test(String(v)))return false;const[y,m,d]=String(v).split('-').map(Number),t=new Date(Date.UTC(y,m-1,d));return y>=1900&&y<=2200&&t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d};
 const MS_KEY=/^(?!(?:constructor|prototype|hasOwnProperty|toString|valueOf)$)[A-Za-z][A-Za-z0-9_-]{0,39}$/;/* a valódi kulcsok: pl. chip, rabies1, rabiesY, vaccY, molt1; J kör (nov. 9., F7 maradék): a JS beépített nevei nem lehetnek kulcsok */
-const EV_NUM=['ft','min','kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW'];
+const EV_NUM=['ft','min','kg','pct','temp','ph','nh3','no2','no3','gh','kh','sg','hot','cool','hum','water'],PET_NUM=['weight','count','tankL','kcal100','uvbM','wcW','males'];
 const numFix=(o,ks)=>ks.forEach(k=>{const v=o[k];if(v==null||v==='')return;if(typeof v==='number'?!Number.isFinite(v):!(typeof v==='string'&&NUM_OK.test(v)))delete o[k];else if(typeof v==='string')o[k]=Number(v.replace(',','.'))});
 const isObj=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
 /* okt. 29.: a betöltéskor (fixState) használt állandók ITT, a fixState előtt – később definiálva az induláskori betöltés hibára futott (TDZ), és az app üresen indult */
@@ -2562,9 +2591,10 @@ function fixState(st){
     {const ok=o=>isObj(o)&&+o.g>0&&+o.g<=100000&&+o.d>0&&+o.d<=5000&&dateOk(o.start)&&(o.name==null||typeof o.name==='string');
      if(p.sitter!=null&&!(isObj(p.sitter)&&(p.sitter.note==null||typeof p.sitter.note==='string')&&(p.sitter.vet==null||typeof p.sitter.vet==='string')))delete p.sitter;
      if(p.marks!=null&&typeof p.marks!=='string')delete p.marks;
+     if(p.tankId!=null&&!idOk(p.tankId))delete p.tankId;if(p.males!=null&&!(Number.isInteger(p.males)&&p.males>=0&&p.males<=999))delete p.males;
      if(p.home!=null&&!dateOk(p.home))delete p.home;
      if(p.stock!=null&&!ok(p.stock))delete p.stock;if(p.stockHist!=null)p.stockHist=Array.isArray(p.stockHist)?p.stockHist.filter(h=>ok(h)&&dateOk(h.end)).slice(0,5):[]}}
-  const ids=new Set(pets.map(p=>p.id)),re=k=>map[k]||k;
+  const ids=new Set(pets.map(p=>p.id)),re=k=>map[k]||k;pets.forEach(p=>{if(p.tankId!=null)p.tankId=re(String(p.tankId))});
   const events=(Array.isArray(st.events)?st.events:[]).filter(isObj).filter(e=>{e.petId=re(String(e.petId));
     if(!ids.has(e.petId)||!dateOk(e.date)||typeof e.kind!=='string')return false;
     if(!idOk(e.id))e.id=newId();numFix(e,EV_NUM);
@@ -4394,8 +4424,8 @@ function fillBreeds(){const sel=$('#wzBreed');if(!sel||!W)return;const list=BREE
   const none=$('#wzBreedNone');if(none)none.hidden=!(wzQ.trim()&&!breedHits(list,wzQ).length)}
 function wizard(id){wzQ='';
   const p=id&&S.pets.find(x=>x.id===id);
-  W=p?{...p,group:tileOf(p),count:p.count??'',tankL:p.tankL??'',weight:p.weight==null?'':gramSp(p)?Math.round(p.weight*1000):p.weight,step:3,mode:'date',edit:true,ey:'',em:'',ew:'',err:''}
-     :{group:'',species:'',speciesName:'',breed:'mix',size:'',count:'',tankL:'',birth:'',est:false,mode:'date',ey:'',em:'',ew:'',name:'',sex:'',neutered:'',weight:'',photo:'',home:'',step:1,err:''};
+  W=p?{...p,group:tileOf(p),count:p.count??'',tankL:p.tankL??'',males:p.males??'',tank:isFishPet(p)&&tankMates(p).length?tankOf(p):'new',weight:p.weight==null?'':gramSp(p)?Math.round(p.weight*1000):p.weight,step:3,mode:'date',edit:true,ey:'',em:'',ew:'',err:''}
+     :{group:'',species:'',speciesName:'',breed:'mix',size:'',count:'',tankL:'',males:'',tank:'new',birth:'',est:false,mode:'date',ey:'',em:'',ew:'',name:'',sex:'',neutered:'',weight:'',photo:'',home:'',step:1,err:''};
   drawWizard();
 }
 function readWizard(){const f=$('#wz');if(!f)return;f.querySelectorAll('[name]').forEach(el=>{if(el.type==='radio'){if(el.checked)W[el.name]=el.value}else if(el.type!=='file')W[el.name]=el.value.trim()})}
@@ -4420,10 +4450,9 @@ function drawWizard(){
     <div class="f"><span>Mit tudsz a koráról?</span>${radio('mode',[['date','Tudom a születésnapját'],['est','Csak becsülni tudom']],w.mode)}</div>
     ${w.mode==='date'?`<label class="f"><span>Születési dátum</span><input type="date" name="birth" value="${esc(w.birth)}" max="${t}"></label>`
       :`<div class="f"><span>Becsült kor</span><div class="three">${[['ey','Hány éves?','pl. 3'],['em','+ hány hónap?','pl. 6'],['ew','+ hány hét?','pl. 2']].map(([k,n,ph])=>`<label class="agef"><small>${n}</small><input type="number" inputmode="numeric" min="0" name="${k}" value="${esc(w[k])}" placeholder="${ph}" aria-label="${n}"></label>`).join('')}</div><span class="hint" style="font-weight:400;margin-top:6px">Ebből születési dátumot számolunk, így az app magától követi az öregedést.</span></div>`}
-    <label class="f"><span>${g==='hal'?'Név (nem kötelező, pl. az akvárium neve)':'Név (nem kötelező)'}</span><input name="name" value="${esc(w.name)}" maxlength="40" autocomplete="off"></label>
+    <label class="f"><span>${g==='hal'?'Név (nem kötelező, pl. a halcsoport vagy az akvárium neve)':'Név (nem kötelező)'}</span><input name="name" value="${esc(w.name)}" maxlength="40" autocomplete="off"></label>
     <div class="f"><span>Fotó (nem kötelező)</span><div class="row">${okPhoto(w.photo)?`<img class="ava big" src="${esc(w.photo)}" alt="">`:''}<label class="btn ghost small" style="position:relative">${w.photo?'Csere':'Fotó választása'}<input type="file" id="photoIn" accept="image/*" style="position:absolute;inset:0;opacity:0;min-height:0"></label>${w.photo?'<button class="btn text" data-act="wzNoPhoto">Eltávolítás</button>':''}</div></div>
-    ${g==='hal'?`<label class="f"><span>Hány hal él az akváriumban?</span><input type="number" inputmode="numeric" min="1" max="999" name="count" value="${esc(w.count)}" placeholder="pl. 6"></label>
-    <label class="f"><span>Az akvárium mérete literben</span><input name="tankL" inputmode="decimal" value="${esc(w.tankL)}" placeholder="pl. 60"></label>${fkey(w)?fishWarnHtml(fkey(w),w.count,w.tankL,'wzAq',1):''}`
+    ${g==='hal'?wzFish(w)
     :`<div class="f"><span>Ivar (nem kötelező)</span>${radio('sex',[['him','Hím'],['nosteny','Nőstény'],['','Nem tudom']],w.sex)}</div>
     ${g==='emlos'||g==='egyeb'?`<div class="f"><span>Ivartalanított? (nem kötelező)</span>${radio('neutered',[['igen','Igen'],['nem','Nem'],['','Nem tudom']],w.neutered)}</div>`:''}
     ${noWeight(w)?'':`<label class="f"><span>Súly ${gramSp(w)?'grammban':'kg-ban'} (nem kötelező)</span><input name="weight" inputmode="decimal" value="${esc(w.weight)}" placeholder="${gramSp(w)?'pl. 65':'pl. 12,5'}"></label>`}
@@ -4446,17 +4475,21 @@ function wizardNext(){
     else if(birth&&birth<addM(t,-Math.max(480,((limitsFor(w)||[])[2]||0)*3)))w.err=w.mode==='est'?'Ennyi idős nem lehet. A „Hány éves?” mezőbe a korát írd (pl. 3), ne a születési évét.':'Ez a dátum túl régi. Ellenőrizd az évszámot.';
     const fish=g==='hal',gr=gramSp(w);let kg=null,cnt=null,tank=null;
     if(fish){cnt=parseInt(w.count,10);tank=numHU(w.tankL);
-      if(!w.err&&!(cnt>=1&&cnt<=999))w.err='Add meg, hány hal él az akváriumban (1 és 999 között).';else if(!w.err&&!(tank>0&&tank<=10000))w.err='Add meg az akvárium méretét literben, pl. 60.'}
+      if(!w.err&&!(cnt>=1&&cnt<=999))w.err='Add meg, hány hal él az akváriumban (1 és 999 között).';else if(!w.err&&!(tank>0&&tank<=10000))w.err='Add meg az akvárium méretét literben, pl. 60.';
+      else if(!w.err&&String(w.males??'').trim()!==''&&!(intOr(w.males)!=null&&intOr(w.males)<=cnt))w.err='A hímek száma 0 és a halak száma közötti egész szám legyen (vagy hagyd üresen).'}
     else if(w.weight!==''&&!noWeight(w)){kg=numHU(w.weight);if(gr)kg/=1000;if(!(kg>0&&kg<200))w.err=gr?'A súlyt számmal add meg grammban, pl. 65.':'A súlyt számmal add meg kg-ban, pl. 12,5.'}
     if(!w.err&&!fish&&w.home&&(!DATE_OK.test(w.home)||w.home>iso(t)||(birth&&w.home<iso(birth))))w.err='A „Mikor került hozzád?” dátum nem lehet jövőbeli, és nem lehet korábbi a születésnél.';
     if(!w.err){
       const old=w.edit&&S.pets.find(x=>x.id===w.id),bs=iso(birth);
       const p={id:old?old.id:newId(),name:clean(w.name),species:w.species,speciesName:w.species==='egyeb'?clean(w.speciesName):'',breed:(w.species==='egyeb'?clean(w.breed):w.breed)||'mix',size:w.size,count:cnt,tankL:tank,birth:bs,
-        est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:fish?'':w.sex,neutered:g==='emlos'||g==='egyeb'?w.neutered:'',weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{},...(!fish&&w.home?{home:w.home}:{})};
+        est:w.mode==='est'||!!(old&&old.est&&old.birth===bs),sex:fish?'':w.sex,neutered:g==='emlos'||g==='egyeb'?w.neutered:'',weight:kg,photo:w.photo||'',createdAt:old?old.createdAt:iso(t),...(fish&&String(w.males??'').trim()!==''?{males:intOr(w.males)}:{}),kcal100:old?old.kcal100||null:null,lessons:old?old.lessons||{}:{},...(!fish&&w.home?{home:w.home}:{})};
       /* okt. 28.: a profil szerkesztése ne veszítse el a máshol beállított értékeket (UVB-időköz, vízcsere, utazási lista, tápkészlet) */
       if(old)for(const k of ['uvbM','uvbOn','wcW','tripChk','stock','stockHist','sitter','marks'])if(old[k]!=null)p[k]=old[k];
       p.lastStage=old&&old.birth===bs&&old.species===p.species&&String(limitsFor(old))===String(limitsFor(p))?old.lastStage:stageOf(p);
+      /* v70: közös akvárium; „Új akvárium” szerkesztéskor friss azonosítót kap, hogy a régi társaktól biztosan elváljon */
+      if(fish){if(w.tank&&w.tank!=='new'&&S.pets.some(q=>q.id!==p.id&&isFishPet(q)&&tankOf(q)===w.tank))p.tankId=w.tank;else if(old&&tankMates(old).length)p.tankId=newId()}
       if(old)S.pets[S.pets.indexOf(old)]=p;else S.pets.push(p);
+      if(fish)S.pets.forEach(q=>{if(q!==p&&isFishPet(q)&&tankOf(q)===tankOf(p))q.tankL=p.tankL});
       if(kg&&(!old||old.weight!==kg)){S.events=S.events.filter(e=>!(e.petId===p.id&&e.kind==='w'&&e.date===iso(t)));S.events.push({id:newId(),petId:p.id,kind:'w',date:iso(t),kg})}
       S.settings.activePetId=p.id;const keys=(old?old.photo:'')!==p.photo?['photo_'+p.id]:[];
       save(...keys);closeSheet();if(!old)tab='home';render({top:!old});toast(old?'Változások mentve':'Állat mentve');return}
@@ -4862,6 +4895,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{const t=e.target;
   if(t.id==='photoIn')pickPhoto(t);
   else if(t.id==='wzBreed'||t.name==='mode'){readWizard();W.err='';drawWizard()}
+  else if(t.id==='wzTank'&&W){readWizard();const T=aqTanks(W.id).find(x=>x.id===W.tank);if(T&&T.L)W.tankL=String(T.L).replace('.',',');W.err='';drawWizard()}
   else if(t.name==='theme'){S.settings.theme=t.value;applyTheme();save()}
   else if(t.name==='wcW'){const p=pet();if(p){p.wcW=+t.value;save();render()}}
   else if(t.name==='uvbM'){const p=pet();if(p){p.uvbM=+t.value;save();render()}}
@@ -4874,7 +4908,7 @@ document.addEventListener('input',e=>{const t=e.target;
     // egyetlen találat → kiválasztjuk (kutyánál így rögtön látszik a fajtából számolt méret); újrarajzolás után a fókusz visszakerül
     if(wzQ.trim()&&h.length===1&&W.breed!==h[0]){readWizard();W.breed=h[0];W.err='';drawWizard();const q=$('#wzBreedQ');if(q){q.focus({preventScroll:true});q.setSelectionRange(q.value.length,q.value.length)}}
     else fillBreeds();return}
-  if((t.name==='count'||t.name==='tankL')&&W&&$('#wzAq')){readWizard();const k=fkey(W);if(k)$('#wzAq').outerHTML=fishWarnHtml(k,W.count,W.tankL,'wzAq',1);return}
+  if((t.name==='count'||t.name==='tankL'||t.name==='males')&&W&&$('#wzAq')){readWizard();const k=fkey(W);if(k)$('#wzAq').outerHTML=fishWarnHtml(k,W.count,W.tankL,'wzAq',1,W.males,wzMates(W));return}
   if(t.id==='chatIn'){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'}
   if(t.id==='cityIn'){const c=S.settings.city=t.value.trim();document.querySelectorAll('#mapBtns a').forEach(a=>{if(c){a.href=mapUrl(a.dataset.q,c);a.removeAttribute('aria-disabled')}else{a.removeAttribute('href');a.setAttribute('aria-disabled','true')}})}});
 document.addEventListener('keydown',e=>{
