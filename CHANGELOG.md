@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Halak – közös akvárium, társítás, hímek száma (2026. nov. 21.)
+- **11-21 – v70:** felvételkor „Melyik akváriumban van?” választó; a közös akvárium literszáma minden halcsoportnál egyezik. Ha egy akváriumban nem ajánlott társ van (vízigény, úszócsipkedés, ragadozás, agresszió, két harcoshal), figyelmeztetés felvételkor és a főoldalon. Ahol számít (harcoshal, guppi, platti, molli, Malawi-sügér, gurámi, mandarinhal, xifó), megadható a hímek száma. Pontosabb darabszám-kérdés („Hány harcoshal van?”). A halas figyelmeztetések sárgák, és eltűnnek, ha a helyzet rendeződik.
+
 ### Halak – akváriumméret, létszám, „Kivel nem tartható?” (2026. nov. 21.)
 - **11-21 – v69:** a halfaj adatlapjára „Kivel nem tartható?” lista került (vízigény, úszócsipkedés, ragadozás, agresszió). Ha az akvárium kisebb a fajnak ajánlottnál, vagy kevesebb a hal a csapatminimumnál, figyelmeztetés jelenik meg felvételkor (élőben), a főoldalon és a Tartás oldalon. Csak figyelmeztet, a mentés mindig engedélyezett. A harcoshalnál is.
 
