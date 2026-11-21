@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Fajkártya felvételkor (2026. nov. 21.)
+- **11-21 – v72:** állatfelvételkor, a faj kiválasztása után megjelenik az összecsukott „A fajról: kinek való?” kártya, mind a 67 fajnál.
+
 ### Fajtakártyák – nyúl, hörcsög, tengerimalac, pinty (2026. nov. 21.)
 - **11-21 – v71:** 10 nyúlfajta, 5 hörcsögfaj, 9 tengerimalac-szőrtípus és 3 pintyfaj forrásolt kártyája a Tartás oldalon és az állatfelvételnél.
 
