@@ -3913,7 +3913,52 @@ Object.assign(FAJTA,{
   'Whippet':{t:'Ragaszkodó, szelíd, bújós; idegennel óvatos, ritkán ugat.',a:'Nagy mozgásigény, bent nyugodt; póráz nélkül csak zárt helyen.',s:'Hosszan egyedül ugathat vagy rághat.',g:'Tanítás után kiváló családi kutya (felügyelettel).',f:['Heti kefélés.','Előfordulhat von Willebrand-betegség (orr- és ínyvérzés); a hízás árt neki.'],src:[RCD('whippet')]}
 });
 /* fajtakártya: fajtaadat vagy (Európai rövidszőrűnél) a macska fajkártya */
+/* ---------- Fajtakártyák, 3. kör (v71, nov. 21.): nyúl, hörcsög, tengerimalac, pinty ----------
+   Külön táblában, fajonként, mert egyes nevek ütköznek (pl. „Rex” nyúl és tengerimalac is). */
+const PDSAR=s=>['PDSA: '+s+' nyúl','https://www.pdsa.org.uk/pet-help-and-advice/looking-after-your-pet/rabbits/'+s.toLowerCase().replace(/ /g,'-')],
+  WGR=['Woodgreen: népszerű nyúlfajták','https://woodgreen.org.uk/pet-advice/rabbit/popular-pet-rabbit-breeds-a-guide-for-new-owners/'],
+  PPR=['Petplan (állatorvosi cikk): népszerű nyúlfajták','https://www.petplan.co.uk/pet-information/rabbit/advice/popular-rabbit-breeds/'],
+  WGH=['Woodgreen: hörcsögök gondozása','https://woodgreen.org.uk/pet-advice/hamster/caring-for-hamsters/'],
+  RSH=['RSPCA: hörcsögök','https://nextgen.rspca.org.uk/animal-care/hamster-advice'],
+  TMV=['Állatorvosi rendelő (Karlsruhe): tengerimalac-fajták útmutató','https://tierarzt-karlsruhe-durlach.de/en/guinea-pig-breeds-2/'],
+  LFV=['Lafeber Vet: pintyek információs lapja','https://lafeber.com/vet/?p=4129'],
+  NYG='Kisgyereknek nem igazán való: nem szereti, ha felveszik, és a háta törékeny, leejtve eltörhet. Nagyobb gyerekes családba illik (felügyelettel).',
+  HAMS='Egyedül tartsd. A Woodgreen szerint minden hörcsögfajt egyedül kell tartani, mert a verekedés életveszélyes sérülést okozhat; az RSPCA szerint a törpehörcsögök néha azonos ivarú, egy alomból való párban élhetnek, de társ nélkül is jól vannak.';
+const FAJTX={
+ nyul:{
+  'Angóra':{t:'Szelíd, társaságkedvelő, de nem szereti, ha kézbe veszik.',e:'kb. 5–8 év',g:NYG,f:['A hosszú gyapjas szőrt naponta ápolni, évente néhányszor nyírni kell.','A lenyelt szőr emésztési gondot (gyomor-bél pangást) okozhat; gubancosodás, bőrfertőzés és légylárvás fertőzés is előfordulhat.','A hosszú szőr miatt könnyen megijed, ha nem vett észre.'],src:[WGR,PPR]},
+  'Belga óriás':{t:'„Szelíd óriás”: kifejlett korában 6–7 kg.',e:'kb. 5–8 év',g:NYG,f:['Hetente ápolni kell (sűrű aljszőr).','Nagy testéhez tágas, természetes környezet kell.'],src:[PDSAR('Flemish Giant')]},
+  'Hermelin':{t:'Törpefajta, kb. 1,1–1,5 kg; családoknál népszerű.',few:1,g:NYG,f:['Társas állat: csoportban vagy párban tartsd.'],src:[['zooplus magazin: Hermelin nyúl','https://www.zooplus.co.uk/magazine/small-pet/small-pet-breeds/hermelin-rabbits']]},
+  'Holland nyúl':{t:'Szelíd, könnyen kezelhető, nyugodt és társaságkedvelő; kb. 2–2,5 kg.',e:'kb. 6–9 év',g:NYG,f:['Rövid szőr, heti ápolás.','Kezdők körében népszerű fajta.'],src:[PDSAR('Dutch'),WGR]},
+  'Kosorrú törpenyúl':{t:'Barátságos, nyugodt, ragaszkodó.',e:'kb. 5–8 év',g:NYG,f:['A lógó fület rendszeresen ellenőrizni kell: fülfertőzésre hajlamos.','Előfordulhat fogelzáródási rendellenesség és szemprobléma.'],src:[WGR,PPR]},
+  'Magyar óriás':{t:'Óriás testű fajta; kedvtelésből és húsáért is tartják.',few:1,g:NYG,src:[['Szegedi Tudományegyetem: állatvédelmi előadás (nyúlfajták)','https://eta.bibl.u-szeged.hu/788/1/mikojozsefneedit_allatvedelem_12_eloadas.pdf']]},
+  'Oroszlánfejű törpenyúl':{t:'Általában félénk, könnyen megijed; kb. 1,5 kg.',e:'kb. 7–9 év',g:NYG,f:['A sörényt naponta, a többi szőrt hetente kell ápolni.','A sörény takarhatja a látását: nyugodtan közelíts hozzá.','Előfordulhat fogprobléma és szőrlabda.'],src:[PDSAR('Lionhead'),WGR,PPR]},
+  'Rex':{t:'Nyugodt, jóindulatú; kb. 3–3,5 kg.',e:'kb. 6–8 év',g:NYG,f:['Bársonyos rövid szőr: kefélni nem kell, szükség esetén nedves ruhával áttörölheted.'],src:[PDSAR('Rex')]},
+  'Színes törpenyúl':{t:'Pici (1 kg alatti), félénk, könnyen megijed.',e:'kb. 7–9 év',g:NYG,n:'Az adatok a holland törpenyúlról (Netherland Dwarf) szólnak.',f:['Türelmes, szelíd bánásmódot igényel.','A kompakt fejforma miatt fogproblémákra hajlamos.'],src:[PDSAR('Netherland Dwarf'),WGR]},
+  'Új-zélandi fehér':{t:'Barátságos, nyugodt, szereti, ha foglalkoznak vele; kb. 4,5–5,5 kg.',e:'kb. 5–8 év',g:NYG,f:['Vedléskor hetente kell ápolni.'],src:[PPR]}},
+ horcsog:{
+  'Szíriai aranyhörcsög':{t:'A legnagyobb hörcsögfaj, ezért könnyebb kézbe venni; kézhez szelídülhet.',a:'Éjjel aktív; alkonyatkor vagy hajnalban foglalkozz vele.',s:'Mindig egyedül tartsd.',e:'kb. 1,5–3 év',f:['Pihenés közben a fölé tartott kéz fenyegető lehet számára.','Legalább 100 × 50 × 50 cm-es otthon kell (a nőstényeknek több hely), kb. 30 cm átmérőjű tömör futókerékkel.'],src:[WGH,RSH]},
+  'Kínai csíkoshörcsög':{t:'Kicsit kisebb a szíriainál, hosszabb farkú; jól szocializálva családbarát.',a:'Éjjel aktív.',s:'Mindig egyedül tartsd.',e:'kb. 1,5–3 év',f:['Legalább 100 × 50 × 50 cm-es otthon, kb. 30 cm átmérőjű tömör futókerék kell.'],src:[WGH,RSH]},
+  'Roborovszki-törpehörcsög':{t:'A legkisebb hörcsögfaj (2,5–5 cm); nagyon gyors.',a:'Éjjel aktív.',s:HAMS,e:'kb. 1,5–3 év',g:'Rendszeres kézbevételre nem való, főleg kisgyereknek.',f:['Legalább 100 × 50 × 40 cm-es otthon kell, legfeljebb 7 mm-es rácstávolsággal, kb. 20 cm átmérőjű tömör futókerékkel.'],src:[WGH,RSH]},
+  'Dzsungáriai törpehörcsög':{t:'Kézhez szelídülhet; jól szocializálva családbarát.',a:'Éjjel aktív.',s:HAMS,e:'kb. 1,5–3 év',f:['Legalább 100 × 50 × 40 cm-es otthon kell, legfeljebb 7 mm-es rácstávolsággal, kb. 20 cm átmérőjű tömör futókerékkel.'],src:[WGH,RSH]},
+  'Campbell-törpehörcsög':{t:'Kézhez szelídülhet; jól szocializálva családbarát.',a:'Éjjel aktív.',s:HAMS,e:'kb. 1,5–3 év',f:['Legalább 100 × 50 × 40 cm-es otthon kell, legfeljebb 7 mm-es rácstávolsággal, kb. 20 cm átmérőjű tömör futókerékkel.'],src:[WGH,RSH]}},
+ tengerimalac:{
+  'Rövidszőrű (sima)':{t:'Sima, rövid szőrű tengerimalac.',k:'igen',f:['Általában elég a heti kefélés.','Előfordulhat fogprobléma; a nem megfelelő alom talpgyulladást, a poros alom légúti gondot okozhat.'],src:[TMV]},
+  'Rozettás (abesszin)':{t:'Szőre forgókba (rozettákba) rendeződik.',f:['A rozettákban megül a kosz: hetente kefélni kell, és figyelni a bőrpírra, a korpára és az élősködőkre.'],src:[TMV]},
+  'Perui':{t:'Nagyon hosszú, egyenes szőrű.',k:'nem',f:['Naponta kefélni, a végbél körül nyírni és a szennyeződést ellenőrizni kell.','Gubancosodás, bőrfelázás, légylárvás fertőzés és a gubanc alatt rejtett sebek előfordulhatnak.'],src:[TMV]},
+  'Sheltie':{t:'Hosszú, hátrafelé omló szőrű.',k:'nem',f:['Naponta ápolni kell; ugyanazok a kockázatok, mint a többi hosszú szőrűnél (gubanc, légylárvás fertőzés).'],src:[TMV]},
+  'Texel':{t:'Hosszú, göndör szőrű.',k:'nem',f:['Naponta ápolni kell; gubancosodás és légylárvás fertőzés előfordulhat.'],src:[TMV]},
+  'Teddy':{t:'Rövid, de sűrű, gyapjas szőrű.',k:'igen',f:['Rendszeresen fésülni kell, mert beleakad az alom.','Hőstressz, bőrnedvesedés, bőr- és szemirritáció előfordulhat.'],src:[TMV]},
+  'Rex':{t:'Rövid, gyapjas, felálló szőrű.',k:'igen',f:['Rendszeresen fésülni kell, mert beleakad az alom.','Hőstressz, bőrnedvesedés, bőr- és szemirritáció előfordulhat.'],src:[TMV]},
+  'Koronás (crested)':{t:'A homlokán egy rozetta („korona”) van.',k:'igen',f:['Rövid szőrű változata kevés ápolást igényel; a hosszú szőrű (coronet) naponta.','A világos bőrűt kevés napsütés érje.'],src:[TMV]},
+  'Szőrtelen (skinny)':{t:'Szinte teljesen szőrtelen.',k:'nem',f:['Csak nagyon tapasztalt gazdának való.','Kefélni nem kell, de a bőrét védeni és tisztítani kell.','Érzékeny a hidegre, a huzatra, a túlmelegedésre és az UV-sugárzásra; a bőre könnyen megsérül.'],src:[TMV]}},
+ pinty:{
+  'Zebrapinty':{t:'Élénk kis pinty; jól alkalmazkodik a fogsághoz.',s:'Általában párban tartják.',e:'a forrás 3–5 évet, máshol akár 10 évet ír',f:['A legtöbb nem szereti a kézbevételt: ne erőltesd, mert megijed és stresszes lesz.','A hím csipogva énekel: nem hangos, de kitartó.','Nagy repülőkalitka vagy röpde való neki.','Előfordulhat arcrüh (atka) és légzsákatka; az utóbbi súlyos, azonnal vidd állatorvoshoz.'],src:[['Lafeber: zebrapinty','https://lafeber.com/pet-birds/species/zebra-finch/'],LFV]},
+  'Japán sirálykapinty':{t:'Békés, nem territoriális, nem verekedős pinty.',s:'Párban vagy kis csapatban érzi jól magát; egyedül stresszes, lehangolt lehet.',e:'akár 10 év',f:['Hasonló méretű, békés fajokkal jól kijön, vegyes röpdébe is való.','Tágas, vízszintes kalitka kell, hogy repülhessen.','Előfordulhat légzsákatka (súlyos: azonnal állatorvos), arcrüh, túlnőtt köröm vagy csőr.'],src:[['Lafeber: japán sirálykapinty','https://lafeber.com/pet-birds/species/society-finch/'],LFV]},
+  'Gould-amandina':{t:'Színpompás, de stresszérzékeny pinty.',f:['Zsúfoltságban stresszes lesz, és egymás tollát tépheti.','A szélsőséges hőmérsékletet rosszabbul tűri, mint a sirálykapinty; a pintyeknek általában 21–27 °C megfelelő.','Hajlamos a légzsákatka-fertőzésre, főleg stresszben.'],src:[['Lafeber: Gould-amandina','https://lafeber.com/pet-birds/species/lady-gouldian-finch/'],LFV]}}};
+const FAJTX_H={nyul:'A fajtáról: ',horcsog:'A hörcsögfajról: ',tengerimalac:'A szőrtípusról: ',pinty:'A pintyfajról: '};
 function fajtaOf(sp,b){if(!b||b==='mix')return null;if(sp==='macska'&&b.startsWith('Európai'))return{x:KINEK.macska,k:'macska',h:'A házi macskáról'};
+  if(FAJTX[sp])return FAJTX[sp][b]&&(BREEDS[sp]||[]).includes(b)?{x:FAJTX[sp][b],h:FAJTX_H[sp]+b}:null;
   return(sp==='kutya'||sp==='macska')&&FAJTA[b]&&BREEDS[sp].includes(b)?{x:FAJTA[b],h:'A fajtáról: '+b}:null}
 function fajtaCard(sp,b,id){const o=fajtaOf(sp,b);if(!o)return'';
   return`<details class="acc fajta" id="${id}" data-breed="${esc(b)}" style="margin-top:14px"><summary><span style="display:flex;flex-direction:column;gap:2px;padding:10px 0"><b>${esc(o.h)}</b><span class="sub" style="font-weight:400;margin:0">${esc(o.x.t)}</span></span></summary><div style="padding-bottom:12px">${kinekBody(o.x,o.k)}</div></details>`}
