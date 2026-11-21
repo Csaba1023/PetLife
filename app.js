@@ -2118,10 +2118,62 @@ const wStat=(v,r)=>!r||v==null?'':r[0]!=null&&v<r[0]?'lo':v>r[1]?'hi':'ok';
 const wcWeeks=p=>p.wcW||(p.species==='harcoshal'?1:2);
 const wcNext=p=>{const last=recs(p,'wchg')[0];if(!last)return null;const d=D(last.date);d.setDate(d.getDate()+7*wcWeeks(p));return d};
 const wcDue=p=>{if(grp(p)!=='hal')return null;const d=wcNext(p);return d&&d-today()<=DAY?d:null};
-const fishCard=p=>{const f=fishOf(p);
+/* ---------- Halak: akváriumméret, létszám, társíthatóság (v69, nov. 21.) ----------
+   Minden szám és szabály a FISH adatlapok forrásolt szövegéből (tank, soc, t/ph/gh) és a harcoshal útmutatójából van;
+   ahol a forrás nem ad számot, nincs ellenőrzés. Csak figyelmeztet, soha nem tilt (a mentés mindig engedélyezett). */
+const FISHX={Guppi:{l:41},Neonhal:{l:54,n:8},Aranyhal:{l:75,lt:'fiatalnak legalább kb. 75 literes'},'Páncélosharcsa':{l:72,n:4},'Szivárványhal':{l:54,lt:'legalább kb. 54 literes (a törpe szivárványhalnak; a Boeseman-félének 120 cm hosszú)',n:6},
+  Platti:{l:54},Molli:{l:81,n:4},'Xifó (kardfarkú hal)':{l:108},'Vörös neonhal':{l:54,n:8},'Zebradánió':{l:81,n:8},'Szumátrai díszmárna':{l:72,n:8,nt:'kevesebb hal mellett agresszív, és megcsipkedi más halak úszóit'},
+  'Vitorláshal':{l:200},'Diszkoszhal':{l:255,n:5},'Gurámi':{l:54,lt:'legalább kb. 54 literes (a törpegurámi egy párjának)'},'Algaevő harcsa (ancistrus)':{l:54},'Razbóra':{l:54,n:8},'Törpesügér':{l:54,n:2,nt:'párban tartsd'},
+  'Malawi-sügér':{l:154},Koi:{pond:1,n:5},'Bohóchal':{l:110},'Zöld korallsügér':{n:6,nt:'egyedül stresszes'},
+  harcoshal:{l:10,li:19}};
+const FT={cold:['Aranyhal','Koi'],coldOk:['Aranyhal','Zebradánió','Koi'],nip:['Szumátrai díszmárna'],long:['Vitorláshal','Gurámi','Guppi','harcoshal'],
+  eats:{'Vitorláshal':['Neonhal','Vörös neonhal']},cichl:['Vitorláshal','Diszkoszhal','Malawi-sügér'],doktor:['Palettás doktorhal','Sárga doktorhal']};
+const fkey=p=>p.species==='harcoshal'?'harcoshal':stock(p)&&p.breed&&p.breed!=='mix'&&FISH[p.breed]&&!FISH[p.breed].gen?p.breed:null;
+const fname=k=>k==='harcoshal'?'Harcoshal':k;
+const fsea=k=>BREEDS.tengeri.includes(k);
+const az=w=>/^[aáeéiíoóöőuúüű]/i.test(w)?'Az':'A';
+const frg=(k,x)=>k==='harcoshal'?WGEN.harcoshal[x==='t'?'temp':x]:FISH[k]&&FISH[k][x];
+const fgap=(a,b)=>!!(a&&b&&a[0]!=null&&b[1]!=null&&a[1]!=null&&b[0]!=null&&(a[1]<b[0]||b[1]<a[0]));
+/* a és b párosításának okai, a szemszögéből (az „ok” rövid, a listában a társ neve mellé kerül) */
+function fishPair(a,b){if(a===b)return[];const r=[];
+  if(fsea(a)!==fsea(b)){r.push(fsea(a)?'édesvízi hal':'tengeri hal');return r}
+  if(fgap(frg(a,'t'),frg(b,'t')))r.push('eltérő hőmérséklet-igény');
+  if(fgap(frg(a,'ph'),frg(b,'ph')))r.push('eltérő pH-igény');
+  if(fgap(frg(a,'gh'),frg(b,'gh')))r.push('eltérő vízkeménység-igény');
+  if(FT.cold.includes(a)&&!FT.coldOk.includes(b))r.push('nem hidegvízi hal (mellé csak hidegvízi társ való)');
+  else if(FT.cold.includes(b)&&!FT.coldOk.includes(a))r.push('hidegvízi hal, csak hidegvízi társ mellé való');
+  if(FT.nip.includes(a)&&FT.long.includes(b))r.push('hosszú úszójú: megcsipkedné az úszóit');
+  if(FT.long.includes(a)&&FT.nip.includes(b))r.push('megcsipkedi az úszóit');
+  if(a==='harcoshal'&&FT.long.includes(b))r.push('hosszú úszójú hal: a harcoshal mellé nem való');
+  if(b==='harcoshal'&&FT.long.includes(a))r.push('a harcoshal hosszú úszójú hal mellé nem való');
+  if((FT.eats[a]||[]).includes(b))r.push('megeheti');
+  if((FT.eats[b]||[]).includes(a))r.push('megeheti őt');
+  if(a==='Malawi-sügér'&&b!=='Malawi-sügér')r.push('a Malawi-sügér békés halak mellé nem való');
+  else if(b==='Malawi-sügér'&&a!=='Malawi-sügér')r.push('agresszív: békés halak mellé nem való');
+  if(a==='Törpesügér'&&FT.cichl.includes(b))r.push('más sügér: a törpesügér mellé nem való');
+  if(b==='Törpesügér'&&FT.cichl.includes(a))r.push('a törpesügér más sügér mellé nem való');
+  if(FT.doktor.includes(a)&&FT.doktor.includes(b))r.push('rokon doktorhal');
+  return[...new Set(r)]}
+/* „Kivel nem tartható?”: okok szerint csoportosítva (a tengeri/édesvízi különbség egy sorban) */
+function fishNoList(k){const all=[...Object.keys(FISH).filter(x=>!FISH[x].gen),'harcoshal'],by={};
+  all.forEach(o=>{const r=fishPair(k,o);if(r[0]==='édesvízi hal'||r[0]==='tengeri hal')return;r.forEach(x=>(by[x]=by[x]||[]).push(fname(o)))});
+  const rows=Object.entries(by).map(([ok,l])=>`<li>${esc(l.join(', '))}: ${esc(ok)}</li>`);
+  rows.push(`<li>${fsea(k)?'Édesvízi halakkal':'Tengeri halakkal'} nem tartható együtt.</li>`);
+  return`<ul class="tips" id="fishNo" style="margin:6px 0 0">${rows.join('')}</ul><p class="sub" style="margin:6px 0 0">A lista a fajlapok adataiból (vízigény, viselkedés) készült, tájékoztató jellegű. A Petavira halfajlistáján nem szereplő halakat nem vizsgálja.</p>`}
+/* méret- és létszámfigyelmeztetés egy halcsoportra (a felvételi űrlap értékeiből is) */
+function fishWarns(k,count,tankL){const X=FISHX[k];if(!X)return[];const w=[],n=fname(k),c=parseInt(count,10),L=typeof tankL==='number'?tankL:numHU(String(tankL||''));
+  if(X.pond)w.push('A koi kerti tóba való: felnőttnek kb. 38 liter víz kell a testhossza minden 2,5 centiméterére, és a tó legalább 0,9–1,8 m mély legyen.');
+  if(L>0&&X.l&&L<X.l)w.push(k==='harcoshal'?`A harcoshalnak legalább kb. 10 literes akvárium kell; a megadott ${fmtKg(L)} liter ennél kevesebb.`:`${az(n)} ${n.toLowerCase()} számára ${X.lt||'legalább kb. '+X.l+' literes'} akváriumot ajánlanak; a megadott ${fmtKg(L)} liter ennél kevesebb.`);
+  else if(L>0&&X.li&&L<X.li)w.push(`A harcoshalnak az ideális akvárium 19–38 liter vagy több; a megadott ${fmtKg(L)} liter a legkisebb ajánlott méretet eléri, de ennél kevesebb.`);
+  if(c>0&&X.n&&c<X.n)w.push(`${az(n)} ${n.toLowerCase()}: legalább ${X.n} példányt ajánlanak együtt tartani${X.nt?' ('+X.nt+')':''}; a megadott ${c}.`);
+  if(k==='harcoshal'&&c>1)w.push('Két hím harcoshalat soha ne tarts együtt: megsebezhetik, megölhetik egymást. Nőstények csoportban tarthatók.');
+  return w}
+const fishWarnHtml=(k,count,tankL,id,wz)=>{const w=fishWarns(k,count,tankL);return w.length?`<div class="note warn" id="${id}" role="status" style="margin-top:10px"><b>Figyelem</b><ul style="margin:6px 0 0;padding-left:18px">${w.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p style="margin:6px 0 0">Tájékoztató jellegű${wz?', a felvételt nem akadályozza':''}.</p></div>`:`<div id="${id}" hidden></div>`};
+const aqWarn=(p,id)=>{const k=fkey(p);return k?fishWarnHtml(k,p.count,p.tankL,id):''};
+const fishCard=p=>{if(p.species==='harcoshal')return`<div class="card" id="fishCard" style="margin-top:14px">${aqWarn(p,'careAq')}<b>Kivel nem tartható?</b>${fishNoList('harcoshal')}</div>`;const f=fishOf(p);
   if(!f)return stock(p)?`<div class="card guide" id="fishCard"><b>Vegyes állomány</b><p>Vegyes állománynál minden halfaj igényét külön nézd meg: a szükséges akváriumméret, a hőmérséklet és a vízértékek tartománya fajonként eltér. Olyan fajokat tarts együtt, amelyeknek az igényei átfedik egymást. Ha a profilban megadod a fő halfajt, itt a fajlapját látod, és a vízértékek naplója ahhoz igazodik.</p></div>`:'';
   const G=wGoals(p),row=(k,v)=>v?`<li><div style="flex:1"><b>${k}</b><span class="when">${v}</span></div></li>`:'',rg=(k,u)=>G[k]?wGoal(k,G[k])+(u?' '+u:''):'';
-  return`<div class="card" id="fishCard" style="margin-top:14px"><b>Fajlap: ${f.n}</b>${f.gen?`<p style="margin-bottom:0">${f.gen}</p>`:`<ul class="list" style="margin-top:8px">${row('Kifejlett méret',f.cm)}${row(f.pond?'Kerti tó':'Akvárium',f.tank)}${row('Hőmérséklet',rg('temp','°C'))}${row('Sűrűség',rg('sg'))}${row('pH',rg('ph'))}${row('Keménység',rg('gh','°dH'))}${row('Viselkedés és társak',f.soc)}${row('Eleség',f.feed)}${row('Jó tudni',f.note)}</ul>`}</div>`};
+  return`<div class="card" id="fishCard" style="margin-top:14px">${aqWarn(p,'careAq')}<b>Fajlap: ${f.n}</b>${f.gen?`<p style="margin-bottom:0">${f.gen}</p>`:`<ul class="list" style="margin-top:8px">${row('Kifejlett méret',f.cm)}${row(f.pond?'Kerti tó':'Akvárium',f.tank)}${row('Hőmérséklet',rg('temp','°C'))}${row('Sűrűség',rg('sg'))}${row('pH',rg('ph'))}${row('Keménység',rg('gh','°dH'))}${row('Viselkedés és társak',f.soc)}${row('Eleség',f.feed)}${row('Jó tudni',f.note)}</ul>${fkey(p)?`<b style="display:block;margin-top:10px">Kivel nem tartható?</b>${fishNoList(fkey(p))}`:''}`}</div>`};
 const fishFeed=p=>{const f=fishOf(p);return f&&f.feed?`<h2>${esc(p.breed)}</h2><p id="fishFeed">${f.feed}</p>`:''};
 function wcHtml(p){const l=recs(p,'wchg'),last=l[0],next=wcNext(p),late=!!(next&&next<today());
   return`<h2>Részleges vízcsere</h2><div class="card" id="wcCard">${last?`<p style="margin:0"><b>Utolsó vízcsere:</b> ${fmtDate(D(last.date))}${last.pct?`, ${esc(last.pct)}%`:''}</p><p class="${late?'err':'sub'}" id="wcNext">Következő: ${fmtDate(next)}${late?', már elmúlt':''}</p>`:'<p class="sub" style="margin:0">Még nincs rögzített vízcsere. Rögzítsd az utolsót, és az app emlékeztet a következőre.</p>'}
@@ -2901,7 +2953,7 @@ function vHome(p){
   <section class="hero"><div class="who">${ava(p,1)}<div style="min-width:0"><h1>${esc(petName(p))}</h1>
    <div class="meta">${esc([p.name?speciesLabel(p).toLowerCase():'',breedLabel(p),size?SIZE_HU[size]:'',sex,p.count?p.count+' db':'',p.tankL?fmtKg(p.tankL)+' literes akvárium':''].filter(Boolean).join(', '))}</div>
    <div class="meta"><b>${fmtAge(p)}</b>${p.est?' (becsült)':''}${st?', '+stHU(p,st).toLowerCase():''}</div>${hyTxt(p)?`<div class="meta hy">${hyTxt(p)} (becslés)</div>`:''}</div>
-   <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">${ic('pen')}</button></div>${trail(p)}</section>${flagHtml(FLAG[gkey(p)]?gkey(p):p.species)}
+   <button class="edit" data-act="petEdit" data-id="${p.id}" aria-label="Profil szerkesztése">${ic('pen')}</button></div>${trail(p)}</section>${flagHtml(FLAG[gkey(p)]?gkey(p):p.species)}${aqWarn(p,'homeAq')}
   <h2>Teendők és emlékeztetők</h2>
   ${due.length||soon.length||par.length||wc||rem.length||sk?`<ul class="tasks">${due.map(i=>`<li class="${statusOf(i)}"><div><b>${esc(i.m.t)}</b><span class="when">${whenText(i)}</span>${tags(i.m)}</div><button class="btn small" data-act="tick" data-key="${i.m.key}">Megvolt</button></li>`).join('')}${wc?`<li class="${wc<t?'late':''}" id="wcDue"><div><b>Részleges vízcsere esedékes</b><span class="when">${fmtDate(wc)}${wc<t?', már elmúlt':''}</span></div><button class="btn small" data-act="wcNew">Rögzítés</button></li>`:''}
    ${par.map(x=>`<li class="${x.date<t?'late':''}"><div><b>${PAR_SHORT[x.t]} esedékes</b><span class="when">${fmtDate(x.date)}${x.date<t?', már elmúlt':''}</span></div><button class="btn small" data-act="parNew" data-t="${x.t}">Rögzítés</button></li>`).join('')}
@@ -4371,7 +4423,7 @@ function drawWizard(){
     <label class="f"><span>${g==='hal'?'Név (nem kötelező, pl. az akvárium neve)':'Név (nem kötelező)'}</span><input name="name" value="${esc(w.name)}" maxlength="40" autocomplete="off"></label>
     <div class="f"><span>Fotó (nem kötelező)</span><div class="row">${okPhoto(w.photo)?`<img class="ava big" src="${esc(w.photo)}" alt="">`:''}<label class="btn ghost small" style="position:relative">${w.photo?'Csere':'Fotó választása'}<input type="file" id="photoIn" accept="image/*" style="position:absolute;inset:0;opacity:0;min-height:0"></label>${w.photo?'<button class="btn text" data-act="wzNoPhoto">Eltávolítás</button>':''}</div></div>
     ${g==='hal'?`<label class="f"><span>Hány hal él az akváriumban?</span><input type="number" inputmode="numeric" min="1" max="999" name="count" value="${esc(w.count)}" placeholder="pl. 6"></label>
-    <label class="f"><span>Az akvárium mérete literben</span><input name="tankL" inputmode="decimal" value="${esc(w.tankL)}" placeholder="pl. 60"></label>`
+    <label class="f"><span>Az akvárium mérete literben</span><input name="tankL" inputmode="decimal" value="${esc(w.tankL)}" placeholder="pl. 60"></label>${fkey(w)?fishWarnHtml(fkey(w),w.count,w.tankL,'wzAq',1):''}`
     :`<div class="f"><span>Ivar (nem kötelező)</span>${radio('sex',[['him','Hím'],['nosteny','Nőstény'],['','Nem tudom']],w.sex)}</div>
     ${g==='emlos'||g==='egyeb'?`<div class="f"><span>Ivartalanított? (nem kötelező)</span>${radio('neutered',[['igen','Igen'],['nem','Nem'],['','Nem tudom']],w.neutered)}</div>`:''}
     ${noWeight(w)?'':`<label class="f"><span>Súly ${gramSp(w)?'grammban':'kg-ban'} (nem kötelező)</span><input name="weight" inputmode="decimal" value="${esc(w.weight)}" placeholder="${gramSp(w)?'pl. 65':'pl. 12,5'}"></label>`}
@@ -4822,6 +4874,7 @@ document.addEventListener('input',e=>{const t=e.target;
     // egyetlen találat → kiválasztjuk (kutyánál így rögtön látszik a fajtából számolt méret); újrarajzolás után a fókusz visszakerül
     if(wzQ.trim()&&h.length===1&&W.breed!==h[0]){readWizard();W.breed=h[0];W.err='';drawWizard();const q=$('#wzBreedQ');if(q){q.focus({preventScroll:true});q.setSelectionRange(q.value.length,q.value.length)}}
     else fillBreeds();return}
+  if((t.name==='count'||t.name==='tankL')&&W&&$('#wzAq')){readWizard();const k=fkey(W);if(k)$('#wzAq').outerHTML=fishWarnHtml(k,W.count,W.tankL,'wzAq',1);return}
   if(t.id==='chatIn'){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px'}
   if(t.id==='cityIn'){const c=S.settings.city=t.value.trim();document.querySelectorAll('#mapBtns a').forEach(a=>{if(c){a.href=mapUrl(a.dataset.q,c);a.removeAttribute('aria-disabled')}else{a.removeAttribute('href');a.setAttribute('aria-disabled','true')}})}});
 document.addEventListener('keydown',e=>{

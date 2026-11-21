@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Halak – akváriumméret, létszám, „Kivel nem tartható?” (2026. nov. 21.)
+- **11-21 – v69:** a halfaj adatlapjára „Kivel nem tartható?” lista került (vízigény, úszócsipkedés, ragadozás, agresszió). Ha az akvárium kisebb a fajnak ajánlottnál, vagy kevesebb a hal a csapatminimumnál, figyelmeztetés jelenik meg felvételkor (élőben), a főoldalon és a Tartás oldalon. Csak figyelmeztet, a mentés mindig engedélyezett. A harcoshalnál is.
+
 ### Fajtakártyák – minden kutyafajta (2026. nov. 21.)
 - **11-21 – v68:** a maradék 70 kutyafajta forrásolt kártyája, így mind a 101 kutyafajtának van leírása. Ahol csak fajtastandard érhető el, „kevés ellenőrzött forrás” jelzés.
 
