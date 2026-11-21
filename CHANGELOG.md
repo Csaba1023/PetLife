@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Fajtakártyák – minden kutyafajta (2026. nov. 21.)
+- **11-21 – v68:** a maradék 70 kutyafajta forrásolt kártyája, így mind a 101 kutyafajtának van leírása. Ahol csak fajtastandard érhető el, „kevés ellenőrzött forrás” jelzés.
+
 ### Fajtakártyák – 15 macska- és 30 kutyafajta (2026. nov. 21.)
 - **11-21 – v67:** forrásolt fajtaleírás (jelleg, napi ritmus, egyedüllét, élettartam, kezdőknek, gyerek mellé, mire figyelj) a Tartás és nevelés oldalon a fajkártya alatt, a „Még nincs állatom” → Fajtatiszta fülön és állatfelvételkor a fajtaválasztó alatt. Európai rövidszőrűnél a házi macska kártyája; skót lógófülűnél állatjóléti figyelmeztetés; minden kártyán „tájékoztató jellegű” sor. A maradék kutyafajták később.
 
