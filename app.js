@@ -3959,6 +3959,40 @@ const FAJTX={
   'Japán sirálykapinty':{t:'Békés, nem territoriális, nem verekedős pinty.',s:'Párban vagy kis csapatban érzi jól magát; egyedül stresszes, lehangolt lehet.',e:'akár 10 év',f:['Hasonló méretű, békés fajokkal jól kijön, vegyes röpdébe is való.','Tágas, vízszintes kalitka kell, hogy repülhessen.','Előfordulhat légzsákatka (súlyos: azonnal állatorvos), arcrüh, túlnőtt köröm vagy csőr.'],src:[['Lafeber: japán sirálykapinty','https://lafeber.com/pet-birds/species/society-finch/'],LFV]},
   'Gould-amandina':{t:'Színpompás, de stresszérzékeny pinty.',f:['Zsúfoltságban stresszes lesz, és egymás tollát tépheti.','A szélsőséges hőmérsékletet rosszabbul tűri, mint a sirálykapinty; a pintyeknek általában 21–27 °C megfelelő.','Hajlamos a légzsákatka-fertőzésre, főleg stresszben.'],src:[['Lafeber: Gould-amandina','https://lafeber.com/pet-birds/species/lady-gouldian-finch/'],LFV]}}};
 const FAJTX_H={nyul:'A fajtáról: ',horcsog:'A hörcsögfajról: ',tengerimalac:'A szőrtípusról: ',pinty:'A pintyfajról: '};
+/* --- nyílméregbéka-fajok (v73, nov. 21.): az általános útmutató az alap, fajonként a társak, a terrárium, a hőmérséklet és a pára cserélődik --- */
+Object.assign(SRC,{bgsuDart:['Bowling Green State University herpetárium: Poison dart frogs','https://www.bgsu.edu/content/dam/BGSU/college-of-arts-and-sciences/biological-sciences/Herpetarium-documents/Frogs/poison-dart-frogs-general-bgsu-herpetarium.pdf'],
+  bgsuLeuco:['Bowling Green State University herpetárium: Yellow and Black Poison Frog','https://www.bgsu.edu/arts-and-sciences/biological-sciences/facilities-and-resources/bgsu-herpetarium/animals/amphibians/yellow-and-black-poison-frog.html'],
+  acDart:['AmphibianCare: Poison Dart Frogs','https://amphibiancare.com/2008/08/22/poison-dart-frogs/'],
+  rmTerrib:['Reptiles Magazine: Golden Poison Dart Frog Care Sheet','https://reptilesmagazine.com/?p=8026'],
+  jfTerrib:['Josh’s Frogs: Phyllobates terribilis','https://joshsfrogs.com/care-sheet/phyllobates-terribilis']});
+const NM_MIX='Fajokat és színváltozatokat ne tarts együtt egy terráriumban.',NM_DT='Nappal 23–29 °C között tartsd (a források 23–28, illetve 24–29 °C-ot írnak), éjszaka 18–21 °C-ra hűlhet. A 28 °C feletti meleg veszélyes lehet. Fűtés többnyire nem kell.';
+const NM={
+ tinctorius:{n:'Festett nyílméregbéka',soc:'Különösen territoriális: inkább egy hím–nőstény párt tarts, hacsak nem nagyon nagy a terrárium. A fiatalok együtt nevelhetők, az ivarérett békák territoriálissá válnak. '+NM_MIX,
+  terr:'Egy párnak legalább 61 × 30 × 41 cm-es (kb. 76 literes), sűrűn beültetett üvegterrárium kell. '+AM_LID,temp:NM_DT,hum:'Kb. 95%, de legalább 70%: naponta permetezz, jó szellőzés mellett. Száraz levegőben félénk, rejtőzködő lesz.',
+  T:{cool:[23,29],hum:[70,100],night:[18,21],note:'A 28 °C feletti meleg veszélyes lehet.'},src:['bgsuDart','acDart'],
+  card:{t:'Látványos, nagyobb termetű (kb. 6,4 cm) nyílméregbéka; a kék „azureus” is ez a faj.',s:'Különösen territoriális: inkább hím–nőstény párban.',e:'7–15 év vagy több',f:['A talaj növényzetén él, de mászik és ugrik is.','Fajokat és színváltozatokat ne keverj.','Nagyon törékeny: ne fogd meg.']}},
+ auratus:{n:'Zöld-fekete nyílméregbéka',soc:'A források nem adnak külön útmutatót: az általános szabály szerint 2–6 felnőtt tartható egy kb. 76 literes terráriumban. '+NM_MIX,
+  terr:'2–6 felnőttnek legalább 61 × 30 × 41 cm-es (kb. 76 literes), sűrűn beültetett üvegterrárium kell. '+AM_LID,temp:NM_DT,hum:'Kb. 95%, de legalább 70%: naponta permetezz, jó szellőzés mellett.',
+  T:{cool:[23,29],hum:[70,100],night:[18,21],note:'A 28 °C feletti meleg veszélyes lehet.'},src:['bgsuDart','acDart'],
+  card:{t:'Kis termetű (kb. 3,2 cm) nyílméregbéka; patakpartok kövein él.',e:'7–15 év vagy több',f:['A források nem adnak rá külön társas útmutatót.','Fajokat és színváltozatokat ne keverj.','Nagyon törékeny: ne fogd meg.']}},
+ leucomelas:{n:'Sárgasávos nyílméregbéka',soc:'Egy tenyészpár vagy egy hármas tartható együtt. '+NM_MIX,
+  terr:'Egy párnak vagy hármasnak legalább kb. 38 literes, sűrűn beültetett terrárium kell jó vízelvezetéssel, sekély vízzel és búvóhellyel. '+AM_LID,temp:'Nappal 23,5–29 °C között tartsd, éjszaka 18–21 °C-ra hűlhet. A 28 °C feletti meleg veszélyes lehet.',hum:'Kb. 95%: naponta permetezz, jó szellőzés mellett.',
+  T:{cool:[23.5,29],hum:[70,100],night:[18,21],note:'A 28 °C feletti meleg veszélyes lehet.'},src:['bgsuLeuco','bgsuDart','acDart'],
+  card:{t:'Nappal aktív, 3–5 cm-es nyílméregbéka; a talajon és az avarban él.',s:'Tenyészpár vagy hármas tartható együtt.',e:'10–15 év (a legidősebb ismert 20,5 évet élt)',f:['Felnőttként naponta 50–75 muslicát eszik.','Nem jó úszó: csak sekély víz legyen.','Nagyon törékeny: ne fogd meg.']}},
+ terribilis:{n:'Arany nyílméregbéka',soc:'Csoportban vagy párban is jól megvan; merész, hangosan trillázó béka. '+NM_MIX,
+  terr:'Felnőttenként legalább kb. 38 liter kell; egy párnak legalább kb. 76 literes, inkább hosszú, mint magas terrárium, mert a talajterület fontosabb a magasságnál. '+AM_LID,
+  temp:'Hűvösebbet kíván, mint a többi faj: nappal 18–24 °C, éjszaka kb. 16 °C. Soha ne legyen 27 °C fölött: hőérzékeny.',hum:'Legalább 70%: naponta permetezz, jó szellőzés mellett.',
+  T:{cool:[18,24],hum:[70,100],night:[16,21],note:'Soha ne legyen 27 °C fölött: hőérzékeny faj.'},src:['rmTerrib','jfTerrib','acDart'],
+  card:{t:'Merész, mindig látható, kb. 5 cm-es nyílméregbéka.',s:'Csoportban vagy párban is tartható.',e:'10–20 év',f:['Hűvösebbet kíván: soha ne legyen 27 °C fölött.','Vadon veszélyeztetett faj (szűk elterjedési terület): csak fogságban tenyésztett állatot vegyél.','A fogságban tenyésztett példány nem mérgező.']}}};
+BREEDS.nyilmeregbeka=Object.keys(NM).map(k=>NM[k].n);SPECIES.nyilmeregbeka.vt='Faj';
+Object.keys(NM).forEach(k=>{const v=NM[k],id='nyilmeregbeka:'+k,B=CARE.nyilmeregbeka,sw=(arr,t,txt)=>arr.map(c=>Array.isArray(c)&&c[0]===t?[t,txt,...c.slice(2)]:c);
+  GVAR[v.n]=id;FOOD[id]=FOOD.nyilmeregbeka;TRIP[id]=TRIP.nyilmeregbeka;
+  const adult=sw(B.g.felnott,'Társak',v.soc);CARE[id]={...B,g:{...B.g,felnott:adult,idos:adult}};
+  HOME[id]=sw(sw(sw(HOME.nyilmeregbeka,'Terrárium',v.terr),'Hőmérséklet',v.temp),'Páratartalom',v.hum);
+  GSRC[id]={food:[...new Set([...GSRC.nyilmeregbeka.food,...v.src])],care:[...new Set([...v.src,...GSRC.nyilmeregbeka.care])],trip:GSRC.nyilmeregbeka.trip};
+  TERRA[id]=v.T;AMB.add(id);if(FLAG.nyilmeregbeka)FLAG[id]=FLAG.nyilmeregbeka;
+  FAJTX.nyilmeregbeka=FAJTX.nyilmeregbeka||{};FAJTX.nyilmeregbeka[v.n]={...v.card,src:v.src.map(s=>SRC[s])}});
+FAJTX_H.nyilmeregbeka='A nyílméregbéka-fajról: ';
 function fajtaOf(sp,b){if(!b||b==='mix')return null;if(sp==='macska'&&b.startsWith('Európai'))return{x:KINEK.macska,k:'macska',h:'A házi macskáról'};
   if(FAJTX[sp])return FAJTX[sp][b]&&(BREEDS[sp]||[]).includes(b)?{x:FAJTX[sp][b],h:FAJTX_H[sp]+b}:null;
   return(sp==='kutya'||sp==='macska')&&FAJTA[b]&&BREEDS[sp].includes(b)?{x:FAJTA[b],h:'A fajtáról: '+b}:null}

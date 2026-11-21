@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Nyílméregbéka-fajok (2026. nov. 21.)
+- **11-21 – v73:** felvételkor választható a festett, a zöld-fekete, a sárgasávos és az arany nyílméregbéka. Mindegyik saját tartási adatokat (társak, terrárium, hőmérséklet, pára), terráriumnapló-céltartományt és fajkártyát kap; az arany nyílméregbékánál hűvösebb (18–24 °C) céltartomány. A régi, faj nélküli profilok az általános útmutatónál maradnak.
+
 ### Fajkártya felvételkor (2026. nov. 21.)
 - **11-21 – v72:** állatfelvételkor, a faj kiválasztása után megjelenik az összecsukott „A fajról: kinek való?” kártya, mind a 67 fajnál.
 
