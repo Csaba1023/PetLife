@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### „Melyik állat illik hozzám?” fajkártyák (2026. nov. 21.)
+- **11-21 – v65:** a „Még nincs állatom” oldalon új nézet: 21 emlős- és madárfaj rövid, forrásolt jellemzése (milyen társ, napi ritmus, társigény, élettartam, gyerek mellé, mire figyelj), három szűrővel. A Tartás és nevelés oldal tetején összecsukható „A fajról” kártya. Hüllők, kétéltűek, halak és gerinctelenek később. Tesztelői ötlet (Körtés János).
+
 ### Tanácsadó – helyzethez illő tartalékszöveg (2026. nov. 19.)
 - **11-19 – v64:** ha a Tanácsadó válasza nem jeleníthető meg, a vészhelyzeti (állatorvos/ügyelet) útmutatás csak tünetvizsgálatnál vagy tünetre utaló kérdésnél jelenik meg; tápajánlásnál, más feladatoknál és egyéb kérdéseknél semleges, a helyzethez illő szöveg. Kétes esetben marad a vészhelyzeti útmutatás.
 
