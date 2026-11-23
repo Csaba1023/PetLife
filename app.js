@@ -4719,7 +4719,7 @@ const AI_OUT_TASK='Most nem tudok részletes választ adni. Próbáld újra kés
 const AI_OUT_CHAT='Erre most nem tudok részletes választ adni. Próbáld meg másképp megfogalmazni, vagy kérdezz újra később.';
 const AI_SYM_RE=/h[áa]ny(ik|t|[áa]s|tak|nak)|[öo]klend|hasmen|v[ée]r(es|ez|z|e\b|\b)|g[öo]rcs|remeg|r[áa]ngat|nem (eszik|iszik|evett|ivott)|m[ée]rgez|megev|lenyel|liheg|fullad|nehezen l[ée]le?gz|s[áa]nt|f[áa]j(dalm|ik|t\b|nak)|f[áa]j\b|beteg|\bl[áa]z(as|a|at|ban)?\b|[áa]jul|eszm[ée]letlen|b[ée]nul|duzzad|s[ée]r[üu]l|\bseb(e|ek|es)?\b|nyálaz|nyalaz|t[áa]ntorog|feszes has|puffad/i;
 const aiOutTxt=ctx=>!ctx?AI_OUT_SAFE:ctx.key?(ctx.key.startsWith('sym:')?AI_OUT_SAFE:ctx.key==='food'||ctx.key==='prod_tap'?AI_OUT_FOOD:AI_OUT_TASK):typeof ctx.q==='string'?(AI_SYM_RE.test(ctx.q)?AI_OUT_SAFE:AI_OUT_CHAT):AI_OUT_SAFE;
-const ERR={short:'Írd le bővebben, mire vagy kíváncsi, pl. „Hány gramm tápot adjak naponta?”',login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
+const ERR={app_only:'A Tanácsadó a Petavira Android-appban érhető el.',short:'Írd le bővebben, mire vagy kíváncsi, pl. „Hány gramm tápot adjak naponta?”',login:'A Tanácsadó fiókkal használható. Lépj be a Beállításokban (jobb felső gomb), a Fiók résznél.',session_expired:'Lejárt a belépésed. Lépj be újra a Beállításokban (jobb felső gomb), majd küldd el újra a kérdést.',offline:'Nincs internetkapcsolat. A Tanácsadóhoz kapcsolat kell.',
   daily_limit:`Mára elfogyott a napi ${AI_DAY} kérdésed. Holnap újra kérdezhetsz.`,hourly_limit:'Ebben az órában elérted a kérdéskeretet. Próbáld újra később.',
   /* okt. 21.: díjcsomag szerinti keret (a szerver PLAN_START után küldi) és a napi globális ingyenes keret */
   weekly_limit:'Ezen a héten elfogytak az ingyenes kérdéseid. Hétfőtől újra kérdezhetsz.',monthly_limit:'Ebben a hónapban elfogytak a Tanácsadó-kérdéseid. A következő hónap 1-jétől újra kérdezhetsz.',plan_ended:'Az ingyenes Tanácsadó-időszakod lejárt.',free_busy:'Ma már nagyon sokan kérdeztek, ezért az ingyenes Tanácsadó szünetel. Holnap újra kérdezhetsz.',too_fast:'Várj néhány másodpercet a következő kérdéssel.',
@@ -4774,6 +4774,35 @@ function aiGuide(p){
    Válasz: {"t":"szöveg","cut":false,"sig":"…","qsig":"…"}; az aláírás nélküli előzményt a szerver figyelmen kívül hagyja. */
 const AI_URL=SB_URL.replace(/\/$/,'')+'/functions/v1/advisor';
 const aiGate=()=>CFG_OK&&!cloud.uid&&cloud.state!=='pending';
+/* ---------- nov. 23. (Z9, 1. kör): Play Integrity híd és csatorna ----------
+   Az Android-app (versionCode 3-tól) postMessage-csatornát nyit (Chrome 115+ TWA, Digital Asset Links), és kérésre Play Integrity-tokent ad.
+   A token ellenőrzése CSAK a szerveren van (Google-visszafejtés); a kliens semmit nem dönt el, csak továbbítja. A csatorna (twa / twa_old / web)
+   csak a naplóhoz kell, nem bizonyíték. Siker után a szerver 1 órás, fiókhoz kötött igazolást (att) ad, ezt a böngészőfül megjegyzi.
+   Biztonság: csak a saját originről jövő, a megbeszélt jelszavas első üzenet nyithat csatornát; a válasz formátuma szigorúan ellenőrzött. */
+const PI_PKG='com.csabastudio.petavira',PI_HELLO='petavira-bridge-1',PI_TOK=/^[A-Za-z0-9_\-.=]{20,8000}$/,PI_ATT=/^a1\.[0-9a-z]{1,12}\.[A-Za-z0-9_-]{43}$/;
+let piPort=null,piSeq=0,piAtt=null;const piWait=new Map();
+try{if(String(document.referrer||'').startsWith('android-app://'+PI_PKG))sessionStorage.setItem('pv_twa','1')}catch(e){}
+try{const a=JSON.parse(sessionStorage.getItem('pv_att')||'null');if(a&&typeof a.uid==='string'&&typeof a.att==='string'&&PI_ATT.test(a.att)&&Number.isFinite(a.exp))piAtt=a}catch(e){}
+addEventListener('message',ev=>{
+  if(piPort||ev.origin!==location.origin||ev.data!==PI_HELLO||!ev.ports||!ev.ports[0])return;
+  piPort=ev.ports[0];
+  piPort.onmessage=m=>{let d=m.data;if(typeof d==='string'){try{d=JSON.parse(d)}catch(e){return}}
+    if(!d||d.t!=='pi'||!Number.isInteger(d.id)||!piWait.has(d.id))return;
+    const f=piWait.get(d.id);piWait.delete(d.id);f(typeof d.tok==='string'&&PI_TOK.test(d.tok)?d.tok:'')}});
+const piChan=()=>{if(piPort)return'twa';try{return sessionStorage.getItem('pv_twa')==='1'?'twa_old':'web'}catch(e){return'web'}};
+const piB64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+/* a kéréshez kötött token: requestHash = base64url(SHA-256('petavira-pi-v1|uid|pin|pts')) – a szerver ugyanígy számolja */
+async function piFields(){const f={ch:piChan()};
+  if(piAtt&&piAtt.uid===cloud.uid&&piAtt.exp>Date.now()+60e3){f.att=piAtt.att;return f}
+  if(!piPort||!(window.crypto&&crypto.subtle))return f;
+  try{const pin=piB64u(crypto.getRandomValues(new Uint8Array(24))),pts=Date.now();
+    const h=piB64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('petavira-pi-v1|'+String(cloud.uid).toLowerCase()+'|'+pin+'|'+pts)));
+    const id=++piSeq,tok=await new Promise(res=>{piWait.set(id,res);setTimeout(()=>{if(piWait.delete(id))res('')},6000);
+      try{piPort.postMessage(JSON.stringify({t:'pi',id,h}))}catch(e){piWait.delete(id);res('')}});
+    if(tok)Object.assign(f,{pit:tok,pin,pts})}catch(e){}
+  return f}
+function piAttSave(j){if(!j||typeof j.att!=='string'||!PI_ATT.test(j.att))return;
+  piAtt={uid:cloud.uid,att:j.att,exp:parseInt(j.att.split('.')[1],36)*1000};try{sessionStorage.setItem('pv_att',JSON.stringify(piAtt))}catch(e){}}
 async function aiCall(body,{signal}={}){
   if(!CFG_OK||!cloud.sb)throw{code:cloud.state==='pending'?'def':'none'};
   if(!cloud.uid)throw{code:'login'};
@@ -4782,9 +4811,11 @@ async function aiCall(body,{signal}={}){
   let tok='';try{const r=await cloud.sb.auth.getSession();tok=(r.data&&r.data.session&&r.data.session.access_token)||''}catch(e){}
   if(!tok)throw{code:'session_expired'};
   aiMark();
-  let res;try{res=await fetch(AI_URL,{method:'POST',signal,headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify(body)})}
+  const pf=await piFields();   /* Z9: csatorna + Play Integrity (a hívó objektuma nem változik) */
+  let res;try{res=await fetch(AI_URL,{method:'POST',signal,headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({...body,...pf})})}
   catch(e){throw{code:e&&e.name==='AbortError'?'cancelled':'offline'}}
   let j={};try{j=await res.json()}catch(e){if(e&&e.name==='AbortError')throw{code:'cancelled'}}
+  piAttSave(j);if(j&&j.code==='app_only'){piAtt=null;try{sessionStorage.removeItem('pv_att')}catch(e){}}
   if(j&&j.unl===true)aiUnlSet();else if(j&&typeof j.left==='number'&&j.per!=='week'&&j.per!=='month')aiLeftSet(j.left);
   else if(j&&Number.isInteger(j.left)&&j.left>=0&&j.per==='month'){aiAcct();aiRate.mleft=j.left;aiRate.mo=monthKey();aiRateSave()}   /* havi keret (okt. 27.) */
   else if(j&&Number.isInteger(j.left)&&j.left>=0&&j.per==='week'){aiAcct();aiRate.wleft=j.left;aiRate.wk=monday();aiRateSave()}   /* heti keret (3. kör) */

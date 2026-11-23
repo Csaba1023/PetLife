@@ -10,6 +10,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Strict-Transport-Security: max-age=31536000
   Cross-Origin-Opener-Policy: same-origin
+  X-Robots-Tag: noindex, nofollow
 
 # Google Play (TWA): Digital Asset Links. Okt. 24.: a Play alkalmazás-aláíró kulcs (1.) és a PWABuilder feltöltőkulcs (2.) SHA-256 lenyomata.
 /.well-known/assetlinks.json

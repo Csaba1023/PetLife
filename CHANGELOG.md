@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Keresőből kivéve, Play Integrity előkészítés (2026. nov. 23.)
+- **11-23 – v74:** az app nem kerül a keresők találatai közé (noindex). A Tanácsadó kérései jelzik, honnan jönnek (app vagy böngésző), és az Android-app következő változatától Play Integrity-igazolást is visznek; szerveroldalon egyelőre csak naplózás (advisor Z9).
+
 ### Nyílméregbéka-fajok (2026. nov. 21.)
 - **11-21 – v73:** felvételkor választható a festett, a zöld-fekete, a sárgasávos és az arany nyílméregbéka. Mindegyik saját tartási adatokat (társak, terrárium, hőmérséklet, pára), terráriumnapló-céltartományt és fajkártyát kap; az arany nyílméregbékánál hűvösebb (18–24 °C) céltartomány. A régi, faj nélküli profilok az általános útmutatónál maradnak.
 
