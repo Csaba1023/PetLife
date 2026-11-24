@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Play Integrity: indításkori igazolás (2026. nov. 24.)
+- **11-24 – v75:** az Android-app következő változata induláskor igazolja magát, és ezt a Tanácsadó kérései továbbviszik (szerveroldalon egyelőre csak naplózás, advisor Z10). A böngészős használat nem változik.
+
 ### Keresőből kivéve, Play Integrity előkészítés (2026. nov. 23.)
 - **11-23 – v74:** az app nem kerül a keresők találatai közé (noindex). A Tanácsadó kérései jelzik, honnan jönnek (app vagy böngésző), és az Android-app következő változatától Play Integrity-igazolást is visznek; szerveroldalon egyelőre csak naplózás (advisor Z9).
 
