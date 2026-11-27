@@ -2650,8 +2650,14 @@ if(linkPend)try{const q=new URLSearchParams(location.search);['token_hash','type
 const PI_LAUNCH=(()=>{const t=HASH.get('pv_pit'),p=HASH.get('pv_pin'),s=HASH.get('pv_pts');
   return t&&/^[A-Za-z0-9_\-.=]{20,8000}$/.test(t)&&p&&/^[A-Za-z0-9_-]{22,43}$/.test(p)&&/^\d{12,14}$/.test(s||'')?{pit:t,pin:p,pts:+s}:null})();
 const PI_V3=HASH.get('pv_v')==='3';
-if(['pv_v','pv_pit','pv_pin','pv_pts'].some(k=>HASH.has(k))||new URLSearchParams(location.search).has('pv_pi'))try{
-  const q=new URLSearchParams(location.search),h=new URLSearchParams(location.hash.slice(1));q.delete('pv_pi');['pv_v','pv_pit','pv_pin','pv_pts'].forEach(k=>h.delete(k));
+/* nov. 27. (v76, Z12): az Android v4 okkódja – miért (nem) jött token: pv_pie (ugyanaz a minta, mint a szerver PIE_RE-je) és
+   pv_pim (eltelt idő ms, 0–60000). Csak diagnosztika; hibás érték eldobva. Egyszer megy el (piDiagTake), token nélkül is. */
+const PI_DIAG=(()=>{const e=HASH.get('pv_pie'),m=HASH.get('pv_pim');
+  if(!e||!/^(?:ok|skip|t_prep|t_req|e_(?:prep|req)_(?:-?\d{1,4}|x))$/.test(e))return null;
+  const o={pie:e};if(m&&/^\d{1,5}$/.test(m)&&+m<=60000)o.pim=+m;return o})();
+const PI_HASH_KEYS=['pv_v','pv_pit','pv_pin','pv_pts','pv_pie','pv_pim'];
+if(PI_HASH_KEYS.some(k=>HASH.has(k))||new URLSearchParams(location.search).has('pv_pi'))try{
+  const q=new URLSearchParams(location.search),h=new URLSearchParams(location.hash.slice(1));q.delete('pv_pi');PI_HASH_KEYS.forEach(k=>h.delete(k));
   history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+(h.toString()?'#'+h:''))}catch(e){}
 /* állapotok: off = nincs beállítva vagy nem tölthető be, pending = ellenőrzés, out = nincs belépve, sync = első letöltés, cloud = mentve, error = sikertelen mentés */
 const cloud={sb:null,uid:null,email:'',ok:false,state:CFG_OK?'pending':'off',err:'',leaving:false,pulling:false,checked:0,dirty:new Set(),busy:false,timer:0};
@@ -4789,7 +4795,7 @@ const aiGate=()=>CFG_OK&&!cloud.uid&&cloud.state!=='pending';
    csak a naplóhoz kell, nem bizonyíték. Siker után a szerver 1 órás, fiókhoz kötött igazolást (att) ad, ezt a böngészőfül megjegyzi.
    Biztonság: csak a saját originről jövő, a megbeszélt jelszavas első üzenet nyithat csatornát; a válasz formátuma szigorúan ellenőrzött. */
 const PI_PKG='com.csabastudio.petavira',PI_HELLO='petavira-bridge-1',PI_TOK=/^[A-Za-z0-9_\-.=]{20,8000}$/,PI_ATT=/^a1\.[0-9a-z]{1,12}\.[A-Za-z0-9_-]{43}$/;
-let piPort=null,piSeq=0,piAtt=null,piLaunch=PI_LAUNCH?{...PI_LAUNCH}:null,piXing=false;const piWait=new Map();
+let piPort=null,piSeq=0,piAtt=null,piLaunch=PI_LAUNCH?{...PI_LAUNCH}:null,piXing=false,piDiag=PI_DIAG?{...PI_DIAG}:null;const piWait=new Map();
 /* Z10: az indítási token legfeljebb 30 percig váltható be (a szerver is ennyit fogad el) */
 const PI_LAUNCH_MS=29*60e3,PI_RESTART='intent://petavira.csabastudio.com/?pv_pi=1#Intent;scheme=https;package='+PI_PKG+';end';
 try{if(PI_V3)sessionStorage.setItem('pv_twa','3');else if(String(document.referrer||'').startsWith('android-app://'+PI_PKG)&&sessionStorage.getItem('pv_twa')!=='3')sessionStorage.setItem('pv_twa','1')}catch(e){}
@@ -4808,7 +4814,9 @@ const piLaunchOk=()=>!!(piLaunch&&Math.abs(Date.now()-piLaunch.pts)<PI_LAUNCH_MS
 const piLaunchTake=()=>{if(!piLaunchOk()){piLaunch=null;return null}const l=piLaunch;piLaunch=null;return{pit:l.pit,pin:l.pin,pts:l.pts,pk:'l'}};
 const piB64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 /* a kéréshez kötött token: requestHash = base64url(SHA-256('petavira-pi-v1|uid|pin|pts')) – a szerver ugyanígy számolja */
-async function piFields(){const f={ch:piChan()};
+/* v76: az okkód egyszer, a következő kérésben (kérdés vagy {task:'att'}) */
+const piDiagTake=()=>{const d=piDiag;piDiag=null;return d||{}};
+async function piFields(){const f={ch:piChan(),...piDiagTake()};
   if(piAttOk()){f.att=piAtt.att;return f}
   const l=piLaunchTake();if(l)return Object.assign(f,l);   /* Z10: indítási token */
   if(!piPort||!(window.crypto&&crypto.subtle))return f;
@@ -4832,7 +4840,7 @@ async function piExchange(){
   piXing=true;
   try{let tok='';try{const r=await cloud.sb.auth.getSession();tok=(r.data&&r.data.session&&r.data.session.access_token)||''}catch(e){}
     const l=tok&&piLaunchTake();if(!l)return;
-    const res=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({task:'att',ch:piChan(),...l})});
+    const res=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify({task:'att',ch:piChan(),...l,...piDiagTake()})});
     let j={};try{j=await res.json()}catch(e){}
     if(res.ok)piAttSave(j)}
   catch(e){}finally{piXing=false}}
