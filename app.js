@@ -4300,7 +4300,7 @@ let delBusy=false;
 function delSheet(){delBusy=false;openSheet(`<form id="auForm" novalidate><h2>Fiók törlése</h2>
   <p>Véglegesen törlöd a fiókodat (${esc(cloud.email)}) és minden hozzá mentett adatot: állatok, fotók, események, beszélgetések, a Tanácsadó használati adatai. Erről az eszközről is törlődnek. Ezt nem lehet visszavonni.</p>
   <p class="sub">Ha meg szeretnéd tartani őket, előbb töltsd le: Beállítások → Adataim letöltése.</p>
-  <label class="f"><span>Jelszó</span><input id="delPw" type="password" autocomplete="current-password" maxlength="72"></label>
+  ${pwField('delPw','Jelszó','current-password')}
   <label class="f"><span>Írd be: TÖRLÉS</span><input id="delTxt" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10"></label>
   ${capBox}<p class="err" id="delErr" role="alert" hidden></p>
   <button class="btn danger" id="delBtn" data-act="delGo">Fiók végleges törlése</button><button type="button" class="btn ghost" data-act="close">Mégse</button></form>`);capMount()}
@@ -4428,14 +4428,14 @@ function authSheet(m,mail=''){auMode=AU[m]?m:'in';auBusy=false;const a=AU[auMode
   openSheet(`<form id="auForm" novalidate><h2>${a.h}</h2>
   ${auMode==='reset'?'<p class="sub">Írd be az e-mail-címed, és küldünk egy linket, amivel új jelszót adhatsz meg.</p>':auMode==='up'?'<p class="sub">A regisztráció után megerősítő levelet kapsz. A benne lévő linkre kattintva válik használhatóvá a fiókod.</p>':''}
   <label class="f"><span>E-mail-cím</span><input id="auMail" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="200" value="${esc(mail)}"></label>
-  ${auMode==='reset'?'':auMode==='up'?pwField('auPw','Jelszó ('+PW_HINT+')','new-password')+pwField('auPw2','Jelszó újra','new-password'):`<label class="f"><span>Jelszó</span><input id="auPw" type="password" name="password" autocomplete="current-password" maxlength="72"></label>`}
+  ${auMode==='reset'?'':auMode==='up'?pwField('auPw','Jelszó ('+PW_HINT+')','new-password')+pwField('auPw2','Jelszó újra','new-password'):`${pwField('auPw','Jelszó','current-password')}`}
   ${auMode==='up'?ageHtml('auAge')+(ASZF_ON?aszfHtml('auAszf'):'')+privLinkHtml('privFromAuth'):''}
   ${capBox}<p class="err" id="auErr" role="alert" hidden></p>
   <button class="btn" id="auBtn" data-act="auGo">${a.b}</button>
   ${auMode==='in'?'<button type="button" class="btn ghost" data-act="auMode" data-m="up">Nincs még fiókom</button><button type="button" class="btn text" style="width:100%" data-act="auMode" data-m="reset">Elfelejtettem a jelszavam</button>':'<button type="button" class="btn ghost" data-act="auMode" data-m="in">Van már fiókom</button>'}
   <button type="button" class="btn ghost" data-act="close">Mégse</button></form>`);capMount()}
 /* nov. 5.: új jelszónál kétszer kell beírni (elgépelés ellen), és megmutatható. A mezők statikus sablonok, felhasználói adat nincs bennük. */
-const pwField=(id,label,ac)=>`<div class="f"><label for="${id}"><span>${label}</span></label><div class="pwRow"><input id="${id}" type="password" name="${id==='auPw'||id==='npPw'?'password':'password2'}" autocomplete="${ac}" maxlength="72"><button type="button" class="btn ghost pwEye" data-act="pwShow" data-for="${id}" aria-pressed="false">Mutasd</button></div></div>`;
+const pwField=(id,label,ac)=>`<div class="f"><label for="${id}"><span>${label}</span></label><div class="pwRow"><input id="${id}" type="password" name="${id==='auPw'||id==='npPw'||id==='delPw'?'password':'password2'}" autocomplete="${ac}" maxlength="72"><button type="button" class="btn ghost pwEye" data-act="pwShow" data-for="${id}" aria-pressed="false">Mutasd</button></div></div>`;
 const PW_DIFF='A két jelszó nem egyezik. Írd be újra.';
 function pwSheet(){openSheet('<form id="auForm" novalidate><h2>Új jelszó megadása</h2>'+pwField('npPw','Új jelszó ('+PW_HINT+')','new-password')+pwField('npPw2','Új jelszó újra','new-password')+'<p class="err" id="npErr" role="alert" hidden></p><button class="btn" id="npBtn" data-act="pwSave">Jelszó mentése</button><button type="button" class="btn ghost" data-act="close">Mégse</button></form>')}
 /* a hibakódok a Supabase Auth kódjai; régebbi válaszoknál a szövegből azonosítunk */
@@ -5091,7 +5091,7 @@ Object.assign(ACT,{
     if(m==='in'||(r.data&&r.data.session)){closeSheet();toast(m==='in'?'Beléptél':'Fiók létrehozva, beléptél');return}
     openSheet(m==='up'?`<h2>Nézd meg a postafiókod</h2><p>Megerősítő levelet küldtünk ide: <b>${esc(mail)}</b>. Kattints a benne lévő linkre, utána itt lépj be.</p><p class="sub">Ha pár percen belül nem érkezik meg, nézd meg a levélszemét mappát. Ha ezzel a címmel már volt fiókod, nem kapsz új levelet: lépj be, vagy kérj új jelszót.</p><button class="btn" data-act="auOpen" data-m="in">Belépés</button><button class="btn ghost" data-act="close">Bezárás</button>`
       :`<h2>Nézd meg a postafiókod</h2><p>Ha van fiók ezzel a címmel (<b>${esc(mail)}</b>), küldtünk egy levelet. A benne lévő linkre kattintva adhatsz meg új jelszót.</p><button class="btn ghost" data-act="close">Bezárás</button>`)},
-  pwShow(el){const f=el.dataset.for;if(!['auPw','auPw2','npPw','npPw2'].includes(f))return;const i=$('#'+f);if(!i)return;const on=i.type==='password';i.type=on?'text':'password';el.textContent=on?'Rejtsd':'Mutasd';el.setAttribute('aria-pressed',String(on))},
+  pwShow(el){const f=el.dataset.for;if(!['auPw','auPw2','npPw','npPw2','delPw'].includes(f))return;   /* v77 (#18): a belépésnél és a fióktörlésnél is */const i=$('#'+f);if(!i)return;const on=i.type==='password';i.type=on?'text':'password';el.textContent=on?'Rejtsd':'Mutasd';el.setAttribute('aria-pressed',String(on))},
   async pwSave(){
     const pw=$('#npPw').value;if(!pwOk(pw))return showErr('#npErr',PW_MSG);if(pw!==(($('#npPw2')||{}).value||''))return showErr('#npErr',PW_DIFF);
     const b=$('#npBtn');b.disabled=true;let r;try{r=await cloud.sb.auth.updateUser({password:pw})}catch(e){r={error:e}}
