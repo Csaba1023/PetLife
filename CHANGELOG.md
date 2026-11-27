@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Jelszó megjelenítése belépéskor (2026. nov. 27.)
+- **11-27 – v77:** a belépésnél és a fióktörlésnél is van „Mutasd / Rejtsd” gomb a jelszómező mellett (eddig csak a regisztrációnál és az új jelszónál). Tesztelői javaslat.
+
 ### Play Integrity: indítási okkód (2026. nov. 27.)
 - **11-27 – v76:** az Android-app következő változata (1.0.3) jelzi, ha induláskor nem sikerült igazolást kérnie (és mennyi ideig próbálta); ezt a Tanácsadó első kérése egyszer továbbviszi, csak a szerver naplójába (advisor Z12). A böngészős használat nem változik.
 
