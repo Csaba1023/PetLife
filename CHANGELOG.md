@@ -6,6 +6,9 @@ A funkcióbővítéseket a nyilvános indulásig csak összefoglalóan soroljuk 
 
 ## 2026. november
 
+### Play Integrity: indítási okkód (2026. nov. 27.)
+- **11-27 – v76:** az Android-app következő változata (1.0.3) jelzi, ha induláskor nem sikerült igazolást kérnie (és mennyi ideig próbálta); ezt a Tanácsadó első kérése egyszer továbbviszi, csak a szerver naplójába (advisor Z12). A böngészős használat nem változik.
+
 ### Play Integrity: indításkori igazolás (2026. nov. 24.)
 - **11-24 – v75:** az Android-app következő változata induláskor igazolja magát, és ezt a Tanácsadó kérései továbbviszik (szerveroldalon egyelőre csak naplózás, advisor Z10). A böngészős használat nem változik.
 
